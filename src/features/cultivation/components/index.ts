@@ -1,4 +1,7 @@
 export { CultivationDashboard } from './CultivationDashboard';
+export { ClaudeDesignCanvas } from './command';
+// FloorPlanLive is consumed directly by features/executive via the floor-plan
+// barrel; not re-exported here because it's no longer a standalone route.
 export { PlantGroupsList } from './PlantGroupsList';
 export { HarvestSessionsList } from './HarvestSessionsList';
 export { GrowRoomsManagement } from './GrowRoomsManagement';

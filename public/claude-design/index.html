@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Cultivo · Cultivation, redesigned</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="system/brand-tokens.css" />
+<link rel="stylesheet" href="screens/styles.css" />
+<link rel="stylesheet" href="screens/bento-styles.css" />
+<link rel="stylesheet" href="screens/fpl-styles.css" />
+<link rel="stylesheet" href="screens/rdt-styles.css" />
+<link rel="stylesheet" href="screens/daily-handoff.css" />
+<link rel="stylesheet" href="styles/tweak-rules.css" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;700&display=swap" />
+<style>
+  body { background: #1B1A18; color: #E8E5DD; font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+  .brief-wrap { max-width: 1200px; margin: 0 auto; padding: 56px 56px 24px; }
+  .brief-eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
+    color: rgba(232,229,221,0.5); margin-bottom: 20px;
+  }
+  .brief-title {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-weight: 300; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.02em; color: #E8E5DD; max-width: 22ch;
+    margin: 0 0 24px;
+  }
+  .brief-title em { font-style: italic; color: #E8E0D4; }
+  .brief-lede {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 17px; line-height: 1.55; max-width: 64ch;
+    color: rgba(232,229,221,0.78);
+  }
+  .brief-meta {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px; margin-top: 36px; padding-top: 24px;
+    border-top: 1px solid rgba(232,229,221,0.12);
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.04em; color: rgba(232,229,221,0.62);
+  }
+  .brief-meta strong { color: #E8E5DD; font-weight: 500; display: block; margin-bottom: 4px;
+    text-transform: uppercase; letter-spacing: 0.10em; font-size: 10px; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div class="brief-wrap">
+  <div class="brief-eyebrow">CULTIVATION · BUILT ON CULTIVO · MAR 6</div>
+  <h1 class="brief-title">Cultivation,<br/>rebuilt on the <em>Cultivo</em> system.</h1>
+  <p class="brief-lede">
+    The original Command Center pivoted around The Eye — a chat box that waited to be asked.
+    Replaced here by <strong style="color:#E8E0D4;font-weight:500">The Seed</strong>: a proactive observation
+    that arrives in the alerts panel as a fourth tone, with its own quiet visual language. Three surfaces
+    — the COO desk, the floor tablet, and a glance for the phone — to show how the same ledger holds across
+    contexts when the system rules are doing their job.
+  </p>
+  <div class="brief-meta">
+    <div><strong>System</strong>Cultivo · brand-tokens.css<br/>IBM Plex Sans · Mono<br/>Warm-white #E8E0D4 single accent</div>
+    <div><strong>The Seed</strong>Origin reads "THE SEED"<br/>Title in sans italic<br/>Footer line: obs · basis · confidence</div>
+    <div><strong>Surfaces</strong>1700×2160 · COO desk<br/>1024×1366 · Floor tablet<br/>390×844 · Mobile glance</div>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="screens/coo-desk.jsx"></script>
+<script type="text/babel" src="screens/coo-bento.jsx"></script>
+<script type="text/babel" src="screens/coo-floorplan.jsx"></script>
+<script type="text/babel" src="screens/coo-room-detail.jsx"></script>
+<script type="text/babel" src="screens/daily-handoff.jsx"></script>
+<script type="text/babel" src="screens/floor-mobile.jsx"></script>
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard } = window;
+const { TweaksPanel, TweakSection, TweakRadio, TweakSelect, TweakToggle, TweakColor, useTweaks } = window;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#E8E0D4",
+  "density": "regular",
+  "italicMode": "off",
+  "seedVisibility": "off"
+}/*EDITMODE-END*/;
+
+const ACCENT_OPTIONS = [
+  { label: 'Warm white · default', value: '#E8E0D4' },
+  { label: 'Cultivar green',       value: '#A8B89A' },
+  { label: 'Terracotta',           value: '#C8896C' },
+  { label: 'Slate',                value: '#97A2AE' },
+  { label: 'Saffron',              value: '#D8A648' },
+];
+
+function applyTweaks(t) {
+  // Accent — propagates through every var(--accent) reference
+  document.documentElement.style.setProperty('--accent', t.accent);
+  // Body classes for density / italic / seed visibility
+  const cls = ['twk-density-' + t.density, 'twk-italic-' + t.italicMode, 'twk-seed-' + t.seedVisibility];
+  document.body.classList.forEach((c) => {
+    if (c.startsWith('twk-')) document.body.classList.remove(c);
+  });
+  cls.forEach((c) => document.body.classList.add(c));
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  React.useEffect(() => { applyTweaks(t); }, [t.accent, t.density, t.italicMode, t.seedVisibility]);
+
+  return (
+    <React.Fragment>
+      <DesignCanvas>
+      <DCSection
+        id="coo-desk"
+        title="01 · Cultivation Command Center — two directions"
+        subtitle="A · Ledger reading: rows-and-columns, alerts panel as a register, equal weight. B · Editorial bento: asymmetric grid, hero cell on the room that needs the COO now, The Seed as a serif aside. Same data, same system, two compositional logics."
+      >
+        <DCArtboard id="coo-a" label="A · Ledger · 1700×2160" width={1700} height={2160}>
+          <CooDesk />
+        </DCArtboard>
+        <DCArtboard id="coo-b" label="B · Editorial bento · 1700×1800" width={1700} height={1800}>
+          <CooDeskBento />
+        </DCArtboard>
+        <DCArtboard id="coo-c" label="C · Floor Plan, Live · 1700×900" width={1700} height={900}>
+          <CooDeskFloorPlan />
+        </DCArtboard>
+        <DCArtboard id="coo-d" label="D · Room Detail · FLR-02 · 1700×2480" width={1700} height={2480}>
+          <CooRoomDetail />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="floor"
+        title="02 · Floor tablet · Worker register"
+        subtitle="The same product, edited for the floor. One room at a time. 44px-minimum hit targets. Plex Sans 700 numerals. The Seed appears as a soft contextual line above the focus header — the worker doesn't get the executive curve, just Diego's note from last cycle."
+      >
+        <DCArtboard id="floor-tab" label="Floor tablet · 1024×1366" width={1024} height={1366}>
+          <FloorTablet />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="mobile"
+        title="03 · Glance · Mobile"
+        subtitle="The COO confidence check. One sentence answer. One number that needs them. One thing The Seed has noticed. Everything else folds beneath."
+      >
+        <DCArtboard id="mob" label="Mobile glance · 390×844" width={390} height={844}>
+          <MobileGlance />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection
+        id="handoff"
+        title="04 · Daily Handoff · printed"
+        subtitle="The paper that lives on the floor. Same data, different fidelity. Black ink on warm-white, no color, hand-fillable rules. The shift lead prints it at 06:00, walks the rooms, marks it up, hands it to the COO at 14:00. The marked-up version shows the workflow: rooms read, FLR-02 circled, tasks ticked, signed off."
+      >
+        <DCArtboard id="handoff-blank" label="A · Blank · 850×1450" width={850} height={1450}>
+          <HandoffBlank />
+        </DCArtboard>
+        <DCArtboard id="handoff-marked" label="B · End of shift · 850×1450" width={850} height={1450}>
+          <HandoffMarked />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+
+    <TweaksPanel title="Tweaks">
+      <TweakSection label="Accent" />
+      <TweakSelect
+        label="Single accent"
+        value={t.accent}
+        options={ACCENT_OPTIONS}
+        onChange={(v) => setTweak('accent', v)}
+      />
+      <TweakColor
+        label="Custom"
+        value={t.accent}
+        onChange={(v) => setTweak('accent', v)}
+      />
+
+      <TweakSection label="Density" />
+      <TweakRadio
+        label="Row pack"
+        value={t.density}
+        options={['compact', 'regular']}
+        onChange={(v) => setTweak('density', v)}
+      />
+
+      <TweakSection label="Italic" />
+      <TweakRadio
+        label="Where italic appears"
+        value={t.italicMode}
+        options={['seed-only', 'off']}
+        onChange={(v) => setTweak('italicMode', v)}
+      />
+
+      <TweakSection label="The Seed" />
+      <TweakRadio
+        label="Seed visibility"
+        value={t.seedVisibility}
+        options={['full', 'hero-only', 'off']}
+        onChange={(v) => setTweak('seedVisibility', v)}
+      />
+    </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

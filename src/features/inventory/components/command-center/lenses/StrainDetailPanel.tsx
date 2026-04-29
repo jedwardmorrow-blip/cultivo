@@ -22,6 +22,7 @@ const STAGE_COLORS: Record<string, string> = {
 const LIFECYCLE_LABELS: Record<string, string> = {
   growing: 'Growing',
   drying: 'Drying',
+  binned: 'Binned',
   curing: 'Curing',
   bucked: 'Bucked',
   trimming: 'Trimming',

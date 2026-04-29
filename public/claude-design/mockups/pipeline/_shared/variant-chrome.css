@@ -1,0 +1,356 @@
+/* Room Roll Strip — variant chrome only.
+   Tokens come from ../../tokens/brand-tokens.css.
+   Nothing here belongs in the typed contract. */
+
+body.sysref-variant {
+  margin: 0;
+  background: var(--op-canvas);
+  color: var(--op-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.variant-doc {
+  max-width: 1366px;
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+
+.variant-header { margin-bottom: 40px; }
+
+.variant-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  margin: 0 0 8px;
+}
+
+.variant-title {
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.005em;
+  margin: 0 0 6px;
+}
+
+.variant-sub {
+  font-size: 13px;
+  color: var(--op-ink-2);
+  max-width: 64ch;
+  margin: 0;
+}
+
+/* Six-tile rollup row, with one Room Roll tile spanning 2 columns */
+.rollup-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  background: var(--op-surface);
+  overflow: hidden;
+}
+
+.rollup-tile {
+  padding: 18px 18px 16px;
+  border-right: 1px solid var(--op-line);
+  position: relative;
+  min-height: 156px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rollup-tile:last-child { border-right: 0; }
+
+.tile-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tile-eyebrow .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.tile-num {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 26px;
+  letter-spacing: -0.005em;
+  color: var(--op-ink);
+  font-feature-settings: 'tnum';
+  margin: 0;
+}
+
+.tile-num.estimate { font-style: italic; }
+
+.tile-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-2);
+  margin-top: 4px;
+  font-feature-settings: 'tnum';
+}
+
+.tile-flag {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  border: 1px solid var(--op-line-strong);
+  border-radius: var(--r-xs);
+  padding: 2px 5px;
+}
+
+/* ── Room Roll Strip — the new pattern ────────────────────────── */
+
+.room-roll {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-roll .tile-eyebrow {
+  margin-bottom: 8px;
+}
+
+.room-rows {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+  flex: 1;
+}
+
+.room-row {
+  display: grid;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--op-line);
+  font-feature-settings: 'tnum';
+}
+
+.room-row:last-child { border-bottom: 0; }
+
+/* v1 grid: room | days | grams | strains | alloc — tight at ~249px content width */
+.room-row.v1 {
+  grid-template-columns: 52px 36px 1fr 28px 44px;
+  gap: 8px;
+}
+
+/* v2 grid: room | days | grams | sparkline | alloc — tightened so the 1fr sparkline
+   has actual room to breathe inside the 2-col tile span (~456px at canonical width). */
+.room-row.v2 {
+  grid-template-columns: 48px 38px 50px 1fr 44px;
+  gap: 10px;
+}
+
+/* v3 grid: room | days | grams | strains | callout (full-width second line) */
+.room-row.v3 {
+  grid-template-columns: 52px 36px 1fr 28px 44px;
+  gap: 8px;
+  padding: 10px 0 8px;
+}
+
+.room-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--op-ink);
+  letter-spacing: 0.02em;
+}
+
+.room-days {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--op-ink);
+  font-style: italic;
+  text-align: right;
+}
+
+.room-days.overdue {
+  color: var(--status-bad);
+  font-style: normal;
+}
+
+.room-days.imminent {
+  color: var(--accent);
+}
+
+.room-days.stuck {
+  color: var(--status-warn);
+  font-style: normal;
+}
+
+.room-grams {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--op-ink-2);
+  text-align: left;
+}
+
+.room-strains {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-3);
+  text-align: right;
+}
+
+.room-alloc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: end;
+}
+
+.room-alloc .a-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.room-alloc.allocated  { color: var(--op-ink-2); }
+.room-alloc.allocated .a-dot { background: var(--accent); }
+
+.room-alloc.partial    { color: var(--op-ink-2); }
+.room-alloc.partial .a-dot { background: var(--accent); opacity: 0.55; }
+
+.room-alloc.unalloc    { color: var(--op-ink-3); }
+.room-alloc.unalloc .a-dot { background: var(--op-ink-4); }
+
+/* v2 sparkline cell */
+.room-spark {
+  height: 16px;
+  display: block;
+  width: 100%;
+}
+
+/* v3 inline callout line */
+.room-callout {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--status-warn);
+  margin-top: 4px;
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-callout.bad { color: var(--status-bad); }
+.room-callout.ok  { color: var(--op-ink-3); }
+
+.room-callout::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+  flex: 0 0 4px;
+}
+
+/* Header row legend, mono caps */
+.room-row.head {
+  display: grid;
+  align-items: center;
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--op-line-strong);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  gap: 12px;
+}
+
+.room-row.head.v1 { grid-template-columns: 52px 36px 1fr 28px 44px; gap: 8px; }
+.room-row.head.v2 { grid-template-columns: 48px 38px 50px 1fr 44px; gap: 10px; }
+.room-row.head.v3 { grid-template-columns: 52px 36px 1fr 28px 44px; gap: 8px; }
+
+.room-row.head .r-days,
+.room-row.head .r-strains,
+.room-row.head .r-alloc { text-align: right; }
+
+.room-row.head .r-grams { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.room-row .room-grams { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Fixture context, design-review only */
+.fixture-context {
+  margin-top: 32px;
+  padding: 20px 24px;
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md);
+  background: var(--op-surface-2);
+  font-size: 12px;
+  color: var(--op-ink-2);
+  line-height: 1.6;
+}
+
+.fixture-context h3 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+
+.fixture-context table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.fixture-context th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--op-ink-3);
+  padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--op-line);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.fixture-context td {
+  padding: 6px 12px 6px 0;
+  color: var(--op-ink-2);
+  border-bottom: 1px solid var(--op-line);
+  font-feature-settings: 'tnum';
+}
+
+.fixture-context td.italic { font-style: italic; }
+
+.fixture-note {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--op-ink-3);
+  margin-top: 12px;
+  font-style: italic;
+}

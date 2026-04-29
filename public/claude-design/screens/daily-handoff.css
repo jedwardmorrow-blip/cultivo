@@ -1,0 +1,340 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Cultivo — Daily Handoff Sheet
+   850×1100 letter portrait. Black ink on warm-white paper.
+   Counterweight to the screens — print fidelity, no chrome.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.artb.dh-sheet {
+  width: 850px; height: 1450px;
+  position: relative;
+  background: #F2EEE3;
+  color: #1a1a18;
+  font-family: var(--font-sans);
+  padding: 36px 44px 30px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04) inset;
+}
+
+/* Subtle paper grain via radial noise */
+.dh-paper {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(120,100,70,0.04), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(120,100,70,0.04), transparent 50%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────────── */
+.dh-head {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 28px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #1a1a18;
+  position: relative;
+}
+.dh-head-l { display: flex; flex-direction: column; }
+.dh-mark { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.dh-mark svg { display: block; }
+.dh-mark-word {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.18em;
+}
+.dh-doc-title {
+  font-family: var(--font-sans); font-weight: 300;
+  font-size: 32px; line-height: 1; letter-spacing: -0.01em;
+  color: #1a1a18; margin: 4px 0 4px;
+}
+.dh-doc-sub {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.10em; color: rgba(26,26,24,0.62);
+  text-transform: uppercase;
+}
+
+/* meta on right — name/value rows with rules to write on */
+.dh-head-r {
+  display: grid; grid-template-rows: repeat(4, auto);
+  gap: 6px; align-self: end; min-width: 280px;
+}
+.dh-meta-row {
+  display: grid; grid-template-columns: 60px 1fr;
+  gap: 12px; align-items: end;
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.10em;
+  color: rgba(26,26,24,0.55);
+  text-transform: uppercase;
+}
+.dh-meta-rule {
+  border-bottom: 1px solid #1a1a18;
+  height: 14px; padding-bottom: 1px;
+  font-family: var(--font-sans); font-size: 11.5px;
+  text-transform: none; letter-spacing: 0;
+  color: #1a2440; position: relative;
+}
+.dh-meta-rule.plain {
+  font-family: var(--font-mono); font-size: 10.5px;
+  color: rgba(26,26,24,0.78); letter-spacing: 0.04em;
+  text-align: right; padding-right: 4px;
+}
+
+/* ── SEED OVERNIGHT ───────────────────────────────────────────── */
+.dh-seed {
+  display: grid; grid-template-columns: 130px 1fr;
+  gap: 14px; align-items: start;
+  padding: 14px 16px; margin: 16px 0 10px;
+  border: 1px solid #1a1a18;
+  background: rgba(26,26,24,0.025);
+  position: relative;
+}
+.dh-seed::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 4px;
+  background: #1a1a18;
+}
+.dh-seed-l {
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #1a1a18; font-weight: 600;
+  padding-top: 1px;
+}
+.dh-seed-says {
+  font-family: var(--font-sans); font-size: 13px;
+  line-height: 1.4; color: #1a1a18;
+  margin-bottom: 8px;
+}
+.dh-seed-says em {
+  font-style: italic;
+}
+.dh-seed-meta {
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.06em; color: rgba(26,26,24,0.55);
+  text-transform: uppercase;
+}
+
+/* ── SECTIONS ──────────────────────────────────────────────────── */
+.dh-section { margin: 14px 0 0; }
+.dh-section-h {
+  display: flex; align-items: baseline; gap: 10px;
+  padding-bottom: 6px; margin-bottom: 6px;
+  border-bottom: 1px solid #1a1a18;
+}
+.dh-section-num {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.10em; color: #1a1a18;
+}
+.dh-section-title {
+  font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+  color: #1a1a18; letter-spacing: -0.005em;
+}
+.dh-section-rule { flex: 1; }
+.dh-section-meta {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.10em; color: rgba(26,26,24,0.55);
+  text-transform: uppercase;
+}
+
+/* ── ROOMS TABLE ──────────────────────────────────────────────── */
+.dh-rooms {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--font-sans); font-size: 11px;
+  color: #1a1a18;
+}
+.dh-rooms th {
+  text-align: left;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 500;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: rgba(26,26,24,0.55);
+  padding: 4px 6px; border-bottom: 1px solid #1a1a18;
+}
+.dh-rooms td {
+  padding: 6px 6px;
+  border-bottom: 1px solid rgba(26,26,24,0.18);
+  vertical-align: bottom; height: 22px;
+}
+.dh-rooms tr.circled td { font-weight: 500; }
+.dh-rooms tr.circled .dh-room-code { position: relative; }
+.dh-rooms tr.circled .dh-room-code::after {
+  content: ''; position: absolute;
+  inset: -3px -2px -2px -3px;
+  border: 1.2px solid #1a2440;
+  border-radius: 50%;
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+.dh-room-code {
+  font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.04em;
+}
+.dh-strain {}
+.dh-day { font-family: var(--font-mono); font-size: 10.5px; }
+.dh-fill {
+  /* cells the worker fills in — empty rule */
+  border-bottom: 1px solid #1a1a18 !important;
+  background: transparent;
+  position: relative;
+}
+.dh-fill.ok { border-bottom: none !important; padding-left: 4px; }
+.dh-flag { font-style: italic; color: rgba(26,26,24,0.74); font-size: 10.5px; }
+
+/* ── TASKS ─────────────────────────────────────────────────────── */
+.dh-tasks {
+  list-style: none; padding: 0; margin: 4px 0 0;
+}
+.dh-task {
+  display: grid;
+  grid-template-columns: 22px 56px 1fr 38px 60px;
+  gap: 10px; align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px dotted rgba(26,26,24,0.30);
+  font-size: 11.5px;
+}
+.dh-task.urgent .dh-task-text { font-weight: 500; }
+.dh-task.urgent::before {
+  content: '!'; font-family: var(--font-mono);
+  color: #1a1a18; font-weight: 700;
+  margin-left: -16px; margin-right: 4px;
+}
+.dh-task-cb { display: flex; align-items: center; }
+.dh-task-time {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.04em; color: #1a1a18;
+}
+.dh-task-text { color: #1a1a18; }
+.dh-task-who {
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.06em; color: rgba(26,26,24,0.62);
+  text-transform: uppercase; text-align: right;
+}
+.dh-task-actual {
+  border-bottom: 1px solid #1a1a18;
+  height: 14px; position: relative;
+  font-family: var(--font-sans); color: #1a2440;
+  font-size: 11px;
+}
+
+/* ── CHECKBOXES ─────────────────────────────────────────────── */
+.dh-cb {
+  position: relative; display: inline-block;
+  width: 14px; height: 14px;
+}
+.dh-cb-box {
+  position: absolute; inset: 0;
+  border: 1px solid #1a1a18;
+}
+.dh-cb-mark {
+  position: absolute; inset: -3px -2px -2px -2px;
+  width: 18px; height: 18px;
+  pointer-events: none;
+}
+
+/* ── TWO-COLUMN BOTTOM ─────────────────────────────────────── */
+.dh-twocol {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin-top: 12px;
+}
+.dh-half {}
+.dh-flat {
+  list-style: none; padding: 0; margin: 4px 0 0;
+  font-size: 11.5px;
+}
+.dh-flat li {
+  padding: 4px 0;
+  border-bottom: 1px dotted rgba(26,26,24,0.20);
+}
+.dh-flat .dh-mono {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.04em;
+  margin-right: 8px; color: rgba(26,26,24,0.74);
+}
+
+/* ── SIGN-OFF ──────────────────────────────────────────────── */
+.dh-signoff {
+  display: grid; grid-template-columns: 2fr 2fr 1fr;
+  gap: 24px; margin-top: 18px;
+}
+.dh-sig {}
+.dh-sig-rule {
+  border-bottom: 1px solid #1a1a18;
+  height: 32px; position: relative;
+}
+.dh-sig-l {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.10em; color: rgba(26,26,24,0.55);
+  text-transform: uppercase; margin-top: 4px;
+}
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+.dh-foot {
+  display: flex; justify-content: space-between;
+  margin-top: 16px; padding-top: 8px;
+  border-top: 1px solid rgba(26,26,24,0.30);
+  font-family: var(--font-mono); font-size: 8.5px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(26,26,24,0.55);
+}
+
+/* ── PEN HANDWRITING ─────────────────────────────────────── */
+.dh-pen {
+  font-family: 'Caveat', 'Bradley Hand', 'Marker Felt', cursive;
+  display: inline-block;
+  color: #1a2440;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+}
+.dh-fill .dh-pen {
+  position: absolute;
+  bottom: 1px;
+  left: 4px;
+  font-size: 13px;
+}
+.dh-task-actual .dh-pen {
+  position: absolute;
+  bottom: 1px;
+  left: 4px;
+  font-size: 12.5px;
+}
+.dh-meta-rule .dh-pen {
+  position: absolute;
+  bottom: 1px;
+  left: 4px;
+  font-size: 13px;
+}
+.dh-sig-rule .dh-pen {
+  position: absolute;
+  bottom: 4px;
+  left: 8px;
+  font-size: 22px;
+}
+.dh-sig.small .dh-sig-rule .dh-pen {
+  font-size: 14px; bottom: 2px;
+}
+
+/* ── FILED STAMP ──────────────────────────────────────────── */
+.dh-stamp {
+  position: absolute;
+  top: 32px; right: 50px;
+  transform: rotate(-8deg);
+  pointer-events: none;
+  z-index: 3;
+}
+.dh-stamp-inner {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  border: 2px solid #6b3a2a;
+  color: #6b3a2a;
+  padding: 6px 14px 4px;
+  text-align: center;
+  opacity: 0.78;
+  letter-spacing: 0.18em;
+  font-size: 18px;
+  background: rgba(107,58,42,0.04);
+}
+.dh-stamp-inner > div:first-child {
+  border-bottom: 1px solid #6b3a2a;
+  padding-bottom: 2px; margin-bottom: 3px;
+}
+.dh-stamp-d {
+  font-size: 10px;
+  letter-spacing: 0.20em;
+}

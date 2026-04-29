@@ -60,7 +60,7 @@ export const sectionDefinitions: SectionDefinition[] = [
     icon: Crown,
     defaultView: 'executive-hub',
     items: [
-      { id: 'executive-hub', label: 'Executive Overview', icon: LayoutDashboard, group: 'primary' },
+      { id: 'executive-hub', label: 'Overview', icon: LayoutDashboard, group: 'primary' },
       { id: 'hub', label: 'Batch Pipeline', icon: GitBranch, group: 'primary' },
       { id: 'pipeline-planner', label: 'Planner', icon: Target, group: 'primary' },
       { id: 'hub-strain-analytics', label: 'Strain Intel', icon: BarChart3, group: 'secondary' },

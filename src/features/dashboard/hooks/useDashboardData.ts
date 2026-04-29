@@ -19,6 +19,7 @@ export interface RevenueGoal {
 
 export interface KPIData {
   revenueMTD: number;
+  revenueMTDPrior: number;          // same calendar window in the prior month (for delta)
   mtdOrders: number;
   mtdCustomers: number;
   openPipeline: number;
@@ -141,6 +142,7 @@ async function fetchRevenueData(): Promise<{
   monthlyRevenue: MonthlyRevenue[];
   weeklyRevenue: WeeklyRevenue[];
   mtd: number;
+  mtdPrior: number;
   mtdOrders: number;
   mtdCustomers: number;
   openPipeline: number;
@@ -150,6 +152,10 @@ async function fetchRevenueData(): Promise<{
 }> {
   const now = new Date();
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  // Prior-month same calendar window (e.g. Apr 1-27 → Mar 1-27)
+  const priorMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const priorMonthStart = `${priorMonth.getFullYear()}-${String(priorMonth.getMonth() + 1).padStart(2, '0')}-01`;
+  const priorMonthThru = `${priorMonth.getFullYear()}-${String(priorMonth.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   // Fetch all non-cancelled orders from the pipeline view
   // order_pipeline columns: id, order_number, status, priority, requested_delivery_date,
@@ -175,6 +181,14 @@ async function fetchRevenueData(): Promise<{
   const mtd = mtdRows.reduce((s, o) => s + (o.total_amount || 0), 0);
   // Use customer_name for unique customer count (no customer_id on this view)
   const mtdCustomerSet = new Set(mtdRows.map(o => o.customer_name).filter(Boolean));
+
+  // Prior-month MTD (same calendar window applied to last month) for delta context.
+  const mtdPriorRows = rows.filter(o => {
+    if (!revenueStatuses.includes(o.status)) return false;
+    const dt = o.scheduled_delivery_date || o.requested_delivery_date || null;
+    return dt && dt >= priorMonthStart && dt <= priorMonthThru;
+  });
+  const mtdPrior = mtdPriorRows.reduce((s, o) => s + (o.total_amount || 0), 0);
 
   // Open pipeline
   const openStatuses = ['submitted', 'accepted', 'processing', 'ready_for_delivery'];
@@ -255,6 +269,7 @@ async function fetchRevenueData(): Promise<{
     monthlyRevenue,
     weeklyRevenue,
     mtd,
+    mtdPrior,
     mtdOrders: mtdRows.length,
     mtdCustomers: mtdCustomerSet.size,
     openPipeline,
@@ -607,6 +622,7 @@ export function useDashboardData() {
         },
         kpi: {
           revenueMTD: revenueResult.mtd,
+          revenueMTDPrior: revenueResult.mtdPrior,
           mtdOrders: revenueResult.mtdOrders,
           mtdCustomers: revenueResult.mtdCustomers,
           openPipeline: revenueResult.openPipeline,

@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Crown, AlertTriangle, TrendingUp, TrendingDown, Users } from 'lucide-react';
+import { Crown, AlertTriangle, TrendingUp, TrendingDown, Users, ChevronDown, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
 import { formatCurrencyShort } from '@/shared/utils/format';
 import { AuditOverdueBadge } from '@/features/compliance';
+import { FloorPlanLive } from '@features/cultivation/components/command/floor-plan';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -403,52 +404,95 @@ export function ExecutiveHub() {
     },
   ];
 
+  const [showDetails, setShowDetails] = useState(false);
+
   return (
-    <HubShell section="Executive" icon={Crown} kpis={kpis}>
+    <HubShell section="Overview" icon={Crown} kpis={undefined}>
       <div className="space-y-6">
 
-        {/* Department Health */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider">
-              Department Health
-            </h2>
-            <AuditOverdueBadge />
-          </div>
-          <DeptHealthChips
-            depts={deptHealth}
-            loading={healthLoading || revLoading || sessionLoading}
-          />
-        </div>
+        {/* Floor Plan Live — primary spatial overview */}
+        <FloorPlanLive embedded />
 
-        {/* Attention Alert Strip */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-cult-warning" />
-            Attention Required
-          </h2>
-          <AttentionAlertStrip alerts={alerts} loading={isAlertsLoading} />
-        </div>
+        {/* Details accordion — preserves the legacy executive panels */}
+        <div className="border-t border-cult-border pt-4">
+          <button
+            type="button"
+            onClick={() => setShowDetails((v) => !v)}
+            className="w-full flex items-center justify-between px-1 py-2 text-cult-text-secondary hover:text-cult-text-primary transition-colors"
+          >
+            <span className="font-mono text-xs uppercase tracking-widest">
+              Details · department health · attention · revenue · headcount
+            </span>
+            {showDetails
+              ? <ChevronDown className="w-4 h-4" />
+              : <ChevronRight className="w-4 h-4" />}
+          </button>
 
-        {/* Revenue Summary */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Revenue Summary
-          </h2>
-          <RevenueSummaryPanel
-            recognized={revRecognized}
-            pipeline={revPipeline}
-            loading={revLoading}
-          />
-        </div>
+          {showDetails ? (
+            <div className="space-y-6 mt-4">
+              {/* Department Health */}
+              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider">
+                    Department Health
+                  </h2>
+                  <AuditOverdueBadge />
+                </div>
+                <DeptHealthChips
+                  depts={deptHealth}
+                  loading={healthLoading || revLoading || sessionLoading}
+                />
+              </div>
 
-        {/* Headcount Activity */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
-            Headcount Activity
-          </h2>
-          <HeadcountSummaryPanel count={sessionCount} loading={sessionLoading} />
+              {/* Attention Alert Strip */}
+              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+                <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-cult-warning" />
+                  Attention Required
+                </h2>
+                <AttentionAlertStrip alerts={alerts} loading={isAlertsLoading} />
+              </div>
+
+              {/* Revenue Summary */}
+              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+                <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Revenue Summary
+                </h2>
+                <RevenueSummaryPanel
+                  recognized={revRecognized}
+                  pipeline={revPipeline}
+                  loading={revLoading}
+                />
+              </div>
+
+              {/* Headcount Activity */}
+              <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+                <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
+                  Headcount Activity
+                </h2>
+                <HeadcountSummaryPanel count={sessionCount} loading={sessionLoading} />
+              </div>
+
+              {/* Legacy KPI strip preserved here for now; HubShell KPIs nulled
+                  out at the top so the Floor Plan's facility state strip can
+                  carry the executive summary read. */}
+              {kpis.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {kpis.map((k) => (
+                    <div key={k.label} className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-3">
+                      <div className="text-[10px] uppercase tracking-widest text-cult-text-muted font-mono mb-1">
+                        {k.label}
+                      </div>
+                      <div className="text-lg font-semibold text-cult-text-primary tabular-nums">
+                        {k.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
       </div>
