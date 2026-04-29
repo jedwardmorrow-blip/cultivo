@@ -123,6 +123,7 @@ export function useCommandCenterData() {
     tasks,
     tasksByRoom,
     totals,
+    today,
     loading: roomsLoading || tasksLoading,
     updateStatus,
     completeWithLog,

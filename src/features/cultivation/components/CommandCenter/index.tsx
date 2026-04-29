@@ -20,6 +20,7 @@ import { usePlantGroups } from '../../hooks/usePlantGroups';
 import { useGrowRooms } from '../../hooks/useGrowRooms';
 import { usePlantGroupLabel } from '../../hooks/usePlantGroupLabel';
 import { useTaskAssignments } from '../../hooks/useTaskAssignments';
+import { useFeedProgramRecipe } from '../../hooks/useFeedProgramRecipe';
 import { useActiveStaff } from '@/features/sessions/hooks/useActiveStaff';
 import { HarvestWorkflow } from '../harvest';
 import { MoveToRoomModal } from '../MoveToRoomModal';
@@ -403,6 +404,70 @@ function _StatsStripLegacy({ room, tasks }: { room: RoomShape; tasks: TaskShape[
 // ═══════════════════════════════════════════════════════════════
 // Task row + completion modal (schema-driven)
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// FeedRecipe — read-only feed recipe display restyled to hairline DS.
+// Source: useFeedProgramRecipe(stage, days, room_id) which resolves the
+// active feed program for the room's current stage/week, plus any
+// per-room product overrides.
+// ═══════════════════════════════════════════════════════════════
+function FeedRecipe({ room }: { room: RoomShape }) {
+  const stage = room.type;
+  const days = room.day ?? 0;
+  const { recipe, roomOverride, loading } = useFeedProgramRecipe(stage, days, room.room_id);
+
+  if (loading) {
+    return <div className="cmd-loading">loading recipe…</div>;
+  }
+  if (!recipe) {
+    return <div className="pending-hint" style={{ padding: '8px 0' }}>No feed program configured for this stage / week</div>;
+  }
+
+  const ec = roomOverride?.target_ec ?? recipe.targets.target_ec;
+  const phMin = roomOverride?.target_ph_min ?? recipe.targets.target_ph_min;
+  const phMax = roomOverride?.target_ph_max ?? recipe.targets.target_ph_max;
+  const overrides = (roomOverride?.product_overrides ?? {}) as Record<string, number | null | undefined>;
+
+  return (
+    <div className="feed-recipe">
+      <div className="feed-recipe-hd">
+        <span className="feed-recipe-name">{recipe.program_name}</span>
+        <span className="feed-recipe-phase">{recipe.phase} · W{recipe.week_number}</span>
+        {ec ? <span className="feed-recipe-ec">EC {ec}</span> : null}
+      </div>
+      <div className="feed-recipe-list">
+        <div className="feed-recipe-hdrow">
+          <span>#</span>
+          <span>Nutrient</span>
+          <span>mL/gal</span>
+          <span>override</span>
+        </div>
+        {recipe.entries.map(entry => {
+          const baseAmt = entry.ml_per_gal;
+          const overrideAmt = overrides[entry.product.id];
+          const isOverride = overrideAmt !== undefined && overrideAmt !== null && overrideAmt !== baseAmt;
+          return (
+            <div key={entry.product.id} className="feed-recipe-row">
+              <span className="feed-recipe-order">{entry.mixing_order}</span>
+              <span className="feed-recipe-product">{entry.product.name}</span>
+              <span className="feed-recipe-amt">{isOverride ? overrideAmt : baseAmt}</span>
+              <span className="feed-recipe-base">{isOverride ? `(was ${baseAmt})` : '—'}</span>
+            </div>
+          );
+        })}
+      </div>
+      {phMin && phMax ? (
+        <div className="feed-recipe-targets">
+          <span>pH {phMin}–{phMax}</span>
+          {recipe.targets.target_ppm_500 ? <span>PPM {recipe.targets.target_ppm_500}</span> : null}
+        </div>
+      ) : null}
+      <div className="feed-recipe-foot">
+        <span>read-only · interactive scaling editor lands in v2</span>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════
 // SectionsLayout — physical room tables and sections with plant counts
 // PR1: read-only with strain breakdown on click
@@ -808,18 +873,112 @@ function toTaskCardData(t: TaskShape, room: RoomShape): TaskCardData {
 // ═══════════════════════════════════════════════════════════════
 // Expanded room view — phase hero, stats, tasks main, sidebar swap
 // ═══════════════════════════════════════════════════════════════
-function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, onAssignWorker }: {
+// Quick task types for inline add (matches legacy INLINE_TASK_TYPES set)
+const INLINE_TASK_TYPES: TaskType[] = ['batch_tank_mix', 'ipm_spray', 'scouting', 'defoliation', 'cleaning', 'training', 'maintenance', 'custom'];
+
+// ═══════════════════════════════════════════════════════════════
+// GlobalAddTaskModal — header-right + add. Picks room, then a task type.
+// ═══════════════════════════════════════════════════════════════
+function GlobalAddTaskModal({ rooms, today, onCreate, onClose, onJumpToRoom }: {
+  rooms: RoomShape[];
+  today: string;
+  onCreate: (input: { room_id: string; task_type: string; task_date: string }) => Promise<unknown>;
+  onClose: () => void;
+  onJumpToRoom: (roomId: string) => void;
+}) {
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleCreate = useCallback(async (taskType: TaskType) => {
+    if (!selectedRoomId) return;
+    setSaving(true);
+    try {
+      await onCreate({ room_id: selectedRoomId, task_type: taskType, task_date: today });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  }, [onCreate, selectedRoomId, today, onClose]);
+
+  return (
+    <div className="cmd-modal-overlay" onClick={onClose}>
+      <div className="cmd-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
+        <div className="cmd-modal-hd">
+          <span className="ml">Add task</span>
+          <button type="button" className="cmd-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="cmd-modal-bd">
+          <div className="cmd-modal-row" style={{ gridTemplateColumns: '60px 1fr' }}>
+            <span className="cmd-modal-key">Room</span>
+            <select className="cmd-modal-input" value={selectedRoomId ?? ''} onChange={e => setSelectedRoomId(e.target.value || null)}>
+              <option value="">— select —</option>
+              {rooms.map(r => (
+                <option key={r.room_id} value={r.room_id}>
+                  {r.code} · {r.type} · {r.plants} plants
+                </option>
+              ))}
+            </select>
+          </div>
+          {selectedRoomId ? (
+            <div className="tl-add-row" style={{ borderTop: 0, padding: 0, marginTop: 4 }}>
+              <span className="ml">Type</span>
+              {INLINE_TASK_TYPES.map(type => {
+                const cfg = TASK_TYPE_CONFIG[type];
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    className="tl-add-pill"
+                    disabled={saving}
+                    onClick={() => void handleCreate(type)}
+                  >
+                    <span className="d" style={{ background: cfg.color }} />
+                    {cfg.label}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+        <div className="cmd-modal-ft">
+          <button type="button" className="cmd-modal-cancel" onClick={onClose}>Cancel</button>
+          {selectedRoomId ? (
+            <button type="button" className="act-btn" style={{ flex: 1 }} onClick={() => onJumpToRoom(selectedRoomId)}>
+              Jump to room →
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, onAssignWorker, onCreateTask, today }: {
   room: RoomShape;
   tasks: TaskShape[];
   onBack: () => void;
   onUpdateStatus: (id: string, status: TaskStatus) => Promise<unknown>;
   onCompleteWithLog: (id: string, refTable: string, refId: string, duration: string | null) => Promise<unknown>;
   onAssignWorker: (id: string, staffId: string) => Promise<unknown>;
+  onCreateTask: (input: { room_id: string; task_type: string; task_date: string; assigned_to?: string | null; notes?: string | null }) => Promise<unknown>;
+  today: string;
 }) {
   const [completingTask, setCompletingTask] = useState<TaskShape | null>(null);
   const [showHarvest, setShowHarvest] = useState(false);
-  const [focusedCard, setFocusedCard] = useState<null | 'schedule' | 'plants' | 'tables' | 'env'>(null);
+  const [focusedCard, setFocusedCard] = useState<null | 'schedule' | 'plants' | 'tables' | 'env' | 'feed'>(null);
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [showInlineAdd, setShowInlineAdd] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  const handleInlineAdd = useCallback(async (taskType: TaskType) => {
+    setAdding(true);
+    try {
+      await onCreateTask({ room_id: room.room_id, task_type: taskType, task_date: today });
+      setShowInlineAdd(false);
+    } finally {
+      setAdding(false);
+    }
+  }, [onCreateTask, room.room_id, today]);
 
   const taskIds = useMemo(() => tasks.map(t => t.id), [tasks]);
   const { assignments, assignToTask, promoteToLead, getForTask } = useTaskAssignments({ taskIds });
@@ -963,7 +1122,29 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, 
                   ) : (
                     <div className="cmd-empty">No tasks scheduled today</div>
                   )}
-                  <button type="button" className="tl-add" onClick={() => alert('Inline add — PR3')}>+ add task</button>
+                  {showInlineAdd ? (
+                    <div className="tl-add-row">
+                      <span className="ml">Add</span>
+                      {INLINE_TASK_TYPES.map(type => {
+                        const cfg = TASK_TYPE_CONFIG[type];
+                        return (
+                          <button
+                            key={type}
+                            type="button"
+                            className="tl-add-pill"
+                            disabled={adding}
+                            onClick={() => void handleInlineAdd(type)}
+                          >
+                            <span className="d" style={{ background: cfg.color }} />
+                            {cfg.label}
+                          </button>
+                        );
+                      })}
+                      <button type="button" className="tl-add-cancel" onClick={() => setShowInlineAdd(false)}>cancel</button>
+                    </div>
+                  ) : (
+                    <button type="button" className="tl-add" onClick={() => setShowInlineAdd(true)}>+ add task</button>
+                  )}
                 </div>
               </div>
             </>
@@ -1016,6 +1197,17 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, 
               </div>
               <div className="exp-main-bd">
                 <SectionsLayout roomId={room.room_id} />
+              </div>
+            </>
+          ) : focusedCard === 'feed' ? (
+            <>
+              <div className="exp-main-hd">
+                <span className="ml">Feed Recipe</span>
+                <span className="ml-sm">stage · {room.type} · day {room.day ?? '—'}</span>
+                <button type="button" className="exp-back" onClick={() => setFocusedCard(null)}>← Tasks</button>
+              </div>
+              <div className="exp-main-bd">
+                <FeedRecipe room={room} />
               </div>
             </>
           ) : (
@@ -1108,6 +1300,14 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, 
               </div>
             </button>
           ) : null}
+          {focusedCard !== 'feed' ? (
+            <button type="button" className="rail-card" onClick={() => setFocusedCard('feed')}>
+              <div className="rail-card-hd"><span className="ml">Feed Recipe</span><span className="ml-sm" style={{ marginLeft: 'auto' }}>tap to expand</span></div>
+              <div className="rail-card-bd compact">
+                <span className="rail-stat-lbl">stage {room.type} · day {room.day ?? '—'}</span>
+              </div>
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -1153,6 +1353,7 @@ export function CommandCenter() {
   const data = useCommandCenterData();
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [featuredRoomId, setFeaturedRoomId] = useState<string | null>(null);
+  const [showGlobalAdd, setShowGlobalAdd] = useState(false);
 
   // Auto-feature: closest-to-harvest flower room (preserves cult-ops behavior)
   const defaultFeaturedId = useMemo(() => {
@@ -1257,11 +1458,20 @@ export function CommandCenter() {
           <span className="hdr-meta">tasks <strong>{data.totals.done} / {data.totals.total}</strong> today</span>
         </div>
         <div className="hdr-r">
-          <button type="button" className="hdr-add" onClick={() => alert('Global add — coming in PR3')}>+ add</button>
+          <button type="button" className="hdr-add" onClick={() => setShowGlobalAdd(true)}>+ add</button>
           <span className="hdr-live">live</span>
         </div>
       </div>
 
+      {showGlobalAdd ? (
+        <GlobalAddTaskModal
+          rooms={data.rooms.filter(r => !r.empty)}
+          today={data.today}
+          onCreate={data.createTask}
+          onClose={() => setShowGlobalAdd(false)}
+          onJumpToRoom={(roomId) => { setShowGlobalAdd(false); transition(() => setSelectedRoomId(roomId)); }}
+        />
+      ) : null}
       {selectedRoom ? (
         <ExpandedRoom
           room={selectedRoom}
@@ -1270,6 +1480,8 @@ export function CommandCenter() {
           onUpdateStatus={data.updateStatus}
           onCompleteWithLog={data.completeWithLog}
           onAssignWorker={data.assignWorker}
+          onCreateTask={data.createTask}
+          today={data.today}
         />
       ) : (
         <>

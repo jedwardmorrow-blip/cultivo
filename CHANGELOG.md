@@ -4,6 +4,56 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-29 - Cultivation Command Center · PR3 (inline + global add + feed recipe)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Add task paths live, feed recipe display restored
+**Branch:** `cmd-center-a-prototype-port`
+
+### What changed
+
+PR3 closes three more legacy behavior gaps:
+
+1. **Inline add task** — the `+ add task` row at the bottom of the task list now expands into a horizontal pill row of the canonical 8 inline task types (batch_tank_mix, ipm_spray, scouting, defoliation, cleaning, training, maintenance, custom). Click a pill to create a daily_task_instance for the current room and today. Mirrors legacy `INLINE_TASK_TYPES`.
+
+2. **Header global add** — the header-right `+ add` button now opens a modal: pick a room (only non-empty rooms shown, with code + stage + plant count), then pick a task type pill, or "Jump to room" to drill into the expanded view with the inline add open. FAB-replacement per locked decision B.
+
+3. **Feed Recipe card + focused view** — added Feed Recipe to the rail, restored from PR1's parked state. Compact card shows stage and day. Focused view renders the active feed program via `useFeedProgramRecipe(stage, days, room_id)`: program name, phase + week, EC target, mixing-order rows with mL/gal and per-room overrides flagged, pH range, PPM target. Read-only for v1; interactive scaling editor flagged for v2.
+
+### Files
+
+- `src/features/cultivation/components/CommandCenter/index.tsx` — `INLINE_TASK_TYPES` array, inline-add expansion in task list, `GlobalAddTaskModal` component, `FeedRecipe` component, feed rail card.
+- `src/features/cultivation/components/CommandCenter/CommandCenter.css` — `tl-add-row` + `tl-add-pill` styles, `feed-recipe-*` styles.
+- `src/features/cultivation/components/CommandCenter/useCommandCenterData.ts` — `today` exposed on adapter return.
+
+### Behavior parity status (post-PR3)
+
+Done across PR1 → PR3:
+- Visual port + card-swap + sections layout + view transitions
+- Two-stage featured tile click
+- AttentionStrip silence-as-signal
+- Always-on Labor strip with sparkline
+- PhaseHero with stage markers
+- Section actions (move, kill, print group, print plants, advance) end-to-end
+- Per-task-type log writes via TaskCompletionForm
+- Multi-person assignment with promote-to-lead
+- Schedule auto-generation on mount
+- Inline add task in expanded room
+- Header global add task with room picker + jump-to-room
+- Feed recipe display
+
+Still parked (defer to follow-up sessions):
+- dnd-kit reschedule calendar (legacy ScheduleCalendarExpanded full restyle)
+- Inline tank mix recipe inside batch_tank_mix task rows (requires TaskExpandedDetail port)
+- Interactive feed recipe scaling editor (v2)
+- Cross-room labor drawer (LaborOverviewPanel restyle)
+
+### Build
+
+`npm run build` passes (exit 0, 16.7s). CommandCenter chunk holds at ~160 KB / 37 KB gzip.
+
+---
+
 ## 2026-04-29 - Cultivation Command Center · PR2 (task completion + assignment + auto-gen)
 
 **Type:** Feature — Cultivation

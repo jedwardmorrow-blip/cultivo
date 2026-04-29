@@ -244,6 +244,16 @@
 .cmd .tl-add { display: flex; align-items: center; justify-content: center; padding: 10px 16px; border-top: 1px dashed var(--op-line); font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); cursor: pointer; background: none; border-left: 0; border-right: 0; border-bottom: 0; width: 100%; transition: color 120ms; letter-spacing: 0.1em; text-transform: uppercase; }
 .cmd .tl-add:hover { color: var(--accent); }
 
+/* Inline add task pill row */
+.cmd .tl-add-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-top: 1px dashed var(--op-line); align-items: center; }
+.cmd .tl-add-row .ml { color: var(--op-ink-3); margin-right: 8px; flex-shrink: 0; }
+.cmd .tl-add-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--op-line-strong); background: none; color: var(--op-ink-2); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; border-radius: var(--r-xs); cursor: pointer; transition: color 120ms, border-color 120ms; }
+.cmd .tl-add-pill:hover { color: var(--op-ink); border-color: var(--op-ink-3); }
+.cmd .tl-add-pill:disabled { opacity: 0.3; cursor: not-allowed; }
+.cmd .tl-add-pill .d { width: 6px; height: 6px; border-radius: 50%; }
+.cmd .tl-add-cancel { background: none; border: 0; color: var(--op-ink-4); font-family: var(--font-mono); font-size: 10px; cursor: pointer; margin-left: auto; letter-spacing: 0.08em; text-transform: uppercase; }
+.cmd .tl-add-cancel:hover { color: var(--op-ink-2); }
+
 /* Multi-person assignment inline expansion */
 .cmd .tl-assignees { background: none; border: 0; color: var(--op-ink-3); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; cursor: pointer; padding: 4px 8px; border-radius: var(--r-xs); transition: color 120ms, background 120ms; display: flex; align-items: center; gap: 6px; }
 .cmd .tl-assignees:hover { color: var(--op-ink); background: var(--op-surface-2); }
@@ -289,6 +299,22 @@
 /* ── Feed recipe ────────────────────────────────────────── */
 .cmd .feed-summary { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink-2); }
 .cmd .feed-summary strong { color: var(--accent); font-weight: 500; }
+
+.cmd .feed-recipe { display: flex; flex-direction: column; gap: 12px; }
+.cmd .feed-recipe-hd { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--op-line); }
+.cmd .feed-recipe-name { font-family: var(--font-mono); font-size: 13px; color: var(--op-ink); font-weight: 500; }
+.cmd .feed-recipe-phase { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.cmd .feed-recipe-ec { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; border-radius: var(--r-xs); font-variant-numeric: tabular-nums; }
+.cmd .feed-recipe-list { display: flex; flex-direction: column; }
+.cmd .feed-recipe-hdrow { display: grid; grid-template-columns: 28px 1fr 80px 100px; gap: 8px; padding: 4px 0; font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-4); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--op-line); }
+.cmd .feed-recipe-row { display: grid; grid-template-columns: 28px 1fr 80px 100px; gap: 8px; padding: 6px 0; font-family: var(--font-mono); font-size: 12px; border-bottom: 1px solid var(--op-line); align-items: baseline; }
+.cmd .feed-recipe-row:last-child { border-bottom: 0; }
+.cmd .feed-recipe-order { color: var(--op-ink-4); font-variant-numeric: tabular-nums; }
+.cmd .feed-recipe-product { color: var(--op-ink); }
+.cmd .feed-recipe-amt { color: var(--accent); font-variant-numeric: tabular-nums; text-align: right; }
+.cmd .feed-recipe-base { color: var(--op-ink-4); font-size: 10px; }
+.cmd .feed-recipe-targets { display: flex; gap: 16px; padding-top: 8px; border-top: 1px solid var(--op-line); font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-2); font-variant-numeric: tabular-nums; }
+.cmd .feed-recipe-foot { font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-4); letter-spacing: 0.06em; text-transform: uppercase; padding-top: 6px; border-top: 1px dashed var(--op-line); }
 
 /* ── Modal ──────────────────────────────────────────────── */
 .cmd-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
