@@ -21,7 +21,20 @@ import { useGrowRooms } from '../../hooks/useGrowRooms';
 import { usePlantGroupLabel } from '../../hooks/usePlantGroupLabel';
 import { useTaskAssignments } from '../../hooks/useTaskAssignments';
 import { useFeedProgramRecipe } from '../../hooks/useFeedProgramRecipe';
+import { useTaskSchedules } from '../../hooks/useTaskSchedules';
 import { useActiveStaff } from '@/features/sessions/hooks/useActiveStaff';
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core';
 import { HarvestWorkflow } from '../harvest';
 import { MoveToRoomModal } from '../MoveToRoomModal';
 import { DeadPlantForm } from '../DeadPlantForm';
@@ -876,6 +889,226 @@ function toTaskCardData(t: TaskShape, room: RoomShape): TaskCardData {
 // Quick task types for inline add (matches legacy INLINE_TASK_TYPES set)
 const INLINE_TASK_TYPES: TaskType[] = ['batch_tank_mix', 'ipm_spray', 'scouting', 'defoliation', 'cleaning', 'training', 'maintenance', 'custom'];
 
+const ALL_DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+function phaseToDate(flipDate: string, phaseDay: number): string {
+  const d = new Date(flipDate + 'T12:00:00');
+  d.setDate(d.getDate() + phaseDay - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatShortDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ScheduleCalendar — dnd-kit reschedule (hairline restyle of legacy)
+// Source: cultivo_drill_down_mechanics (drag-overlay uses 1px --op-line-strong
+// border + --accent ink shift; no scale transform per new DS).
+// ═══════════════════════════════════════════════════════════════
+
+function DraggableTaskPill({ task, isOverlay }: { task: TaskShape; isOverlay?: boolean }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: task.id,
+    data: { task },
+  });
+  const cfg = TASK_TYPE_CONFIG[task.type as TaskType];
+  return (
+    <div
+      ref={!isOverlay ? setNodeRef : undefined}
+      {...(!isOverlay ? { ...attributes, ...listeners } : {})}
+      className={`sched-pill ${isDragging && !isOverlay ? 'dragging' : ''} ${isOverlay ? 'overlay' : ''}`}
+    >
+      <span className="sched-pill-dot" style={{ background: cfg?.color ?? 'var(--op-ink-3)' }} />
+      <span className="sched-pill-label">{cfg?.label ?? task.type}</span>
+      {task.assignee ? <span className="sched-pill-assigned">●</span> : null}
+    </div>
+  );
+}
+
+function DroppableDayColumn({ dateStr, phaseDay, isToday, children }: {
+  dateStr: string;
+  phaseDay: number | null;
+  isToday: boolean;
+  children: React.ReactNode;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: dateStr });
+  const d = new Date(dateStr + 'T12:00:00');
+  const dayName = ALL_DAYS_SHORT[d.getDay()];
+  const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`sched-day ${isWeekend ? 'weekend' : ''} ${isOver ? 'dragover' : ''} ${isToday ? 'today' : ''}`}
+    >
+      <div className="sched-day-hd">
+        <span className="sched-day-name">{dayName}</span>
+        {phaseDay !== null ? <span className="sched-day-phase">D{phaseDay}</span> : null}
+        <span className="sched-day-date">{formatShortDate(dateStr)}</span>
+      </div>
+      <div className="sched-day-bd">{children}</div>
+    </div>
+  );
+}
+
+function ScheduleCalendar({ room, tasks, today, onReschedule }: {
+  room: RoomShape;
+  tasks: TaskShape[];
+  today: string;
+  onReschedule: (taskId: string, newDate: string) => Promise<unknown>;
+}) {
+  const { schedules } = useTaskSchedules(room.room_id);
+  const totalDays = room.cycleDays || 42;
+  const currentPhaseDay = room.day ?? 1;
+  const currentWeek = Math.max(1, Math.ceil(currentPhaseDay / 7));
+  const totalWeeks = Math.max(1, Math.ceil(totalDays / 7));
+  const [viewWeek, setViewWeek] = useState(currentWeek);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const flipDate = room.flipDate;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  const weekDates = useMemo(() => {
+    if (!flipDate) {
+      const d = new Date(today + 'T12:00:00');
+      const dayOfWeek = d.getDay();
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - ((dayOfWeek + 6) % 7));
+      return Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        return { dateStr: date.toISOString().slice(0, 10), phaseDay: null as number | null };
+      });
+    }
+    const weekStartDay = (viewWeek - 1) * 7 + 1;
+    return Array.from({ length: 7 }, (_, i) => {
+      const phaseDay = weekStartDay + i;
+      return { dateStr: phaseToDate(flipDate, phaseDay), phaseDay };
+    });
+  }, [flipDate, viewWeek, today]);
+
+  const dayTasks = useMemo(() => {
+    const map = new Map<string, TaskShape[]>();
+    for (const wd of weekDates) {
+      map.set(wd.dateStr, tasks.filter(t => (t.raw.task_date as string) === wd.dateStr));
+    }
+    return map;
+  }, [tasks, weekDates]);
+
+  const milestones = useMemo(() => {
+    if (!flipDate) return [] as { id: string; taskType: string; phaseDay: number; daysAway: number }[];
+    return schedules
+      .filter(s => s.scheduling_mode === 'phase_day' && s.phase_day_start != null)
+      .map(s => {
+        const phaseDay = s.phase_day_start!;
+        const realDate = phaseToDate(flipDate, phaseDay);
+        const daysAway = Math.round(
+          (new Date(realDate + 'T00:00:00Z').getTime() - new Date(today + 'T00:00:00Z').getTime()) / 86400000
+        );
+        return { id: s.id, taskType: s.task_type, phaseDay, daysAway };
+      })
+      .toSorted((a, b) => a.phaseDay - b.phaseDay);
+  }, [schedules, flipDate, today]);
+
+  const draggedTask = activeId ? tasks.find(t => t.id === activeId) ?? null : null;
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  }, []);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over || !active) return;
+    const taskId = active.id as string;
+    const newDate = over.id as string;
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || (task.raw.task_date as string) === newDate) return;
+    await onReschedule(taskId, newDate);
+  }, [tasks, onReschedule]);
+
+  return (
+    <div className="sched-cal">
+      <div className="sched-cal-hd">
+        <span className="ml">{room.code} schedule</span>
+        <span className="ml-sm">
+          {weekDates[0]?.phaseDay !== null && weekDates[6]?.phaseDay !== null
+            ? `Day ${weekDates[0]?.phaseDay}-${weekDates[6]?.phaseDay} · `
+            : ''}
+          {formatShortDate(weekDates[0]?.dateStr ?? today)} – {formatShortDate(weekDates[6]?.dateStr ?? today)}
+        </span>
+        {flipDate ? (
+          <div className="sched-cal-nav">
+            <button
+              type="button"
+              className="sched-nav-btn"
+              onClick={() => setViewWeek(w => Math.max(1, w - 1))}
+              disabled={viewWeek <= 1}
+            >‹</button>
+            <span className="sched-week-label">Week {viewWeek} of {totalWeeks}</span>
+            <button
+              type="button"
+              className="sched-nav-btn"
+              onClick={() => setViewWeek(w => Math.min(totalWeeks, w + 1))}
+              disabled={viewWeek >= totalWeeks}
+            >›</button>
+          </div>
+        ) : null}
+      </div>
+
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="sched-grid">
+          {weekDates.map(wd => (
+            <DroppableDayColumn
+              key={wd.dateStr}
+              dateStr={wd.dateStr}
+              phaseDay={wd.phaseDay}
+              isToday={wd.dateStr === today}
+            >
+              {(dayTasks.get(wd.dateStr) ?? []).map(t => (
+                <DraggableTaskPill key={t.id} task={t} />
+              ))}
+              {(dayTasks.get(wd.dateStr) ?? []).length === 0 ? (
+                <span className="sched-day-empty">—</span>
+              ) : null}
+            </DroppableDayColumn>
+          ))}
+        </div>
+        <DragOverlay dropAnimation={null}>
+          {draggedTask ? <DraggableTaskPill task={draggedTask} isOverlay /> : null}
+        </DragOverlay>
+      </DndContext>
+
+      {milestones.length > 0 ? (
+        <div className="sched-milestones">
+          <div className="ml" style={{ marginBottom: 6 }}>Phase milestones</div>
+          {milestones.map(m => {
+            const cfg = TASK_TYPE_CONFIG[m.taskType as TaskType];
+            const isPast = m.daysAway < 0;
+            return (
+              <div key={m.id} className={`sched-milestone ${isPast ? 'past' : ''}`}>
+                <span className="sched-milestone-dot" style={{ background: cfg?.color ?? 'var(--op-ink-3)' }} />
+                <span className="sched-milestone-label">{cfg?.label ?? m.taskType}</span>
+                <span className="sched-milestone-day">Day {m.phaseDay}</span>
+                <span className="sched-milestone-away">
+                  {m.daysAway === 0 ? 'TODAY' : m.daysAway > 0 ? `in ${m.daysAway}d` : `${Math.abs(m.daysAway)}d ago`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <div className="sched-cal-foot">drag a task pill to a different day to reschedule</div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════
 // GlobalAddTaskModal — header-right + add. Picks room, then a task type.
 // ═══════════════════════════════════════════════════════════════
@@ -953,7 +1186,7 @@ function GlobalAddTaskModal({ rooms, today, onCreate, onClose, onJumpToRoom }: {
   );
 }
 
-function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, onAssignWorker, onCreateTask, today }: {
+function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, onAssignWorker, onCreateTask, onReschedule, today }: {
   room: RoomShape;
   tasks: TaskShape[];
   onBack: () => void;
@@ -961,6 +1194,7 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, 
   onCompleteWithLog: (id: string, refTable: string, refId: string, duration: string | null) => Promise<unknown>;
   onAssignWorker: (id: string, staffId: string) => Promise<unknown>;
   onCreateTask: (input: { room_id: string; task_type: string; task_date: string; assigned_to?: string | null; notes?: string | null }) => Promise<unknown>;
+  onReschedule: (taskId: string, newDate: string) => Promise<unknown>;
   today: string;
 }) {
   const [completingTask, setCompletingTask] = useState<TaskShape | null>(null);
@@ -1152,22 +1386,11 @@ function ExpandedRoom({ room, tasks, onBack, onUpdateStatus, onCompleteWithLog, 
             <>
               <div className="exp-main-hd">
                 <span className="ml">Schedule</span>
-                <span className="ml-sm">3-day lookahead</span>
+                <span className="ml-sm">drag to reschedule</span>
                 <button type="button" className="exp-back" onClick={() => setFocusedCard(null)}>← Tasks</button>
               </div>
-              <div className="exp-main-bd">
-                <div className="sched-row" style={{ padding: '8px 0' }}>
-                  <span className="sched-day today">Today</span>
-                  <span className="sched-tasks">{tasks.length} task{tasks.length === 1 ? '' : 's'} · {done} done · {tasks.length - done} remaining</span>
-                </div>
-                <div className="sched-row" style={{ padding: '8px 0' }}>
-                  <span className="sched-day">Tomorrow</span>
-                  <span className="sched-tasks pending-hint">live multi-day calendar with drag-to-reschedule lands in PR2</span>
-                </div>
-                <div className="sched-row" style={{ padding: '8px 0' }}>
-                  <span className="sched-day">Wed</span>
-                  <span className="sched-tasks pending-hint">PR2</span>
-                </div>
+              <div className="exp-main-bd no-pad">
+                <ScheduleCalendar room={room} tasks={tasks} today={today} onReschedule={onReschedule} />
               </div>
             </>
           ) : focusedCard === 'plants' ? (
@@ -1481,6 +1704,7 @@ export function CommandCenter() {
           onCompleteWithLog={data.completeWithLog}
           onAssignWorker={data.assignWorker}
           onCreateTask={data.createTask}
+          onReschedule={async (taskId, newDate) => { await data.updateTask(taskId, { task_date: newDate }); }}
           today={data.today}
         />
       ) : (

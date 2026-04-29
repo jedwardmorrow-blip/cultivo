@@ -4,6 +4,58 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-29 - Cultivation Command Center · PR4 (dnd-kit reschedule calendar)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Drag-to-reschedule live in the Schedule focused view
+**Branch:** `cmd-center-a-prototype-port`
+
+### What changed
+
+The Schedule focused view (rail card → main panel) now renders a real 7-day calendar with drag-to-reschedule, replacing PR3's honest 3-row stub.
+
+### Behavior
+
+- 7-day grid, one column per weekday. Weekend columns subtly tinted via `--op-surface`.
+- For flipped flower rooms: phase-day labels (D1–D63) drive the columns. Week navigation (prev/next) keeps the view focused on the relevant cycle window. Header reads "Week N of M".
+- For non-flipped rooms (veg/clone/mother): falls back to current calendar week.
+- Tasks render as draggable hairline pills with stage-color dot, label, and an assignee bullet if a worker is assigned. Pills drag with `useDraggable`; day columns receive drops via `useDroppable`. Drop calls `updateTask({ task_date: newDate })` through the existing daily_task_instances service.
+- Drag overlay uses 1px `--op-line-strong` border + `--accent` ink shift, no scale transform per new DS doctrine.
+- Phase milestones strip below the calendar surfaces scheduled phase_day events with relative-time labels (TODAY / in N days / N days ago). Past milestones dim to 40 percent opacity.
+- Loaded via `useTaskSchedules(roomId)` for milestone source data.
+
+### Files
+
+- `src/features/cultivation/components/CommandCenter/index.tsx` — `ScheduleCalendar`, `DraggableTaskPill`, `DroppableDayColumn` components; `phaseToDate` and `formatShortDate` helpers; dnd-kit imports; `onReschedule` prop wired from top-level via `useDailyTasks.updateTask`.
+- `src/features/cultivation/components/CommandCenter/CommandCenter.css` — `.sched-cal*`, `.sched-grid`, `.sched-day*`, `.sched-pill*`, `.sched-milestones*` styles. Hairline only.
+- `src/features/cultivation/components/CommandCenter/useCommandCenterData.ts` — `updateTask` exposed on adapter return.
+
+### Behavior parity status (post-PR4)
+
+The original 11 carry-forward behaviors are now ✅ across the arc:
+- ✅ Section actions: move, kill, print group, print plants, advance (PR1.5)
+- ✅ Plant group label printing (PR1.5)
+- ✅ Move-to-room with split-and-move-multiple (PR1.5)
+- ✅ Stage advance per group (PR1.5)
+- ✅ Dead plant logging (PR1.5)
+- ✅ Per-task-type log writes (PR2)
+- ✅ Multi-person task assignment + promote-to-lead (PR2)
+- ✅ Schedule auto-generation on mount (PR2)
+- ✅ Inline add task + global add (PR3)
+- ✅ Feed recipe display (PR3)
+- ✅ dnd-kit reschedule calendar (PR4)
+
+Still parked (smaller follow-ups):
+- Inline tank mix recipe inside batch_tank_mix task rows (requires TaskExpandedDetail port)
+- Interactive feed recipe scaling editor (v2)
+- Cross-room labor drawer (LaborOverviewPanel restyle)
+
+### Build
+
+`npm run build` passes (exit 0, 13.6s).
+
+---
+
 ## 2026-04-29 - Cultivation Command Center · PR3 (inline + global add + feed recipe)
 
 **Type:** Feature — Cultivation

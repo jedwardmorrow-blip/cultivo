@@ -283,7 +283,50 @@
 .cmd .sc-val { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink); }
 .cmd .pending-hint { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); letter-spacing: 0.04em; }
 
-/* ── Schedule lookahead ─────────────────────────────────── */
+/* ── Schedule calendar (dnd-kit) ─────────────────────────── */
+.cmd .sched-cal { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; }
+.cmd .sched-cal-hd { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--op-line); }
+.cmd .sched-cal-hd .ml { color: var(--op-ink-3); }
+.cmd .sched-cal-hd .ml-sm { color: var(--op-ink-4); }
+.cmd .sched-cal-nav { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.cmd .sched-nav-btn { background: none; border: 1px solid var(--op-line-strong); color: var(--op-ink-2); padding: 2px 8px; font-family: var(--font-mono); font-size: 12px; cursor: pointer; border-radius: var(--r-xs); transition: color 120ms, border-color 120ms; }
+.cmd .sched-nav-btn:hover:not(:disabled) { color: var(--op-ink); border-color: var(--op-ink-3); }
+.cmd .sched-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.cmd .sched-week-label { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); letter-spacing: 0.06em; text-transform: uppercase; min-width: 90px; text-align: center; }
+
+.cmd .sched-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--op-line); border: 1px solid var(--op-line); }
+.cmd .sched-day { display: flex; flex-direction: column; background: var(--op-canvas); min-height: 140px; }
+.cmd .sched-day.weekend { background: var(--op-surface); }
+.cmd .sched-day.today { background: var(--op-surface-2); }
+.cmd .sched-day.today .sched-day-name { color: var(--accent); }
+.cmd .sched-day.dragover { background: var(--op-surface-2); box-shadow: inset 0 0 0 1px var(--op-line-strong); }
+.cmd .sched-day-hd { padding: 8px 8px 6px; border-bottom: 1px solid var(--op-line); display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.cmd .sched-day-name { font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-4); letter-spacing: 0.1em; text-transform: uppercase; }
+.cmd .sched-day-phase { font-family: var(--font-mono); font-size: 13px; color: var(--op-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.cmd .sched-day-date { font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-4); }
+.cmd .sched-day-bd { padding: 6px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.cmd .sched-day-empty { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); text-align: center; opacity: 0.4; padding-top: 8px; }
+
+.cmd .sched-pill { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border: 1px solid var(--op-line); background: var(--op-surface); font-family: var(--font-mono); font-size: 10px; color: var(--op-ink); border-radius: var(--r-xs); cursor: grab; user-select: none; transition: border-color 120ms, color 120ms; }
+.cmd .sched-pill:hover { border-color: var(--op-ink-3); }
+.cmd .sched-pill:active { cursor: grabbing; }
+.cmd .sched-pill.dragging { opacity: 0.3; }
+.cmd .sched-pill.overlay { border-color: var(--accent); color: var(--accent); }
+.cmd .sched-pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.cmd .sched-pill-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmd .sched-pill-assigned { color: var(--status-ok); font-size: 8px; margin-left: auto; }
+
+.cmd .sched-milestones { display: flex; flex-direction: column; gap: 4px; padding: 10px 0 0; border-top: 1px solid var(--op-line); }
+.cmd .sched-milestone { display: flex; align-items: center; gap: 10px; padding: 4px 8px; font-family: var(--font-mono); font-size: 11px; }
+.cmd .sched-milestone.past { opacity: 0.4; }
+.cmd .sched-milestone-dot { width: 6px; height: 6px; border-radius: 50%; transform: rotate(45deg); flex-shrink: 0; }
+.cmd .sched-milestone-label { color: var(--op-ink-2); flex: 1; }
+.cmd .sched-milestone-day { color: var(--op-ink-4); font-variant-numeric: tabular-nums; }
+.cmd .sched-milestone-away { color: var(--op-ink-3); font-size: 10px; letter-spacing: 0.04em; }
+
+.cmd .sched-cal-foot { padding-top: 8px; border-top: 1px dashed var(--op-line); font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-4); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* ── Schedule lookahead (sidebar compact) ───────────────── */
 .cmd .sched-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-family: var(--font-mono); font-size: 11px; }
 .cmd .sched-day { width: 60px; color: var(--op-ink-4); flex-shrink: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
 .cmd .sched-day.today { color: var(--accent); }

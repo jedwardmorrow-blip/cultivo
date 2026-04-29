@@ -47,6 +47,7 @@ export function useCommandCenterData() {
     completeWithLog,
     assignWorker,
     createTask,
+    updateTask,
     refetch: refetchTasks,
   } = useDailyTasks(today);
 
@@ -129,6 +130,7 @@ export function useCommandCenterData() {
     completeWithLog,
     assignWorker,
     createTask,
+    updateTask,
     refetchTasks,
   };
 }
