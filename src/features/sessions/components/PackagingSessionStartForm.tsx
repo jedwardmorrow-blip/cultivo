@@ -200,12 +200,12 @@ export function PackagingSessionStartForm({
   };
 
   return (
-    <div className="bg-cult-near-black p-6 rounded-lg shadow-xl border-2 border-cult-green mb-6">
-      <h2 className="text-2xl font-bold mb-6 text-cult-white uppercase tracking-wide">Start New Packaging Session</h2>
+    <div className="bg-cult-surface p-6 rounded-lg border-2 border-cult-green mb-6">
+      <h2 className="text-2xl font-bold mb-6 text-cult-text-primary uppercase tracking-wide">Start New Packaging Session</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">Packager*</label>
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">Packager*</label>
             <select
               value={formData.packager_staff_id || ''}
               onChange={(e) => {
@@ -224,7 +224,7 @@ export function PackagingSessionStartForm({
                   });
                 }
               }}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-text-primary border border-cult-surface-raised rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               required
               disabled={staffLoading}
             >
@@ -235,13 +235,13 @@ export function PackagingSessionStartForm({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
-              Strain* {availableStrains.length > 0 && <span className="text-xs text-cult-light-gray">({availableStrains.length} with bulk inventory)</span>}
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
+              Strain* {availableStrains.length > 0 && <span className="text-xs text-cult-text-muted">({availableStrains.length} with bulk inventory)</span>}
             </label>
             <select
               value={formData.strain || ''}
               onChange={(e) => setFormData({ ...formData, strain: e.target.value, package_id: '', batch_id: '' })}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-text-primary border border-cult-surface-raised rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               required
             >
               <option value="">Select Strain First</option>
@@ -259,10 +259,10 @@ export function PackagingSessionStartForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
               Batch ID*
               {formData.strain && getAvailableBatchesForStrain(formData.strain).length > 0 && (
-                <span className="text-xs text-cult-light-gray ml-1">
+                <span className="text-xs text-cult-text-muted ml-1">
                   ({getAvailableBatchesForStrain(formData.strain).length} available)
                 </span>
               )}
@@ -270,7 +270,7 @@ export function PackagingSessionStartForm({
             <select
               value={formData.batch_id}
               onChange={(e) => setFormData({ ...formData, batch_id: e.target.value, package_id: '' })}
-              className="w-full px-3 py-2 bg-cult-dark-gray text-cult-white border border-cult-medium-gray rounded focus:ring-2 focus:ring-cult-green focus:border-cult-green disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 bg-cult-surface text-cult-text-primary border border-cult-border rounded focus:ring-2 focus:ring-cult-green focus:border-cult-green disabled:opacity-50 disabled:cursor-not-allowed"
               required
               disabled={!formData.strain}
             >
@@ -286,8 +286,8 @@ export function PackagingSessionStartForm({
             {formData.batch_id && (
               <div className="mt-2">
                 {coaStatus.loading ? (
-                  <div className="flex items-center gap-2 text-sm text-cult-light-gray">
-                    <div className="animate-spin h-4 w-4 border-2 border-cult-light-gray border-t-transparent rounded-full"></div>
+                  <div className="flex items-center gap-2 text-sm text-cult-text-muted">
+                    <div className="animate-spin h-4 w-4 border-2 border-cult-text-muted border-t-transparent rounded-full"></div>
                     <span>Checking COA status...</span>
                   </div>
                 ) : coaStatus.hasValidCoa === true ? (
@@ -305,10 +305,10 @@ export function PackagingSessionStartForm({
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
               Package ID*
               {formData.batch_id && getPackagesForBatch(formData.strain || '', formData.batch_id).length > 0 && (
-                <span className="text-xs text-cult-light-gray ml-1">
+                <span className="text-xs text-cult-text-muted ml-1">
                   ({getPackagesForBatch(formData.strain || '', formData.batch_id).length} available)
                 </span>
               )}
@@ -327,7 +327,7 @@ export function PackagingSessionStartForm({
                   setFormData({ ...formData, package_id: e.target.value });
                 }
               }}
-              className="w-full px-3 py-2 bg-cult-dark-gray text-cult-white border border-cult-medium-gray rounded focus:ring-2 focus:ring-cult-green focus:border-cult-green disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 bg-cult-surface text-cult-text-primary border border-cult-border rounded focus:ring-2 focus:ring-cult-green focus:border-cult-green disabled:opacity-50 disabled:cursor-not-allowed"
               required
               disabled={!formData.batch_id}
             >
@@ -346,7 +346,7 @@ export function PackagingSessionStartForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
               Available in Package (g)
               {formData.package_id && (
                 <span className="ml-2 text-xs text-cult-green font-bold">
@@ -359,12 +359,12 @@ export function PackagingSessionStartForm({
               step="0.1"
               value={formData.package_weight}
               onChange={(e) => setFormData({ ...formData, package_weight: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-text-primary border border-cult-surface-raised rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               disabled
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-cult-white mb-1">
+            <label className="block text-sm font-medium text-cult-text-primary mb-1">
               Pull Weight (g)*
               {formData.pull_weight > 0 && formData.package_id && (
                 <span className={`ml-2 text-xs font-bold ${
@@ -383,7 +383,7 @@ export function PackagingSessionStartForm({
               step="0.1"
               value={formData.pull_weight || ''}
               onChange={(e) => setFormData({ ...formData, pull_weight: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 bg-cult-black text-cult-off-white border border-cult-charcoal rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
+              className="w-full px-3 py-2 bg-cult-black text-cult-text-primary border border-cult-surface-raised rounded-cult focus:ring-2 focus:ring-cult-danger/50 focus:border-cult-danger transition-all duration-300"
               required
               min="0.1"
               max={inventoryPackages.find(p => p.package_id === formData.package_id)?.available_qty || undefined}
@@ -392,11 +392,11 @@ export function PackagingSessionStartForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-1">Notes</label>
+          <label className="block text-sm font-medium text-cult-text-primary mb-1">Notes</label>
           <textarea
             value={formData.notes || ''}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full px-3 py-2 bg-cult-dark-gray text-cult-white border border-cult-medium-gray rounded focus:ring-2 focus:ring-cult-green focus:border-cult-green placeholder-cult-light-gray"
+            className="w-full px-3 py-2 bg-cult-surface text-cult-text-primary border border-cult-border rounded focus:ring-2 focus:ring-cult-green focus:border-cult-green placeholder-cult-text-muted"
             rows={2}
             placeholder="Any notes..."
           />

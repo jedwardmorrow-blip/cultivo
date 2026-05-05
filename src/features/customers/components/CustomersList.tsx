@@ -20,85 +20,85 @@ export function CustomersList({
 }: CustomersListProps) {
   if (customers.length === 0) {
     return (
-      <div className="bg-cult-near-black rounded-lg border border-cult-medium-gray p-12 text-center">
-        <Building2 className="w-12 h-12 text-cult-light-gray mx-auto mb-3" />
-        <p className="text-cult-light-gray">No customers found</p>
-        <p className="text-cult-lighter-gray text-sm mt-1">Add your first customer to get started</p>
+      <div className="bg-cult-surface rounded-lg border border-cult-border p-12 text-center">
+        <Building2 className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
+        <p className="text-cult-text-muted">No customers found</p>
+        <p className="text-cult-text-muted text-sm mt-1">Add your first customer to get started</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray">
+    <div className="bg-cult-surface rounded-lg shadow border border-cult-border">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+          <thead className="bg-cult-surface border-b border-cult-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Code</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">License</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Contact</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-light-gray uppercase">Address</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-light-gray uppercase">Geocoded</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-light-gray uppercase">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Name</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Code</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">License</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Contact</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Address</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-muted uppercase">Geocoded</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-muted uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-medium-gray">
+          <tbody className="divide-y divide-cult-border">
             {customers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-cult-dark-gray transition">
+              <tr key={customer.id} className="hover:bg-cult-surface transition">
                 <td className="px-4 py-3">
-                  <div className="text-sm font-medium text-cult-white">{customer.name}</div>
+                  <div className="text-sm font-medium text-cult-text-primary">{customer.name}</div>
                   {customer.license_name && customer.license_name !== customer.name && (
-                    <div className="text-xs text-cult-light-gray mt-0.5">{customer.license_name}</div>
+                    <div className="text-xs text-cult-text-muted mt-0.5">{customer.license_name}</div>
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <span className="text-sm font-mono text-cult-white">{customer.dispensary_code}</span>
+                  <span className="text-sm font-mono text-cult-text-primary">{customer.dispensary_code}</span>
                 </td>
                 <td className="px-4 py-3">
                   {customer.license_number ? (
                     <div className="text-sm">
-                      <div className="text-cult-white font-mono">{customer.license_number}</div>
+                      <div className="text-cult-text-primary font-mono">{customer.license_number}</div>
                       {customer.ato_number && (
-                        <div className="text-xs text-cult-light-gray mt-0.5">
+                        <div className="text-xs text-cult-text-muted mt-0.5">
                           ATO: {customer.ato_number}
                         </div>
                       )}
                     </div>
                   ) : (
-                    <span className="text-cult-lighter-gray text-xs">-</span>
+                    <span className="text-cult-text-muted text-xs">-</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   {customer.contact_name || customer.email || customer.phone ? (
                     <div className="text-sm">
                       {customer.contact_name && (
-                        <div className="text-cult-white">{customer.contact_name}</div>
+                        <div className="text-cult-text-primary">{customer.contact_name}</div>
                       )}
                       {customer.email && (
-                        <div className="text-xs text-cult-light-gray">{customer.email}</div>
+                        <div className="text-xs text-cult-text-muted">{customer.email}</div>
                       )}
                       {customer.phone && (
-                        <div className="text-xs text-cult-light-gray">{customer.phone}</div>
+                        <div className="text-xs text-cult-text-muted">{customer.phone}</div>
                       )}
                     </div>
                   ) : (
-                    <span className="text-cult-lighter-gray text-xs">-</span>
+                    <span className="text-cult-text-muted text-xs">-</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   {customer.delivery_address || customer.address ? (
                     <div className="text-sm">
-                      <div className="text-cult-white">
+                      <div className="text-cult-text-primary">
                         {customer.delivery_address || customer.address}
                       </div>
-                      <div className="text-xs text-cult-light-gray">
+                      <div className="text-xs text-cult-text-muted">
                         {customer.delivery_city || customer.city}, {customer.delivery_state || customer.state}{' '}
                         {customer.delivery_postal_code || customer.postal_code}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-cult-lighter-gray text-xs">No address</span>
+                    <span className="text-cult-text-muted text-xs">No address</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-center">

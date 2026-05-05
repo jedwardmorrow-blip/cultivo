@@ -32,43 +32,43 @@ export function ActiveBuckingSessionsTable({
   };
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray mb-6">
-      <div className="p-4 border-b border-cult-medium-gray">
-        <h2 className="text-lg font-bold text-cult-white">Active Bucking Sessions ({sessions.length})</h2>
+    <div className="bg-cult-surface rounded-lg shadow border border-cult-border mb-6">
+      <div className="p-4 border-b border-cult-border">
+        <h2 className="text-lg font-bold text-cult-text-primary">Active Bucking Sessions ({sessions.length})</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+          <thead className="bg-cult-surface border-b border-cult-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Bucker</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Strain</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Package ID</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Weight (kg)</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Time Elapsed</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Bucker</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Strain</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Package ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Weight (kg)</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Time Elapsed</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-            <tbody className="divide-y divide-cult-medium-gray">
+            <tbody className="divide-y divide-cult-border">
               {sessions.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center">
-                    <p className="text-cult-light-gray text-sm">No active bucking sessions</p>
-                    <p className="text-cult-silver text-xs mt-1">Start a new tote to begin bucking</p>
+                    <p className="text-cult-text-muted text-sm">No active bucking sessions</p>
+                    <p className="text-cult-text-secondary text-xs mt-1">Start a new tote to begin bucking</p>
                   </td>
                 </tr>
               ) : (
                 sessions.map((session) => {
                   const stale = isStaleSession(session.started_at);
                   return (
-                  <tr key={session.id} className={`hover:bg-cult-dark-gray/50 transition-colors ${stale ? 'bg-cult-danger/5' : ''}`}>
-                    <td className="px-4 py-3 text-sm text-cult-white font-medium">
+                  <tr key={session.id} className={`hover:bg-cult-surface/50 transition-colors ${stale ? 'bg-cult-danger/5' : ''}`}>
+                    <td className="px-4 py-3 text-sm text-cult-text-primary font-medium">
                       {session.bucker_name}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {session.strain}
                     </td>
                     <td className="px-4 py-3 text-sm font-mono">
-                      <span className={stale ? 'text-cult-danger' : 'text-cult-silver'}>
+                      <span className={stale ? 'text-cult-danger' : 'text-cult-text-secondary'}>
                         {session.binned_package_id}
                       </span>
                       {stale && (
@@ -77,7 +77,7 @@ export function ActiveBuckingSessionsTable({
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {(session.binned_weight_grams / 1000).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-center font-medium">

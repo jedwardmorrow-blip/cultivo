@@ -215,7 +215,7 @@ export function OrderReadinessCard({ order, readiness, highlighted, onSendDoc }:
       >
         {/* Header — always visible */}
         <div
-          className="p-3 cursor-pointer hover:bg-white/[0.04] transition-colors"
+          className="p-3 cursor-pointer hover:bg-cult-surface-subtle transition-colors"
           onClick={() => setExpanded(!expanded)}
         >
           <div className="flex items-center justify-between mb-1.5">
@@ -262,7 +262,7 @@ export function OrderReadinessCard({ order, readiness, highlighted, onSendDoc }:
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <div className="px-3 pb-3 pt-1 border-t border-white/[0.06]">
+              <div className="px-3 pb-3 pt-1 border-t border-cult-border-subtle">
                 {/* Line Items */}
                 <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2">Line Items</div>
 

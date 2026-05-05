@@ -39,16 +39,16 @@ export function OrderFormDetails({
 }: OrderFormDetailsProps) {
   return (
     <div className="p-4 space-y-4">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-4 space-y-4">
-        <div className="flex items-center gap-2 border-b border-cult-medium-gray pb-3">
+      <div className="bg-cult-surface border border-cult-border rounded-lg p-4 space-y-4">
+        <div className="flex items-center gap-2 border-b border-cult-border pb-3">
           <List className="w-5 h-5 text-cult-green" />
-          <h2 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+          <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide">
             Order Information
           </h2>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-2">
+          <label className="block text-sm font-medium text-cult-text-primary mb-2">
             Dispensary *
           </label>
           <div className="flex gap-2">
@@ -56,7 +56,7 @@ export function OrderFormDetails({
               required
               value={selectedCustomerId}
               onChange={(e) => onCustomerChange(e.target.value)}
-              className="flex-1 px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
+              className="flex-1 px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
             >
               <option value="">Select dispensary</option>
               {customers.map(customer => (
@@ -78,13 +78,13 @@ export function OrderFormDetails({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-2">
+          <label className="block text-sm font-medium text-cult-text-primary mb-2">
             Priority
           </label>
           <select
             value={priority}
             onChange={(e) => onPriorityChange(e.target.value)}
-            className="w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
+            className="w-full px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
           >
             <option value="normal">Normal</option>
             <option value="high">High</option>
@@ -93,7 +93,7 @@ export function OrderFormDetails({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-off-white mb-2">
+          <label className="block text-sm font-medium text-cult-text-primary mb-2">
             Requested Delivery Date
           </label>
           <input
@@ -107,10 +107,10 @@ export function OrderFormDetails({
             }}
             min={getDateInputConstraints().min}
             max={getDateInputConstraints().max}
-            className={`w-full px-4 py-3 bg-cult-black border rounded-cult text-cult-off-white focus:outline-none focus:ring-2 text-base transition-all duration-300 ${
+            className={`w-full px-4 py-3 bg-cult-black border rounded-cult text-cult-text-primary focus:outline-none focus:ring-2 text-base transition-all duration-300 ${
               dateError
                 ? 'border-cult-danger focus:ring-cult-danger/50'
-                : 'border-cult-charcoal focus:ring-cult-danger/50 focus:border-cult-danger'
+                : 'border-cult-surface-raised focus:ring-cult-danger/50 focus:border-cult-danger'
             }`}
           />
           {dateError && (
@@ -122,27 +122,27 @@ export function OrderFormDetails({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-2">
+          <label className="block text-sm font-medium text-cult-text-primary mb-2">
             Delivery Notes
           </label>
           <textarea
             value={deliveryNotes}
             onChange={(e) => onDeliveryNotesChange(e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-light-gray focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
+            className="w-full px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
             placeholder="Special delivery instructions..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-white mb-2">
+          <label className="block text-sm font-medium text-cult-text-primary mb-2">
             Internal Notes
           </label>
           <textarea
             value={internalNotes}
             onChange={(e) => onInternalNotesChange(e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white placeholder-cult-light-gray focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
+            className="w-full px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green text-base"
             placeholder="Internal team notes..."
           />
         </div>

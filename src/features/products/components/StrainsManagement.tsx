@@ -162,7 +162,7 @@ export function StrainsManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading strains...</div>
+        <div className="text-cult-text-muted">Loading strains...</div>
       </div>
     );
   }
@@ -183,38 +183,38 @@ export function StrainsManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+      <div className="bg-cult-surface border border-cult-border p-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Leaf className="w-6 h-6 text-cult-white" />
-            <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+            <Leaf className="w-6 h-6 text-cult-text-primary" />
+            <h2 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
               Strain Catalog
             </h2>
           </div>
           <button
             onClick={handleAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+            className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider"
           >
             <Plus className="w-4 h-4" />
             Add Strain
           </button>
         </div>
 
-        <div className="mb-6 bg-cult-black border border-cult-medium-gray p-4">
-          <p className="text-sm text-cult-light-gray mb-4">
+        <div className="mb-6 bg-cult-black border border-cult-border p-4">
+          <p className="text-sm text-cult-text-muted mb-4">
             Manage your strain catalog with genetic information and classifications.
             Total strains: {strains.length}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cult-lighter-gray" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cult-text-muted" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search strains..."
-                className="w-full pl-10 pr-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                className="w-full pl-10 pr-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
               />
             </div>
 
@@ -222,7 +222,7 @@ export function StrainsManagement() {
               <select
                 value={filterDominance}
                 onChange={(e) => setFilterDominance(e.target.value)}
-                className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
               >
                 <option value="all">All Dominance Types</option>
                 {dominanceTypes.map((type) => (
@@ -236,38 +236,38 @@ export function StrainsManagement() {
         </div>
 
         {adding && (
-          <div className="mb-4 bg-cult-black border border-cult-medium-gray p-6">
+          <div className="mb-4 bg-cult-black border border-cult-border p-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">
+              <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide mb-4">
                 Add New Strain
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Strain Name *
                   </label>
                   <input
                     type="text"
                     value={editForm.name || ''}
                     onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                     placeholder="e.g., Blue Pave"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Abbreviation *
                   </label>
                   <input
                     type="text"
                     value={editForm.abbreviation || ''}
                     onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value.toUpperCase().slice(0, 3) })}
-                    className={`w-full px-4 py-3 bg-cult-near-black border text-cult-white focus:outline-none focus:border-cult-white font-mono uppercase ${
+                    className={`w-full px-4 py-3 bg-cult-surface border text-cult-text-primary focus:outline-none focus:border-cult-accent font-mono uppercase ${
                       editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation)
                         ? 'border-cult-warning'
-                        : 'border-cult-medium-gray'
+                        : 'border-cult-border'
                     }`}
                     placeholder="e.g., BLP"
                     maxLength={3}
@@ -279,18 +279,18 @@ export function StrainsManagement() {
                     </p>
                   )}
                   {!editForm.abbreviation && (
-                    <p className="text-cult-medium-gray text-xs mt-1">Required for harvest batch IDs</p>
+                    <p className="text-cult-border text-xs mt-1">Required for harvest batch IDs</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Dominance Type
                   </label>
                   <select
                     value={editForm.dominance_type || 'Hybrid'}
                     onChange={(e) => setEditForm({ ...editForm, dominance_type: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                   >
                     {dominanceTypes.map((type) => (
                       <option key={type} value={type}>
@@ -302,22 +302,22 @@ export function StrainsManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Genetics Description
                 </label>
                 <textarea
                   value={editForm.genetics_description || ''}
                   onChange={(e) => setEditForm({ ...editForm, genetics_description: e.target.value })}
                   rows={2}
-                  className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                  className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                   placeholder="e.g., Azul Runtz x Pave"
                 />
               </div>
 
-              <div className="flex gap-2 justify-end pt-4 border-t border-cult-medium-gray">
+              <div className="flex gap-2 justify-end pt-4 border-t border-cult-border">
                 <button
                   onClick={handleCancel}
-                  className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                  className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -325,7 +325,7 @@ export function StrainsManagement() {
                 <button
                   onClick={() => handleSave()}
                   disabled={!editForm.name || !isValidAbbreviation(editForm.abbreviation)}
-                  className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-4 h-4" />
                   Save
@@ -341,37 +341,37 @@ export function StrainsManagement() {
               key={strain.id}
               className={`bg-cult-black border p-4 transition-all ${
                 strain.is_active
-                  ? 'border-cult-medium-gray'
-                  : 'border-cult-medium-gray opacity-50'
+                  ? 'border-cult-border'
+                  : 'border-cult-border opacity-50'
               }`}
             >
               {editingId === strain.id ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Strain Name *
                       </label>
                       <input
                         type="text"
                         value={editForm.name || ''}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                        className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Abbreviation *
                       </label>
                       <input
                         type="text"
                         value={editForm.abbreviation || ''}
                         onChange={(e) => setEditForm({ ...editForm, abbreviation: e.target.value.toUpperCase().slice(0, 3) })}
-                        className={`w-full px-4 py-3 bg-cult-near-black border text-cult-white focus:outline-none focus:border-cult-white font-mono uppercase ${
+                        className={`w-full px-4 py-3 bg-cult-surface border text-cult-text-primary focus:outline-none focus:border-cult-accent font-mono uppercase ${
                           editForm.abbreviation && !isValidAbbreviation(editForm.abbreviation)
                             ? 'border-cult-warning'
-                            : 'border-cult-medium-gray'
+                            : 'border-cult-border'
                         }`}
                         maxLength={3}
                         placeholder="e.g., BLP"
@@ -385,13 +385,13 @@ export function StrainsManagement() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Dominance Type
                       </label>
                       <select
                         value={editForm.dominance_type || 'Hybrid'}
                         onChange={(e) => setEditForm({ ...editForm, dominance_type: e.target.value })}
-                        className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                        className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                       >
                         {dominanceTypes.map((type) => (
                           <option key={type} value={type}>
@@ -403,21 +403,21 @@ export function StrainsManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                       Genetics Description
                     </label>
                     <textarea
                       value={editForm.genetics_description || ''}
                       onChange={(e) => setEditForm({ ...editForm, genetics_description: e.target.value })}
                       rows={2}
-                      className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                      className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                     />
                   </div>
 
-                  <div className="flex gap-2 justify-end pt-4 border-t border-cult-medium-gray">
+                  <div className="flex gap-2 justify-end pt-4 border-t border-cult-border">
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                      className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                     >
                       <X className="w-4 h-4" />
                       Cancel
@@ -425,7 +425,7 @@ export function StrainsManagement() {
                     <button
                       onClick={() => handleSave(strain.id)}
                       disabled={!editForm.name || !isValidAbbreviation(editForm.abbreviation)}
-                      className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Save className="w-4 h-4" />
                       Save
@@ -436,11 +436,11 @@ export function StrainsManagement() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+                      <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
                         {strain.name}
                       </h3>
                       {isValidAbbreviation(strain.abbreviation) ? (
-                        <span className="px-2 py-1 bg-cult-near-black border border-cult-medium-gray text-cult-lighter-gray text-xs font-mono uppercase">
+                        <span className="px-2 py-1 bg-cult-surface border border-cult-border text-cult-text-muted text-xs font-mono uppercase">
                           {strain.abbreviation}
                         </span>
                       ) : (
@@ -450,13 +450,13 @@ export function StrainsManagement() {
                         </span>
                       )}
                       {strain.dominance_type && (
-                        <span className="px-2 py-1 bg-cult-near-black border border-cult-medium-gray text-cult-lighter-gray text-xs uppercase tracking-wider">
+                        <span className="px-2 py-1 bg-cult-surface border border-cult-border text-cult-text-muted text-xs uppercase tracking-wider">
                           {strain.dominance_type}
                         </span>
                       )}
                     </div>
                     {strain.genetics_description && (
-                      <p className="text-sm text-cult-light-gray">{strain.genetics_description}</p>
+                      <p className="text-sm text-cult-text-muted">{strain.genetics_description}</p>
                     )}
                   </div>
 
@@ -465,7 +465,7 @@ export function StrainsManagement() {
                       onClick={() => toggleActive(strain.id, strain.is_active)}
                       className={`px-3 py-1 border text-xs font-medium uppercase tracking-wider transition-all duration-200 ${
                         strain.is_active
-                          ? 'border-cult-medium-gray text-cult-lighter-gray hover:border-cult-white hover:text-cult-white'
+                          ? 'border-cult-border text-cult-text-muted hover:border-cult-accent hover:text-cult-text-primary'
                           : 'border-cult-success text-cult-success hover:border-cult-success/80'
                       }`}
                     >
@@ -473,7 +473,7 @@ export function StrainsManagement() {
                     </button>
                     <button
                       onClick={() => handleEdit(strain)}
-                      className="px-3 py-1 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-xs font-medium uppercase tracking-wider"
+                      className="px-3 py-1 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-xs font-medium uppercase tracking-wider"
                     >
                       <Edit2 className="w-3 h-3" />
                     </button>
@@ -490,7 +490,7 @@ export function StrainsManagement() {
           ))}
 
           {filteredStrains.length === 0 && (
-            <div className="text-center py-12 text-cult-lighter-gray">
+            <div className="text-center py-12 text-cult-text-muted">
               No strains found matching your criteria.
             </div>
           )}

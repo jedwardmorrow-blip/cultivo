@@ -377,8 +377,8 @@ export function DailyDigestView() {
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">Reports</h1>
-        <p className="text-cult-light-gray mt-2">Daily cultivation digest</p>
+        <h1 className="text-3xl font-bold text-cult-text-primary">Reports</h1>
+        <p className="text-cult-text-muted mt-2">Daily cultivation digest</p>
       </div>
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
@@ -672,7 +672,7 @@ function LaborTab({
         <div className="bg-cult-surface-overlay rounded-lg p-3 border border-cult-border">
           <span className="text-xs text-cult-text-muted uppercase tracking-wider">Tasks Done</span>
           <div className="mt-1 text-lg font-bold text-cult-text-primary">{tasksCompleted}/{tasksTotal}</div>
-          <div className="mt-1.5 w-full h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
+          <div className="mt-1.5 w-full h-1.5 bg-cult-surface-raised rounded-full overflow-hidden">
             <div className="h-full bg-cult-success rounded-full transition-all" style={{ width: `${completionPct}%` }} />
           </div>
         </div>

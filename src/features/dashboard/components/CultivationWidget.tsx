@@ -77,9 +77,9 @@ export function CultivationWidget() {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Sprout className="w-5 h-5 text-cult-success" />
-          <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">Cultivation</h2>
+          <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">Cultivation</h2>
         </div>
-        <div className="text-xs text-cult-medium-gray py-4">Loading cultivation data…</div>
+        <div className="text-xs text-cult-border py-4">Loading cultivation data…</div>
       </div>
     );
   }
@@ -94,13 +94,13 @@ export function CultivationWidget() {
         <div className="flex items-center gap-3">
           <Sprout className="w-5 h-5 text-cult-success" />
           <div>
-            <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">Cultivation</h2>
-            <p className="text-xs text-cult-light-gray mt-0.5">Active plant groups, harvests, and drying runs</p>
+            <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">Cultivation</h2>
+            <p className="text-xs text-cult-text-muted mt-0.5">Active plant groups, harvests, and drying runs</p>
           </div>
         </div>
         <button
           onClick={() => navigate('/cultivation-dashboard')}
-          className="flex items-center gap-1.5 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+          className="flex items-center gap-1.5 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors"
         >
           View all
           <ArrowRight className="w-3.5 h-3.5" />
@@ -119,29 +119,29 @@ export function CultivationWidget() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
-          <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Active Groups</div>
-          <div className="text-2xl font-bold text-cult-white">{summary.activeGroups}</div>
-          <div className="text-xs text-cult-medium-gray mt-0.5">{summary.totalPlants.toLocaleString()} plants</div>
+          <div className="text-xs text-cult-border uppercase tracking-wider mb-1">Active Groups</div>
+          <div className="text-2xl font-bold text-cult-text-primary">{summary.activeGroups}</div>
+          <div className="text-xs text-cult-border mt-0.5">{summary.totalPlants.toLocaleString()} plants</div>
         </div>
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
-          <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Active Harvests</div>
-          <div className={`text-2xl font-bold ${summary.activeHarvests.length > 0 ? 'text-cult-warning' : 'text-cult-white'}`}>
+          <div className="text-xs text-cult-border uppercase tracking-wider mb-1">Active Harvests</div>
+          <div className={`text-2xl font-bold ${summary.activeHarvests.length > 0 ? 'text-cult-warning' : 'text-cult-text-primary'}`}>
             {summary.activeHarvests.length}
           </div>
-          <div className="text-xs text-cult-medium-gray mt-0.5">in progress</div>
+          <div className="text-xs text-cult-border mt-0.5">in progress</div>
         </div>
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-3">
-          <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">Pending Binning</div>
-          <div className={`text-2xl font-bold ${summary.pendingBinning > 0 ? 'text-cult-stage-clone' : 'text-cult-white'}`}>
+          <div className="text-xs text-cult-border uppercase tracking-wider mb-1">Pending Binning</div>
+          <div className={`text-2xl font-bold ${summary.pendingBinning > 0 ? 'text-cult-stage-clone' : 'text-cult-text-primary'}`}>
             {summary.pendingBinning}
           </div>
-          <div className="text-xs text-cult-medium-gray mt-0.5">awaiting dry weight</div>
+          <div className="text-xs text-cult-border mt-0.5">awaiting dry weight</div>
         </div>
       </div>
 
       {summary.activeGroups > 0 && (
         <div>
-          <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2">Stage Distribution</div>
+          <div className="text-xs text-cult-border uppercase tracking-wider mb-2">Stage Distribution</div>
           <div className="flex h-2 rounded-full overflow-hidden bg-cult-surface-overlay gap-px">
             {(['clone', 'veg', 'flower'] as const).map((stage) => {
               const count = stage === 'clone' ? summary.cloneCount : stage === 'veg' ? summary.vegCount : summary.flowerCount;
@@ -164,7 +164,7 @@ export function CultivationWidget() {
                 <div key={stage} className="flex items-center gap-1">
                   <div className={`w-2 h-2 rounded-full ${STAGE_STYLES[stage].bar}`} />
                   <span className={`text-xs capitalize ${STAGE_STYLES[stage].text}`}>{stage}</span>
-                  <span className="text-xs text-cult-medium-gray">{count}</span>
+                  <span className="text-xs text-cult-border">{count}</span>
                 </div>
               );
             })}
@@ -175,13 +175,13 @@ export function CultivationWidget() {
       {summary.activeHarvests.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5 text-xs text-cult-medium-gray uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-xs text-cult-border uppercase tracking-wider">
               <Scissors className="w-3.5 h-3.5" />
               Active Harvests
             </div>
             <button
               onClick={() => navigate('/cultivation-harvest')}
-              className="text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="text-xs text-cult-border hover:text-cult-text-primary transition-colors"
             >
               Manage →
             </button>
@@ -190,8 +190,8 @@ export function CultivationWidget() {
             {summary.activeHarvests.slice(0, 3).map((h) => (
               <div key={h.id} className="flex items-center justify-between border border-cult-border bg-cult-surface-raised rounded-cult px-3 py-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-mono text-cult-light-gray">{h.batch_registry?.batch_number ?? '—'}</span>
-                  <span className="text-xs text-cult-white truncate">{h.plant_groups?.strains?.name ?? 'Unknown'}</span>
+                  <span className="text-xs font-mono text-cult-text-muted">{h.batch_registry?.batch_number ?? '—'}</span>
+                  <span className="text-xs text-cult-text-primary truncate">{h.plant_groups?.strains?.name ?? 'Unknown'}</span>
                 </div>
                 <span className="text-xs text-cult-warning font-mono flex-shrink-0">
                   {formatWeight(h.wet_weight_grams)}
@@ -199,7 +199,7 @@ export function CultivationWidget() {
               </div>
             ))}
             {summary.activeHarvests.length > 3 && (
-              <p className="text-xs text-cult-medium-gray text-center py-1">
+              <p className="text-xs text-cult-border text-center py-1">
                 +{summary.activeHarvests.length - 3} more
               </p>
             )}
@@ -227,11 +227,11 @@ export function CultivationWidget() {
 
       {summary.activeGroups === 0 && summary.activeHarvests.length === 0 && summary.pendingBinning === 0 && (
         <div className="border border-dashed border-cult-border rounded-cult p-6 text-center">
-          <Sprout className="w-8 h-8 text-cult-dark-gray mx-auto mb-2" />
-          <p className="text-sm text-cult-medium-gray">No active cultivation activity</p>
+          <Sprout className="w-8 h-8 text-cult-surface mx-auto mb-2" />
+          <p className="text-sm text-cult-border">No active cultivation activity</p>
           <button
             onClick={() => navigate('/cultivation-dashboard')}
-            className="mt-2 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+            className="mt-2 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors"
           >
             Go to Cultivation →
           </button>

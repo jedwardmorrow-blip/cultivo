@@ -4,6 +4,222 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-04-29 - Cultivation Command Center · PR4 (dnd-kit reschedule calendar)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Drag-to-reschedule live in the Schedule focused view
+**Branch:** `cmd-center-a-prototype-port`
+
+### What changed
+
+The Schedule focused view (rail card → main panel) now renders a real 7-day calendar with drag-to-reschedule, replacing PR3's honest 3-row stub.
+
+### Behavior
+
+- 7-day grid, one column per weekday. Weekend columns subtly tinted via `--op-surface`.
+- For flipped flower rooms: phase-day labels (D1–D63) drive the columns. Week navigation (prev/next) keeps the view focused on the relevant cycle window. Header reads "Week N of M".
+- For non-flipped rooms (veg/clone/mother): falls back to current calendar week.
+- Tasks render as draggable hairline pills with stage-color dot, label, and an assignee bullet if a worker is assigned. Pills drag with `useDraggable`; day columns receive drops via `useDroppable`. Drop calls `updateTask({ task_date: newDate })` through the existing daily_task_instances service.
+- Drag overlay uses 1px `--op-line-strong` border + `--accent` ink shift, no scale transform per new DS doctrine.
+- Phase milestones strip below the calendar surfaces scheduled phase_day events with relative-time labels (TODAY / in N days / N days ago). Past milestones dim to 40 percent opacity.
+- Loaded via `useTaskSchedules(roomId)` for milestone source data.
+
+### Files
+
+- `src/features/cultivation/components/CommandCenter/index.tsx` — `ScheduleCalendar`, `DraggableTaskPill`, `DroppableDayColumn` components; `phaseToDate` and `formatShortDate` helpers; dnd-kit imports; `onReschedule` prop wired from top-level via `useDailyTasks.updateTask`.
+- `src/features/cultivation/components/CommandCenter/CommandCenter.css` — `.sched-cal*`, `.sched-grid`, `.sched-day*`, `.sched-pill*`, `.sched-milestones*` styles. Hairline only.
+- `src/features/cultivation/components/CommandCenter/useCommandCenterData.ts` — `updateTask` exposed on adapter return.
+
+### Behavior parity status (post-PR4)
+
+The original 11 carry-forward behaviors are now ✅ across the arc:
+- ✅ Section actions: move, kill, print group, print plants, advance (PR1.5)
+- ✅ Plant group label printing (PR1.5)
+- ✅ Move-to-room with split-and-move-multiple (PR1.5)
+- ✅ Stage advance per group (PR1.5)
+- ✅ Dead plant logging (PR1.5)
+- ✅ Per-task-type log writes (PR2)
+- ✅ Multi-person task assignment + promote-to-lead (PR2)
+- ✅ Schedule auto-generation on mount (PR2)
+- ✅ Inline add task + global add (PR3)
+- ✅ Feed recipe display (PR3)
+- ✅ dnd-kit reschedule calendar (PR4)
+
+Still parked (smaller follow-ups):
+- Inline tank mix recipe inside batch_tank_mix task rows (requires TaskExpandedDetail port)
+- Interactive feed recipe scaling editor (v2)
+- Cross-room labor drawer (LaborOverviewPanel restyle)
+
+### Build
+
+`npm run build` passes (exit 0, 13.6s).
+
+---
+
+## 2026-04-29 - Cultivation Command Center · PR3 (inline + global add + feed recipe)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Add task paths live, feed recipe display restored
+**Branch:** `cmd-center-a-prototype-port`
+
+### What changed
+
+PR3 closes three more legacy behavior gaps:
+
+1. **Inline add task** — the `+ add task` row at the bottom of the task list now expands into a horizontal pill row of the canonical 8 inline task types (batch_tank_mix, ipm_spray, scouting, defoliation, cleaning, training, maintenance, custom). Click a pill to create a daily_task_instance for the current room and today. Mirrors legacy `INLINE_TASK_TYPES`.
+
+2. **Header global add** — the header-right `+ add` button now opens a modal: pick a room (only non-empty rooms shown, with code + stage + plant count), then pick a task type pill, or "Jump to room" to drill into the expanded view with the inline add open. FAB-replacement per locked decision B.
+
+3. **Feed Recipe card + focused view** — added Feed Recipe to the rail, restored from PR1's parked state. Compact card shows stage and day. Focused view renders the active feed program via `useFeedProgramRecipe(stage, days, room_id)`: program name, phase + week, EC target, mixing-order rows with mL/gal and per-room overrides flagged, pH range, PPM target. Read-only for v1; interactive scaling editor flagged for v2.
+
+### Files
+
+- `src/features/cultivation/components/CommandCenter/index.tsx` — `INLINE_TASK_TYPES` array, inline-add expansion in task list, `GlobalAddTaskModal` component, `FeedRecipe` component, feed rail card.
+- `src/features/cultivation/components/CommandCenter/CommandCenter.css` — `tl-add-row` + `tl-add-pill` styles, `feed-recipe-*` styles.
+- `src/features/cultivation/components/CommandCenter/useCommandCenterData.ts` — `today` exposed on adapter return.
+
+### Behavior parity status (post-PR3)
+
+Done across PR1 → PR3:
+- Visual port + card-swap + sections layout + view transitions
+- Two-stage featured tile click
+- AttentionStrip silence-as-signal
+- Always-on Labor strip with sparkline
+- PhaseHero with stage markers
+- Section actions (move, kill, print group, print plants, advance) end-to-end
+- Per-task-type log writes via TaskCompletionForm
+- Multi-person assignment with promote-to-lead
+- Schedule auto-generation on mount
+- Inline add task in expanded room
+- Header global add task with room picker + jump-to-room
+- Feed recipe display
+
+Still parked (defer to follow-up sessions):
+- dnd-kit reschedule calendar (legacy ScheduleCalendarExpanded full restyle)
+- Inline tank mix recipe inside batch_tank_mix task rows (requires TaskExpandedDetail port)
+- Interactive feed recipe scaling editor (v2)
+- Cross-room labor drawer (LaborOverviewPanel restyle)
+
+### Build
+
+`npm run build` passes (exit 0, 16.7s). CommandCenter chunk holds at ~160 KB / 37 KB gzip.
+
+---
+
+## 2026-04-29 - Cultivation Command Center · PR2 (task completion + assignment + auto-gen)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Per-task-type log writes + multi-person assignment live
+**Branch:** `cmd-center-a-prototype-port`
+
+### What changed
+
+PR2 wires three legacy behaviors into the new Command Center, restoring full task parity vs cult-ops:
+
+1. **Per-task-type log writes** — replaced the simple PR1 completion modal with a delegating wrapper around the existing `TaskCompletionForm`. Each completion now writes the correct typed log row (`ipm_spray_log`, `batch_tank_mix_log`, `scouting_log`, `defoliation_log`, `cleaning_log`, `training_log`, `custom_task_log`, `saturation_check_log`, `irrigation_audit_log`) plus the `daily_task_instances` audit pointer via `completion_ref_table` / `completion_ref_id`.
+
+2. **Multi-person task assignment with promote-to-lead** — every task row now has an inline assignee summary (`N assigned ▸` / `unassigned ▸`). Click to expand the row inline and see the full assignee list with role badges. Each non-lead assignee shows a "promote → lead" action. A "+ add staff…" select adds the next person as crew (or as lead if they're the first). Wired through `useTaskAssignments` (`assignToTask`, `promoteToLead`, `getForTask`) — the same hook the legacy used.
+
+3. **Auto-generation of today's tasks from active schedules** — `useGenerateTasksFromSchedules` now runs once on mount of the Command Center, after the rooms and tasks queries settle. Idempotent (existing tasks ignored), silent on failure (best-effort), refetches on success.
+
+### Files
+
+- `src/features/cultivation/components/CommandCenter/index.tsx` — TaskRow split into row + inline TaskRowAssignees panel; TaskCompletionForm wired with `toTaskCardData` adapter; `useTaskAssignments` + `useActiveStaff` integration.
+- `src/features/cultivation/components/CommandCenter/useCommandCenterData.ts` — auto-gen on first mount via `useGenerateTasksFromSchedules`.
+- `src/features/cultivation/components/CommandCenter/CommandCenter.css` — new styles for assignee chip, role badges, promote-to-lead button, inline expansion panel.
+
+### Behavior parity with legacy (now complete for tasks)
+
+| Behavior | Status |
+|---|---|
+| Per-task-type log writes (ipm/spray/scouting/etc) | ✅ via TaskCompletionForm delegation |
+| Multi-person assignment | ✅ |
+| Promote-to-lead | ✅ |
+| Single-person quick-assign | ✅ via TaskCompletionForm staff dropdown |
+| Auto-gen tasks from schedules on mount | ✅ |
+
+### Still parked
+
+- PR3: dnd-kit reschedule calendar (defer; legacy ScheduleCalendarExpanded needs full restyle), inline tank mix recipe inside batch_tank_mix tasks, inline + global add task wired, interactive feed recipe scaling, cross-room labor drawer.
+
+### Build
+
+`npm run build` passes (exit 0, 12.6s). CommandCenter chunk holds steady at ~155 KB / 36 KB gzip.
+
+---
+
+## 2026-04-29 - Cultivation Command Center · Claude Design v2 port (PR1 + PR1.5)
+
+**Type:** Feature — Cultivation
+**Status:** ✅ Complete — Section actions wired (move, kill, print group, print plants, advance)
+**Branch:** `cmd-center-a-prototype-port`
+**Brain canon:** `cultivation_command_center_brief_v1` (id `c961c2f9-172b-406d-b871-da1740560780`)
+
+### What changed
+
+Replaces the 3,121-line legacy `CommandCenter.tsx` (Liquid Glass aesthetic, framer-motion, hardcoded hex) with a port of the Claude Design v2 prototype against the new Cultivo working-instrument DS. Hairline only, no glass, no shadow, no gradient, no backdrop-blur.
+
+### New surface structure
+
+- Identity strip + cycle strip at the top.
+- Card-swap body: tasks main panel by default, four compact rail cards (Schedule, Plants, Tables, Environment) that swap into the main panel on click.
+- Two-stage featured-tile click on the rooms grid (first click features col-span-2 row-span-2, second click expands).
+- Silence-is-signal AttentionStrip (urgency >= 2 only).
+- Always-on Labor strip with sparkline trend tail.
+- Empty rooms collapse into a single hairline strip; active rooms section by stage (Flower / Veg / Clone / Mother).
+- Tables + Sections layout rotated 90° (tables side-by-side, sections vertical).
+- View Transitions API on tile-to-expanded morph (Chrome / Edge); fallback elsewhere.
+
+### New atoms / molecules
+
+- `cultivation/components/CommandCenter/index.tsx` — top-level component (replaces legacy file).
+- `cultivation/components/CommandCenter/useCommandCenterData.ts` — production-to-prototype field adapter.
+- `cultivation/components/CommandCenter/CommandCenter.css` — full hairline DS styles.
+- `cultivation/types/taskSchemas.ts` — unified schema marrying `TASK_TYPE_CONFIG` with completion fields per task_type. Environmental Check expanded to 7 fields.
+- `cultivation/constants/cyclePhaseMarkers.ts` — Stretch / Bulk / Flush / Ripen for flower; Establish / Growth / Flip for veg; Misting / Transplant for clone.
+- `cultivation/constants/environmentalTargets.ts` — manual targets per room type (Temp, RH, VPD, CO2). Renders with "manual" tag; flips to "live" when sensor integration lands.
+
+### Section actions (PR1.5)
+
+Click a section in the Tables view to reveal:
+- Move (mounts existing `MoveToRoomModal` with split-and-move support).
+- Print group (mounts `PlantGroupLabelPrintModal` via `usePlantGroupLabel.openGroupLabel`).
+- Print plants (per-plant labels via `openPlantLabels`).
+- Advance → next stage (clone → veg → flower → harvested) with confirmation modal.
+- Kill (mounts existing `DeadPlantForm`).
+
+### Behavior preserved end-to-end
+
+Every plant-print, move, split-and-move, kill, and stage-advance behavior from legacy reaches the same services through the same hooks. Zero feature loss for the floor-actions surface.
+
+### Behavior parked for PR2 / PR3
+
+- Multi-day reschedule calendar with dnd-kit (PR2)
+- Schedule auto-generation on mount (PR2)
+- Multi-person task assignment + promote-to-lead (PR2)
+- Per-task-type log writes (batch_tank_mix_log, scouting_log, ipm_spray_log, etc) (PR2)
+- Inline tank mix recipe inside batch_tank_mix tasks (PR3)
+- Inline + global add task (PR3)
+- Interactive feed recipe scaling (PR3)
+- Cross-room labor aggregation drawer (PR3)
+
+### Reference
+
+- Legacy file preserved at `_inbound/cmd-center-prototype-2026-04-29/CommandCenter.legacy.tsx` (3,121 lines, untouched).
+- Prototype HTML + JSX at `_inbound/cmd-center-prototype-2026-04-29/`.
+- Brain rows promoted: `cultivo_atom_pending_cell_v1`, `cultivo_molecule_phase_hero_v1`, `cultivo_atom_sparkline_status_tail_v1`, `cultivation_task_completion_schema_v1`.
+
+### Design decisions locked
+
+A. Two-stage featured-tile click stays.
+B. FAB pattern dropped; replaced by inline `+ add` in task list header and header-right global add.
+C. Brief written before implementation (this row exists; the brief is canon).
+D. All 11 carry-forward features stay through the PR1 → PR3 arc.
+E. Single-file port (not feature-aligned decomposition) for v1.
+F. Temp / humidity placeholder cells with manual tag, JSONB log for environmental_check until v2 sensor table.
+
+---
+
 ## 2026-04-11 - Plant Audit UI (Phase A — baseline reset tool)
 
 **Type:** Feature — Cultivation

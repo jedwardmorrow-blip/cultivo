@@ -17,7 +17,7 @@ function YieldSparkline({ values, width = 120, height = 28, color = '#22c55e', a
   if (values.length < 2) {
     return (
       <div style={{ width, height }} className="flex items-center justify-center">
-        <span className="text-xs text-cult-medium-gray">—</span>
+        <span className="text-xs text-cult-border">—</span>
       </div>
     );
   }
@@ -104,7 +104,7 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
     return (
       <button
         onClick={() => handleSort(field)}
-        className={`flex items-center gap-1 text-left ${isActive ? 'text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+        className={`flex items-center gap-1 text-left ${isActive ? 'text-cult-text-primary' : 'text-cult-border hover:text-cult-text-muted'}`}
       >
         {label}
         {isActive && <ArrowUpDown className="w-3 h-3" />}
@@ -114,8 +114,8 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
 
   if (strainAggregates.length === 0) {
     return (
-      <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-        <p className="text-cult-medium-gray text-sm uppercase tracking-wider">No completed harvests to analyze</p>
+      <div className="bg-cult-surface border border-cult-border p-8 text-center">
+        <p className="text-cult-border text-sm uppercase tracking-wider">No completed harvests to analyze</p>
       </div>
     );
   }
@@ -125,7 +125,7 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-dark-gray text-xs uppercase tracking-wider">
+            <tr className="border-b border-cult-surface text-xs uppercase tracking-wider">
               <th className="text-left py-3 px-3"><SortButton field="strain_name" label="Strain" /></th>
               <th className="text-right py-3 px-3"><SortButton field="harvest_count" label="Harvests" /></th>
               <th className="text-right py-3 px-3"><SortButton field="total_plants" label="Plants" /></th>
@@ -133,7 +133,7 @@ export function StrainBreakdown({ strainAggregates, rows }: StrainBreakdownProps
               <th className="text-right py-3 px-3"><SortButton field="total_dry_grams" label="Dry" /></th>
               <th className="text-right py-3 px-3"><SortButton field="avg_yield_pct" label="Yield %" /></th>
               <th className="text-right py-3 px-3"><SortButton field="avg_dry_per_plant" label="Dry/Plant" /></th>
-              <th className="py-3 px-3 w-32 text-right text-cult-medium-gray">Trend</th>
+              <th className="py-3 px-3 w-32 text-right text-cult-border">Trend</th>
             </tr>
           </thead>
           <tbody>
@@ -173,32 +173,32 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
     <>
       <tr
         onClick={onToggle}
-        className="border-b border-cult-dark-gray hover:bg-cult-near-black cursor-pointer transition-colors group"
+        className="border-b border-cult-surface hover:bg-cult-surface cursor-pointer transition-colors group"
       >
         <td className="py-3 px-3">
           <div className="flex items-center gap-2">
-            <span className="text-cult-white font-semibold">{strain.strain_name}</span>
+            <span className="text-cult-text-primary font-semibold">{strain.strain_name}</span>
             {strain.strain_abbreviation && (
-              <span className="text-xs text-cult-medium-gray font-mono border border-cult-dark-gray px-1">
+              <span className="text-xs text-cult-border font-mono border border-cult-surface px-1">
                 {strain.strain_abbreviation}
               </span>
             )}
           </div>
         </td>
-        <td className="text-right py-3 px-3 text-cult-light-gray font-mono">{strain.harvest_count}</td>
-        <td className="text-right py-3 px-3 text-cult-light-gray font-mono">{strain.total_plants}</td>
-        <td className="text-right py-3 px-3 text-cult-light-gray font-mono">{formatWeight(strain.total_wet_grams)}</td>
-        <td className="text-right py-3 px-3 text-cult-white font-mono font-semibold">
+        <td className="text-right py-3 px-3 text-cult-text-muted font-mono">{strain.harvest_count}</td>
+        <td className="text-right py-3 px-3 text-cult-text-muted font-mono">{strain.total_plants}</td>
+        <td className="text-right py-3 px-3 text-cult-text-muted font-mono">{formatWeight(strain.total_wet_grams)}</td>
+        <td className="text-right py-3 px-3 text-cult-text-primary font-mono font-semibold">
           {strain.total_dry_grams > 0 ? formatWeight(strain.total_dry_grams) : '—'}
         </td>
         <td className="text-right py-3 px-3">
           {strain.avg_yield_pct != null ? (
             <span className="text-cult-success font-mono font-semibold">{strain.avg_yield_pct}%</span>
           ) : (
-            <span className="text-cult-medium-gray">—</span>
+            <span className="text-cult-border">—</span>
           )}
         </td>
-        <td className="text-right py-3 px-3 text-cult-light-gray font-mono">
+        <td className="text-right py-3 px-3 text-cult-text-muted font-mono">
           {strain.avg_dry_per_plant != null ? formatWeight(strain.avg_dry_per_plant) : '—'}
         </td>
         <td className="py-3 px-3 text-right">
@@ -209,8 +209,8 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
       {isExpanded && strainRows.length > 0 && (
         <tr>
           <td colSpan={8} className="bg-cult-black px-3 py-3">
-            <div className="space-y-2 pl-4 border-l-2 border-cult-dark-gray">
-              <div className="flex items-center gap-4 text-xs text-cult-medium-gray uppercase tracking-wider mb-2">
+            <div className="space-y-2 pl-4 border-l-2 border-cult-surface">
+              <div className="flex items-center gap-4 text-xs text-cult-border uppercase tracking-wider mb-2">
                 <span className="w-24">Date</span>
                 <span className="w-20">Room</span>
                 <span className="w-16 text-right">Wet</span>
@@ -221,24 +221,24 @@ function StrainRow({ strain, isExpanded, strainRows, yieldValues, onToggle }: St
               </div>
               {strainRows.map((row) => (
                 <div key={row.harvest_session_id} className="flex items-center gap-4 text-xs">
-                  <span className="w-24 text-cult-light-gray">{new Date(row.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                  <span className="w-20 font-mono text-cult-light-gray">{row.grow_room_code ?? '—'}</span>
-                  <span className="w-16 text-right font-mono text-cult-light-gray">{formatWeight(row.effective_wet_weight_grams)}</span>
-                  <span className="w-16 text-right font-mono text-cult-white">{row.dry_weight_grams != null ? formatWeight(row.dry_weight_grams) : '—'}</span>
+                  <span className="w-24 text-cult-text-muted">{new Date(row.harvest_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  <span className="w-20 font-mono text-cult-text-muted">{row.grow_room_code ?? '—'}</span>
+                  <span className="w-16 text-right font-mono text-cult-text-muted">{formatWeight(row.effective_wet_weight_grams)}</span>
+                  <span className="w-16 text-right font-mono text-cult-text-primary">{row.dry_weight_grams != null ? formatWeight(row.dry_weight_grams) : '—'}</span>
                   <span className="w-14 text-right font-mono">
                     {row.yield_percentage != null ? (
                       <span className="text-cult-success">{row.yield_percentage}%</span>
                     ) : '—'}
                   </span>
-                  <span className="w-12 text-right font-mono text-cult-light-gray">{row.plant_count_harvested}</span>
-                  <span className="w-16 text-right font-mono text-cult-light-gray">
+                  <span className="w-12 text-right font-mono text-cult-text-muted">{row.plant_count_harvested}</span>
+                  <span className="w-16 text-right font-mono text-cult-text-muted">
                     {row.avg_dry_per_plant != null ? formatWeight(row.avg_dry_per_plant) : '—'}
                   </span>
                 </div>
               ))}
 
               {strain.best_yield_pct != null && strain.worst_yield_pct != null && strain.best_yield_pct !== strain.worst_yield_pct && (
-                <div className="flex items-center gap-4 mt-2 pt-2 border-t border-cult-dark-gray text-xs">
+                <div className="flex items-center gap-4 mt-2 pt-2 border-t border-cult-surface text-xs">
                   <div className="flex items-center gap-1.5 text-cult-success">
                     <TrendingUp className="w-3 h-3" />
                     Best: {strain.best_yield_pct}%

@@ -95,13 +95,13 @@ export function UnifiedOrders({
     return (
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cult-white">DISTRIBUTION</h1>
+          <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">DISTRIBUTION</h1>
         </div>
-        <div className="bg-cult-danger/10 border border-cult-danger/30 rounded-cult p-8 text-center">
+        <div className="bg-cult-danger-muted border border-cult-danger/40 rounded p-8 text-center">
           <p className="text-cult-danger text-sm mb-4">{error.message}</p>
           <button
             onClick={() => actions.loadOrders(true)}
-            className="px-5 py-2 bg-cult-off-white text-cult-black rounded-cult hover:bg-cult-silver transition-all text-sm font-semibold"
+            className="px-5 py-2 border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black transition-colors rounded font-mono uppercase tracking-[0.16em] text-[11px]"
           >
             Retry
           </button>
@@ -114,19 +114,19 @@ export function UnifiedOrders({
     <div className="max-w-7xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">DISTRIBUTION</h1>
-          <p className="text-cult-text-secondary text-sm mt-2">
+          <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">DISTRIBUTION</h1>
+          <p className="font-mono uppercase tracking-[0.12em] text-[10px] text-cult-text-muted mt-1.5 tabular-nums">
             {orders.length} total orders
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* View toggle */}
-          <div className="flex items-center bg-cult-surface-raised border border-cult-border rounded-cult p-0.5">
+          <div className="flex items-center bg-cult-surface-inset border border-cult-border-subtle rounded p-0.5">
             <button
               onClick={() => setViewMode('cards')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-cult transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 font-mono uppercase tracking-[0.14em] text-[11px] rounded transition-colors ${
                 viewMode === 'cards'
-                  ? 'bg-cult-surface-overlay text-cult-text-primary'
+                  ? 'bg-cult-surface-raised text-cult-text-primary'
                   : 'text-cult-text-muted hover:text-cult-text-secondary'
               }`}
               title="Card view"
@@ -136,9 +136,9 @@ export function UnifiedOrders({
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-cult transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 font-mono uppercase tracking-[0.14em] text-[11px] rounded transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-cult-surface-overlay text-cult-text-primary'
+                  ? 'bg-cult-surface-raised text-cult-text-primary'
                   : 'text-cult-text-muted hover:text-cult-text-secondary'
               }`}
               title="Table view"
@@ -150,9 +150,9 @@ export function UnifiedOrders({
 
           <button
             onClick={() => onCreateOrder()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-cult-success text-cult-black rounded-cult hover:bg-cult-success-bright transition-all text-sm font-bold shadow-lg hover:shadow-cult-success/20"
+            className="flex items-center gap-2 px-4 py-2 border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black transition-colors rounded font-mono uppercase tracking-[0.16em] text-[11px]"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             New Order
           </button>
         </div>

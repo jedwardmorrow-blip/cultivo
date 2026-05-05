@@ -16,9 +16,9 @@ function getStatusColor(status: string): string {
   switch (status) {
     case 'active': return 'bg-cult-success-muted text-cult-success border-cult-success/30';
     case 'prospect': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-    case 'inactive': return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
+    case 'inactive': return 'bg-cult-border/30 text-cult-text-secondary border-cult-border/30';
     case 'churned': return 'bg-cult-danger-muted text-cult-danger border-cult-danger/30';
-    default: return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
+    default: return 'bg-cult-border/30 text-cult-text-secondary border-cult-border/30';
   }
 }
 
@@ -163,11 +163,11 @@ export function AccountsList({}: AccountsListProps) {
     <div className="space-y-5 pb-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Accounts</h1>
-          <p className="text-cult-light-gray mt-2">
+          <h1 className="text-3xl font-bold text-cult-text-primary">Accounts</h1>
+          <p className="text-cult-text-muted mt-2">
             {accounts.filter((a) => a.account_type !== 'hub_child').length} accounts
             {childrenByParent.size > 0 && (
-              <span className="ml-1 text-cult-silver">
+              <span className="ml-1 text-cult-text-secondary">
                 ({Array.from(childrenByParent.values()).reduce((s, c) => s + c.length, 0)} hub locations)
               </span>
             )}
@@ -175,7 +175,7 @@ export function AccountsList({}: AccountsListProps) {
         </div>
         <button
           onClick={() => navigate('/crm-dashboard')}
-          className="px-4 py-2 text-sm font-medium text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
+          className="px-4 py-2 text-sm font-medium text-cult-text-primary bg-cult-surface border border-cult-border rounded-lg hover:bg-cult-surface-raised transition-colors"
         >
           Back to Dashboard
         </button>
@@ -183,18 +183,18 @@ export function AccountsList({}: AccountsListProps) {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-silver" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-text-secondary" />
           <input
             type="text"
             placeholder="Search by name, code, city, or license..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-cult-near-black border border-cult-medium-gray rounded-lg text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted transition-colors"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-silver hover:text-cult-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-text-secondary hover:text-cult-text-primary"
             >
               <X className="w-4 h-4" />
             </button>
@@ -203,11 +203,11 @@ export function AccountsList({}: AccountsListProps) {
 
         <div className="flex gap-2">
           <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-silver pointer-events-none" />
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cult-text-secondary pointer-events-none" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as AccountStatus | 'all')}
-              className="pl-9 pr-8 py-2.5 bg-cult-near-black border border-cult-medium-gray rounded-lg text-sm text-cult-white appearance-none cursor-pointer focus:outline-none focus:border-cult-lighter-gray"
+              className="pl-9 pr-8 py-2.5 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-text-primary appearance-none cursor-pointer focus:outline-none focus:border-cult-text-muted"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -220,7 +220,7 @@ export function AccountsList({}: AccountsListProps) {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value as AccountType | 'all')}
-            className="px-3 py-2.5 bg-cult-near-black border border-cult-medium-gray rounded-lg text-sm text-cult-white appearance-none cursor-pointer focus:outline-none focus:border-cult-lighter-gray"
+            className="px-3 py-2.5 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-text-primary appearance-none cursor-pointer focus:outline-none focus:border-cult-text-muted"
           >
             <option value="all">All Types</option>
             <option value="direct">Direct</option>
@@ -231,7 +231,7 @@ export function AccountsList({}: AccountsListProps) {
           {hasFilters && (
             <button
               onClick={() => { setSearchTerm(''); setStatusFilter('all'); setTypeFilter('all'); }}
-              className="px-3 py-2.5 text-xs text-cult-silver hover:text-cult-white bg-cult-near-black border border-cult-medium-gray rounded-lg hover:bg-cult-charcoal transition-colors"
+              className="px-3 py-2.5 text-xs text-cult-text-secondary hover:text-cult-text-primary bg-cult-surface border border-cult-border rounded-lg hover:bg-cult-surface-raised transition-colors"
             >
               Clear
             </button>
@@ -239,21 +239,21 @@ export function AccountsList({}: AccountsListProps) {
         </div>
       </div>
 
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
+      <div className="bg-cult-surface border border-cult-border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-cult-charcoal">
+              <tr className="border-b border-cult-surface-raised">
                 <SortHeader label="Account" field="name" current={sortField} dir={sortDir} onSort={handleSort} />
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider hidden sm:table-cell">Location</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider hidden sm:table-cell">Location</th>
                 <SortHeader label="Revenue" field="total_revenue" current={sortField} dir={sortDir} onSort={handleSort} align="right" />
                 <SortHeader label="Orders" field="order_count" current={sortField} dir={sortDir} onSort={handleSort} align="right" className="hidden md:table-cell" />
                 <SortHeader label="Last Order" field="last_order_date" current={sortField} dir={sortDir} onSort={handleSort} align="right" className="hidden lg:table-cell" />
-                <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider hidden sm:table-cell">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider hidden sm:table-cell">Status</th>
                 <th className="px-4 py-3 w-10"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-cult-charcoal/50">
+            <tbody className="divide-y divide-cult-surface-raised/50">
               {filteredAccounts.map((account) => {
                 const isHub = account.account_type === 'hub_parent';
                 const children = isHub ? (childrenByParent.get(account.id) || []) : [];
@@ -277,7 +277,7 @@ export function AccountsList({}: AccountsListProps) {
               })}
               {filteredAccounts.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-cult-light-gray text-sm">
+                  <td colSpan={7} className="px-4 py-12 text-center text-cult-text-muted text-sm">
                     No accounts match your filters.
                   </td>
                 </tr>
@@ -313,24 +313,24 @@ function ParentRow({
     <>
       <tr
         onClick={() => onSelect(account.id)}
-        className="hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
+        className="hover:bg-cult-surface/50 cursor-pointer transition-colors group"
       >
         <td className="px-4 py-3">
           <div className="flex items-center gap-2">
             {isHub && children.length > 0 ? (
               <button
                 onClick={(e) => onToggle(account.id, e)}
-                className="p-0.5 rounded hover:bg-cult-charcoal transition-colors"
+                className="p-0.5 rounded hover:bg-cult-surface-raised transition-colors"
               >
-                <ChevronDown className={`w-4 h-4 text-cult-silver transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                <ChevronDown className={`w-4 h-4 text-cult-text-secondary transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
               </button>
             ) : (
-              <Building2 className="w-4 h-4 text-cult-medium-gray flex-shrink-0" />
+              <Building2 className="w-4 h-4 text-cult-border flex-shrink-0" />
             )}
             <div className="min-w-0">
-              <p className="text-sm font-medium text-cult-white truncate">{account.name}</p>
+              <p className="text-sm font-medium text-cult-text-primary truncate">{account.name}</p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs font-mono text-cult-light-gray">{account.dispensary_code}</span>
+                <span className="text-xs font-mono text-cult-text-muted">{account.dispensary_code}</span>
                 {isHub && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold bg-sky-500/20 text-sky-400 rounded">
                     <Network className="w-3 h-3" />
@@ -342,17 +342,17 @@ function ParentRow({
           </div>
         </td>
         <td className="px-4 py-3 hidden sm:table-cell">
-          <span className="text-xs text-cult-light-gray">
+          <span className="text-xs text-cult-text-muted">
             {[account.city, account.state].filter(Boolean).join(', ') || '-'}
           </span>
         </td>
         <td className="px-4 py-3 text-right">
           <div>
-            <span className={`text-sm font-semibold ${combinedRevenue > 0 ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
+            <span className={`text-sm font-semibold ${combinedRevenue > 0 ? 'text-cult-success' : 'text-cult-border'}`}>
               {combinedRevenue > 0 ? formatCurrency(combinedRevenue) : '-'}
             </span>
             {isHub && Number(account.total_revenue) > 0 && (account.child_total_revenue || 0) > 0 && (
-              <p className="text-xs text-cult-silver">
+              <p className="text-xs text-cult-text-secondary">
                 {formatCurrency(Number(account.total_revenue))} direct
               </p>
             )}
@@ -360,9 +360,9 @@ function ParentRow({
         </td>
         <td className="px-4 py-3 text-right hidden md:table-cell">
           <div>
-            <span className="text-sm text-cult-light-gray">{combinedOrders || '-'}</span>
+            <span className="text-sm text-cult-text-muted">{combinedOrders || '-'}</span>
             {isHub && account.order_count > 0 && (account.child_total_orders || 0) > 0 && (
-              <p className="text-xs text-cult-silver">{account.order_count} direct</p>
+              <p className="text-xs text-cult-text-secondary">{account.order_count} direct</p>
             )}
           </div>
         </td>
@@ -370,7 +370,7 @@ function ParentRow({
           <span className={`text-xs ${
             account.days_since_last_order !== null && account.days_since_last_order > 30
               ? 'text-cult-warning'
-              : 'text-cult-light-gray'
+              : 'text-cult-text-muted'
           }`}>
             {account.days_since_last_order !== null ? `${account.days_since_last_order}d ago` : '-'}
           </span>
@@ -381,7 +381,7 @@ function ParentRow({
           </span>
         </td>
         <td className="px-4 py-3 text-right">
-          <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+          <ChevronRight className="w-4 h-4 text-cult-border group-hover:text-cult-text-primary transition-colors" />
         </td>
       </tr>
 
@@ -389,35 +389,35 @@ function ParentRow({
         <tr
           key={child.id}
           onClick={() => onSelect(child.id)}
-          className="hover:bg-cult-dark-gray/30 cursor-pointer transition-colors group bg-cult-dark-gray/20"
+          className="hover:bg-cult-surface/30 cursor-pointer transition-colors group bg-cult-surface/20"
         >
           <td className="px-4 py-2.5 pl-12">
             <div className="flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-sky-400/60 flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm text-cult-silver group-hover:text-cult-white truncate">{child.name}</p>
-                <span className="text-xs font-mono text-cult-light-gray">{child.dispensary_code}</span>
+                <p className="text-sm text-cult-text-secondary group-hover:text-cult-text-primary truncate">{child.name}</p>
+                <span className="text-xs font-mono text-cult-text-muted">{child.dispensary_code}</span>
               </div>
             </div>
           </td>
           <td className="px-4 py-2.5 hidden sm:table-cell">
-            <span className="text-xs text-cult-light-gray">
+            <span className="text-xs text-cult-text-muted">
               {[child.city, child.state].filter(Boolean).join(', ') || '-'}
             </span>
           </td>
           <td className="px-4 py-2.5 text-right">
-            <span className={`text-sm ${Number(child.total_revenue) > 0 ? 'text-cult-success/80' : 'text-cult-medium-gray'}`}>
+            <span className={`text-sm ${Number(child.total_revenue) > 0 ? 'text-cult-success/80' : 'text-cult-border'}`}>
               {Number(child.total_revenue) > 0 ? formatCurrency(Number(child.total_revenue)) : '-'}
             </span>
           </td>
           <td className="px-4 py-2.5 text-right hidden md:table-cell">
-            <span className="text-sm text-cult-light-gray">{child.order_count || '-'}</span>
+            <span className="text-sm text-cult-text-muted">{child.order_count || '-'}</span>
           </td>
           <td className="px-4 py-2.5 text-right hidden lg:table-cell">
             <span className={`text-xs ${
               child.days_since_last_order !== null && child.days_since_last_order > 30
                 ? 'text-cult-warning'
-                : 'text-cult-light-gray'
+                : 'text-cult-text-muted'
             }`}>
               {child.days_since_last_order !== null ? `${child.days_since_last_order}d ago` : '-'}
             </span>
@@ -428,7 +428,7 @@ function ParentRow({
             </span>
           </td>
           <td className="px-4 py-2.5 text-right">
-            <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+            <ChevronRight className="w-3.5 h-3.5 text-cult-border group-hover:text-cult-text-primary transition-colors" />
           </td>
         </tr>
       ))}
@@ -456,8 +456,8 @@ function SortHeader({
   const isActive = current === field;
   return (
     <th
-      className={`px-4 py-3 text-${align} text-xs font-medium uppercase tracking-wider cursor-pointer select-none hover:text-cult-white transition-colors ${
-        isActive ? 'text-cult-white' : 'text-cult-silver'
+      className={`px-4 py-3 text-${align} text-xs font-medium uppercase tracking-wider cursor-pointer select-none hover:text-cult-text-primary transition-colors ${
+        isActive ? 'text-cult-text-primary' : 'text-cult-text-secondary'
       } ${className}`}
       onClick={() => onSort(field)}
     >

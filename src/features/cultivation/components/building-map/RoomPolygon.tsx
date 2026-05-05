@@ -351,7 +351,7 @@ function RoomPolygonInner({ layout, ops, isSelected, isHovered, onHover, onClick
               textAnchor="middle"
               fill="#404040"
               fontSize={8}
-              fontFamily="'Montserrat', system-ui"
+              fontFamily="'IBM Plex Sans', system-ui"
               fontStyle="italic"
               opacity={0.3}
             >
@@ -438,13 +438,13 @@ function RoomTooltipInner({ layout, ops }: RoomTooltipProps) {
         }
       `}</style>
       <div
-        className="bg-cult-near-black border border-cult-border px-3 py-2 shadow-lg"
+        className="bg-cult-surface border border-cult-border px-3 py-2 shadow-lg"
         style={{ minWidth: 160, maxWidth: 200 }}
       >
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-sm" style={{ background: base, opacity: 0.7 }} />
-            <span className="text-cult-white font-mono font-bold text-xs">{layout.code}</span>
+            <span className="text-cult-text-primary font-mono font-bold text-xs">{layout.code}</span>
           </div>
           <span className="text-cult-text-muted font-mono text-[9px] uppercase">{roomType}</span>
         </div>
@@ -454,24 +454,24 @@ function RoomTooltipInner({ layout, ops }: RoomTooltipProps) {
           <div className="space-y-1">
             <div className="flex justify-between text-[10px] font-mono">
               <span className="text-cult-text-muted">Plants</span>
-              <span className="text-cult-white font-semibold">{plants}</span>
+              <span className="text-cult-text-primary font-semibold">{plants}</span>
             </div>
             {strains.length > 0 && (
               <div className="flex justify-between text-[10px] font-mono">
                 <span className="text-cult-text-muted">Strains</span>
-                <span className="text-cult-white font-semibold">{strains.slice(0, 3).join(', ')}{strains.length > 3 ? ` +${strains.length - 3}` : ''}</span>
+                <span className="text-cult-text-primary font-semibold">{strains.slice(0, 3).join(', ')}{strains.length > 3 ? ` +${strains.length - 3}` : ''}</span>
               </div>
             )}
             {daysInStage !== null && (
               <div className="flex justify-between text-[10px] font-mono">
                 <span className="text-cult-text-muted">Day in stage</span>
-                <span className="text-cult-white font-semibold">{daysInStage}</span>
+                <span className="text-cult-text-primary font-semibold">{daysInStage}</span>
               </div>
             )}
             {daysToHarvest !== null && (
               <div className="flex justify-between text-[10px] font-mono">
                 <span className="text-cult-text-muted">Harvest</span>
-                <span className={`font-semibold ${daysToHarvest <= 0 ? 'text-cult-danger' : daysToHarvest <= 7 ? 'text-cult-warning' : 'text-cult-white'}`}>
+                <span className={`font-semibold ${daysToHarvest <= 0 ? 'text-cult-danger' : daysToHarvest <= 7 ? 'text-cult-warning' : 'text-cult-text-primary'}`}>
                   {daysToHarvest <= 0 ? `${Math.abs(daysToHarvest)}d overdue` : `${daysToHarvest}d`}
                 </span>
               </div>

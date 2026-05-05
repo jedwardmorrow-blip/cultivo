@@ -114,12 +114,12 @@ export function PlantAuditReviewScreen({
 
   return (
     <div className="space-y-4">
-      <div className="glass-card rounded-cult p-4 border border-white/[0.10] flex items-center justify-between gap-4 flex-wrap">
+      <div className="bg-cult-surface rounded-cult p-4 border border-cult-border flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-xs text-cult-text-secondary uppercase tracking-wider">
+          <div className="font-mono uppercase tracking-[0.14em] text-[10px] text-cult-text-muted">
             Review
           </div>
-          <div className="text-lg font-bold text-cult-text-primary">
+          <div className="text-lg font-semibold text-cult-text-primary tabular-nums">
             {session.audit_number}
           </div>
         </div>
@@ -127,17 +127,17 @@ export function PlantAuditReviewScreen({
           <button
             type="button"
             onClick={onBack}
-            className="px-4 py-2 rounded-xl border border-white/[0.15] text-cult-text-primary hover:bg-white/[0.06] transition text-sm flex items-center gap-1.5"
+            className="px-4 py-2 rounded border border-cult-border text-cult-text-primary hover:bg-cult-surface-subtle transition-colors flex items-center gap-1.5 font-mono uppercase tracking-[0.16em] text-[11px]"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             Back to Count
           </button>
           <button
             type="button"
             onClick={() => setShowApplyDialog(true)}
-            className="px-4 py-2 rounded-xl bg-cult-success text-cult-opaque-black font-bold text-sm flex items-center gap-1.5 hover:bg-cult-success-bright transition"
+            className="px-4 py-2 rounded border border-cult-accent text-cult-accent flex items-center gap-1.5 hover:bg-cult-accent hover:text-cult-opaque-black transition-colors font-mono uppercase tracking-[0.16em] text-[11px]"
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-3.5 h-3.5" />
             Apply Audit
           </button>
         </div>
@@ -181,13 +181,13 @@ export function PlantAuditReviewScreen({
       </div>
 
       {/* Per-room breakdown */}
-      <div className="glass-card rounded-cult border border-white/[0.10] overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02]">
-          <div className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
+      <div className="bg-cult-surface rounded-cult border border-cult-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset">
+          <div className="font-mono uppercase tracking-[0.14em] text-[11px] text-cult-text-muted">
             Breakdown by Room
           </div>
         </div>
-        <div className="divide-y divide-white/[0.06]">
+        <div className="divide-y divide-cult-border-subtle">
           {breakdown.map((r) => (
             <div key={r.roomId} className="p-4 flex items-center justify-between gap-4 flex-wrap">
               <div className="flex-1 min-w-[180px]">
@@ -259,7 +259,7 @@ function StatTile({
   tone: 'neutral' | 'success' | 'danger' | 'info' | 'warning' | 'pending';
 }) {
   const toneClass = {
-    neutral: 'border-white/[0.10] bg-white/[0.04] text-cult-text-primary',
+    neutral: 'border-cult-border-subtle bg-cult-surface-inset text-cult-text-primary',
     success: 'border-cult-success/30 bg-cult-success/10 text-cult-success',
     danger: 'border-cult-danger/30 bg-cult-danger/10 text-cult-danger',
     info: 'border-cult-info/30 bg-cult-info/10 text-cult-info',

@@ -53,7 +53,7 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
       )}
       <div className="flex items-end gap-2">
         <div className="flex-1">
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-border uppercase tracking-wider mb-0.5">
             Weight (g)
           </label>
           <input
@@ -63,11 +63,11 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             placeholder="e.g. 1200"
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-text-muted"
           />
         </div>
         <div className="w-24">
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-border uppercase tracking-wider mb-0.5">
             Plants
           </label>
           <input
@@ -78,17 +78,17 @@ function WeightEntryForm({ harvestSessionId, maxPlants, plantsAlreadyWeighed, on
             value={plantCount}
             onChange={(e) => setPlantCount(e.target.value)}
             placeholder={String(Math.min(5, remaining))}
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-text-muted"
           />
         </div>
         <div className="w-28">
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-border uppercase tracking-wider mb-0.5">
             Dest
           </label>
           <select
             value={destination}
             onChange={(e) => setDestination(e.target.value as HarvestType)}
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-2 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray uppercase"
+            className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-2 py-1.5 text-xs focus:outline-none focus:border-cult-text-muted uppercase"
           >
             <option value="flower">Flower</option>
             <option value="fresh_frozen">Frozen</option>
@@ -156,21 +156,21 @@ export function PlantGroupWeightCard({
   }
 
   return (
-    <div className={`border ${isComplete ? 'border-cult-success/30 bg-cult-success-muted' : 'border-cult-medium-gray bg-cult-near-black'} p-4`}>
+    <div className={`border ${isComplete ? 'border-cult-success/30 bg-cult-success-muted' : 'border-cult-border bg-cult-surface'} p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             {batchNumber && (
-              <span className="text-cult-white font-mono text-sm font-semibold">{batchNumber}</span>
+              <span className="text-cult-text-primary font-mono text-sm font-semibold">{batchNumber}</span>
             )}
-            <span className="text-cult-white text-sm truncate">{strainName}</span>
+            <span className="text-cult-text-primary text-sm truncate">{strainName}</span>
           </div>
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-cult-medium-gray text-xs">{group.plant_count} plants total</span>
+            <span className="text-cult-border text-xs">{group.plant_count} plants total</span>
             {totalWeight > 0 && (
               <>
-                <span className="text-cult-medium-gray text-xs">|</span>
-                <span className="text-cult-light-gray text-xs font-mono">
+                <span className="text-cult-border text-xs">|</span>
+                <span className="text-cult-text-muted text-xs font-mono">
                   {formatWeight(totalWeight)} recorded
                 </span>
               </>
@@ -189,14 +189,14 @@ export function PlantGroupWeightCard({
 
       <div className="mt-3">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
+          <span className="text-xs text-cult-border uppercase tracking-wider">
             {totalPlants} / {group.plant_count} plants weighed
           </span>
-          <span className="text-xs text-cult-medium-gray">{progress}%</span>
+          <span className="text-xs text-cult-border">{progress}%</span>
         </div>
         <div className="w-full bg-cult-black h-1.5 overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 ${isComplete ? 'bg-cult-success' : 'bg-cult-white'}`}
+            className={`h-full transition-all duration-300 ${isComplete ? 'bg-cult-success' : 'bg-cult-accent'}`}
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -213,7 +213,7 @@ export function PlantGroupWeightCard({
           <button
             onClick={handleStartWeighing}
             disabled={creating}
-            className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider font-semibold"
+            className="flex items-center gap-1.5 text-xs border border-cult-border text-cult-text-muted px-3 py-1.5 hover:border-cult-text-muted hover:text-cult-text-primary transition-all uppercase tracking-wider font-semibold"
           >
             <Scale className="w-3.5 h-3.5" />
             {creating ? 'Starting...' : 'Start Weighing'}
@@ -226,12 +226,12 @@ export function PlantGroupWeightCard({
           {entries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-center justify-between bg-cult-black border border-cult-dark-gray px-3 py-1.5 text-xs"
+              className="flex items-center justify-between bg-cult-black border border-cult-surface px-3 py-1.5 text-xs"
             >
               <div className="flex items-center gap-3">
-                <span className="text-cult-white font-mono">{formatWeight(Number(entry.weight_grams))}</span>
-                <span className="text-cult-medium-gray">|</span>
-                <span className="text-cult-light-gray">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
+                <span className="text-cult-text-primary font-mono">{formatWeight(Number(entry.weight_grams))}</span>
+                <span className="text-cult-border">|</span>
+                <span className="text-cult-text-muted">{entry.plant_count} plant{entry.plant_count !== 1 ? 's' : ''}</span>
                 {entry.destination && (
                   <span className={`text-xs px-1 py-0.5 uppercase tracking-wider font-bold border ${entry.destination === 'fresh_frozen' ? 'border-cyan-800 text-cyan-400' : 'border-cult-success/30 text-cult-success'}`}>
                     {entry.destination === 'fresh_frozen' ? 'FF' : 'FLW'}
@@ -240,7 +240,7 @@ export function PlantGroupWeightCard({
               </div>
               <button
                 onClick={() => handleRemoveEntry(entry.id)}
-                className="text-cult-medium-gray hover:text-cult-danger transition-colors p-0.5"
+                className="text-cult-border hover:text-cult-danger transition-colors p-0.5"
                 title="Remove entry"
               >
                 <Trash2 className="w-3 h-3" />
@@ -261,7 +261,7 @@ export function PlantGroupWeightCard({
 
       {harvestSession && (
         <div className="mt-3">
-          <label className="block text-xs text-cult-medium-gray uppercase tracking-wider mb-0.5">
+          <label className="block text-xs text-cult-border uppercase tracking-wider mb-0.5">
             Waste (g) - optional
           </label>
           <input
@@ -271,7 +271,7 @@ export function PlantGroupWeightCard({
             value={wasteGrams || ''}
             onChange={(e) => onWasteChange(group.id, parseFloat(e.target.value) || 0)}
             placeholder="0"
-            className="w-32 bg-cult-black border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            className="w-32 bg-cult-black border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-sm focus:outline-none focus:border-cult-text-muted"
           />
         </div>
       )}

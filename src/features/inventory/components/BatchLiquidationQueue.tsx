@@ -65,12 +65,12 @@ function SkeletonRows() {
     <>
       {[1, 2, 3, 4].map(i => (
         <tr key={i} className="animate-pulse">
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-6" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-24" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-20" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-12" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
-          <td className="px-3 py-2.5"><div className="h-4 bg-cult-graphite rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-6" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-24" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-20" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-12" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
+          <td className="px-3 py-2.5"><div className="h-4 bg-cult-surface rounded w-16" /></td>
         </tr>
       ))}
     </>
@@ -162,7 +162,7 @@ export function BatchLiquidationQueue() {
   const shipFirstBatch = rows.find(r => r.available_g > 0);
 
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+    <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h2 className="text-label font-semibold text-cult-text-primary uppercase tracking-wider flex items-center gap-2">
@@ -176,7 +176,7 @@ export function BatchLiquidationQueue() {
       <div className="overflow-x-auto">
         <table className="w-full text-[12px]">
           <thead>
-            <tr className="border-b border-cult-charcoal/60">
+            <tr className="border-b border-cult-surface-raised/60">
               {['#', 'Batch / Strain', 'Harvested', 'Age', 'Available (ATP)', 'Committed'].map(h => (
                 <th
                   key={h}
@@ -187,7 +187,7 @@ export function BatchLiquidationQueue() {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-charcoal/30">
+          <tbody className="divide-y divide-cult-surface-raised/30">
             {loading ? (
               <SkeletonRows />
             ) : rows.length === 0 ? (
@@ -207,7 +207,7 @@ export function BatchLiquidationQueue() {
                     className={`transition-colors ${
                       isShipFirst
                         ? 'bg-cult-warning/10 hover:bg-cult-warning/15'
-                        : 'hover:bg-cult-graphite/20'
+                        : 'hover:bg-cult-surface/20'
                     }`}
                   >
                     {/* Rank */}
@@ -277,7 +277,7 @@ export function BatchLiquidationQueue() {
       </div>
 
       {!loading && rows.length > 0 && (
-        <p className="text-[10px] text-cult-text-faint mt-3 pt-3 border-t border-cult-charcoal/40">
+        <p className="text-[10px] text-cult-text-faint mt-3 pt-3 border-t border-cult-surface-raised/40">
           Age badge: green &lt;14d · amber 14–30d · red &gt;30d.
           ATP = on-hand inventory with qty &gt; 0.
           Committed = pending/active order line items assigned to batch.

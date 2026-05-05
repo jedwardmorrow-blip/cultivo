@@ -9,7 +9,7 @@ export function RevenueSparkline({ data, width = 80, height = 24, className = ''
   if (data.length < 2) {
     return (
       <div className={`flex items-center justify-center ${className}`} style={{ width, height }}>
-        <span className="text-xs text-cult-medium-gray">--</span>
+        <span className="text-xs text-cult-border">--</span>
       </div>
     );
   }

@@ -107,7 +107,7 @@ function StrainInventorySummary({ formats }: { formats: StrainFormatRow[] }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-cult bg-cult-dark-gray/40 border border-cult-medium-gray/30 mb-3">
+    <div className="flex items-center gap-3 px-4 py-2.5 rounded-cult bg-cult-surface/40 border border-cult-border/30 mb-3">
       <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold shrink-0">Available Stock</span>
       <div className="flex items-center gap-3 text-xs flex-wrap">
         {items.map(item => (
@@ -266,9 +266,9 @@ function SimplifiedByStrainView({
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult overflow-hidden">
+    <div className="bg-cult-surface border border-cult-border rounded-cult overflow-hidden">
       {/* Column headers */}
-      <div className="flex items-center gap-0 px-5 py-2.5 border-b border-cult-medium-gray">
+      <div className="flex items-center gap-0 px-5 py-2.5 border-b border-cult-border">
         <div className="w-8" />
         <div className="w-60 text-xs uppercase tracking-wider text-gray-500 font-semibold">Strain</div>
         <div className="w-36 text-xs uppercase tracking-wider text-gray-500 font-semibold">Stock Status</div>
@@ -316,7 +316,7 @@ function SimplifiedByStrainView({
             {/* ── Strain header row ──────────────────────────────────── */}
             <button
               onClick={() => toggleStrain(strainId)}
-              className="w-full flex items-center gap-0 px-5 py-3.5 text-left border-b border-cult-medium-gray/50 hover:bg-cult-dark-gray/30 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-0 px-5 py-3.5 text-left border-b border-cult-border/50 hover:bg-cult-surface/30 transition-colors cursor-pointer"
             >
               <div className="w-8 shrink-0 flex justify-center">
                 {isExpanded
@@ -350,7 +350,7 @@ function SimplifiedByStrainView({
 
             {/* ── Expanded: orders by delivery day ───────────────────── */}
             {isExpanded && (
-              <div className="px-5 pb-5 pt-3 border-b border-cult-medium-gray/50" style={{ paddingLeft: '3.25rem' }}>
+              <div className="px-5 pb-5 pt-3 border-b border-cult-border/50" style={{ paddingLeft: '3.25rem' }}>
                 {/* Strain inventory context for unassigned orders */}
                 {unassignedCount > 0 && <StrainInventorySummary formats={formats} />}
 
@@ -369,11 +369,11 @@ function SimplifiedByStrainView({
                         className={`rounded-cult border overflow-hidden ${
                           isDateToday ? 'border-sky-500/30 bg-sky-500/[0.03]' :
                           isPast ? 'border-cult-danger/20 bg-cult-danger/[0.02]' :
-                          'border-cult-medium-gray/30 bg-cult-dark-gray/20'
+                          'border-cult-border/30 bg-cult-surface/20'
                         }`}
                       >
                         {/* Day header */}
-                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-cult-medium-gray/20">
+                        <div className="flex items-center justify-between px-4 py-2.5 border-b border-cult-border/20">
                           <div className="flex items-center gap-2.5">
                             <Calendar className="w-3.5 h-3.5 text-gray-600" />
                             <span className={`text-sm font-semibold ${
@@ -414,7 +414,7 @@ function SimplifiedByStrainView({
                                 className={`flex items-center gap-0 py-2 px-3 rounded-cult text-sm transition-colors ${
                                   isFullyAssigned ? 'bg-cult-success/5' :
                                   hasAssignment ? 'bg-cult-warning/5' :
-                                  'hover:bg-white/[0.02]'
+                                  'hover:bg-cult-surface-inset'
                                 }`}
                               >
                                 {/* Order number */}
@@ -701,7 +701,7 @@ export function ProductionQueue() {
           <AlertTriangle className="w-8 h-8 text-cult-danger mx-auto mb-2" />
           <div className="text-cult-danger font-medium">Production queue unavailable</div>
           <div className="text-cult-text-secondary text-sm mt-1">Try refreshing — if the issue persists, contact support.</div>
-          <button onClick={refresh} className="mt-4 px-4 py-2 bg-cult-near-black border border-cult-medium-gray rounded-cult hover:bg-cult-dark-gray text-sm text-white">
+          <button onClick={refresh} className="mt-4 px-4 py-2 bg-cult-surface border border-cult-border rounded-cult hover:bg-cult-surface text-sm text-white">
             Try Again
           </button>
         </div>
@@ -727,7 +727,7 @@ export function ProductionQueue() {
         </div>
         <button
           onClick={refresh}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-cult-near-black border border-cult-medium-gray rounded-cult hover:bg-cult-dark-gray text-gray-300"
+          className="flex items-center gap-2 px-3 py-2 text-sm bg-cult-surface border border-cult-border rounded-cult hover:bg-cult-surface text-gray-300"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -753,7 +753,7 @@ export function ProductionQueue() {
       />
 
       {/* ── Filters + Tabs Row ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-cult-medium-gray pb-0">
+      <div className="flex items-center justify-between border-b border-cult-border pb-0">
         <div className="flex items-center gap-1">
           {tabs.map(tab => {
             const Icon = tab.icon;
@@ -791,7 +791,7 @@ export function ProductionQueue() {
             </div>
           )}
           {activeTab === 'orders' && (
-            <div className="flex items-center gap-0.5 rounded-cult border border-cult-medium-gray/40 bg-cult-dark-gray/40 p-0.5">
+            <div className="flex items-center gap-0.5 rounded-cult border border-cult-border/40 bg-cult-surface/40 p-0.5">
               <button
                 onClick={() => setOrderViewMode('by-strain')}
                 className={`px-3 py-1 text-xs font-medium rounded transition-colors ${

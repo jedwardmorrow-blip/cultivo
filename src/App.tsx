@@ -100,7 +100,7 @@ const ExecutiveHub = lazyRetry(() => import('./features/executive'), 'ExecutiveH
 function ViewFallback() {
   return (
     <div className="flex items-center justify-center py-24">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-white" />
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-accent" />
     </div>
   );
 }
@@ -215,18 +215,14 @@ function AuthenticatedApp() {
               <Route path="/production-overview" element={<ProductionCommandCenter />} />
               <Route path="/production-dashboard-legacy" element={<ProductionDashboard />} />
               <Route path="/production-sessions" element={<SessionsHub />} />
-              <Route path="/bucking-sessions" element={<Navigate to="/production-sessions" replace />} />
-              <Route path="/trim-sessions" element={<Navigate to="/production-sessions" replace />} />
-              <Route path="/packaging-sessions" element={<Navigate to="/production-sessions" replace />} />
+              <Route path="/bucking-sessions" element={<Navigate to="/production-sessions?tab=bucking" replace />} />
+              <Route path="/trim-sessions" element={<Navigate to="/production-sessions?tab=trim" replace />} />
+              <Route path="/packaging-sessions" element={<Navigate to="/production-sessions?tab=packaging" replace />} />
               <Route path="/production-queue" element={<ProductionQueue />} />
               <Route path="/production-pipeline" element={<ProductionPipelineBoard />} />
-              <Route path="/batches" element={<BatchManagement />} />
+              <Route path="/batches" element={<HubBatchPipeline />} />
+              <Route path="/batches/list" element={<BatchManagement />} />
               <Route path="/inventory-all" element={<InventoryDataProvider><UnifiedInventoryViewWrapper /></InventoryDataProvider>} />
-              <Route path="/inventory-binned" element={<Navigate to="/inventory-all" replace />} />
-              <Route path="/inventory-bucked" element={<Navigate to="/inventory-all" replace />} />
-              <Route path="/inventory-bulk" element={<Navigate to="/inventory-all" replace />} />
-              <Route path="/inventory-packaged" element={<Navigate to="/inventory-all" replace />} />
-              <Route path="/inventory-daily-activity" element={<Navigate to="/inventory-all" replace />} />
               <Route path="/inventory-conversions" element={<ConversionsViewWrapper />} />
               <Route path="/inventory-conversion-history" element={<ConversionHistoryViewWrapper />} />
               <Route path="/inventory-audits" element={<AuditsViewWrapper />} />
@@ -295,7 +291,7 @@ function WorkerAppContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cult-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-white" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cult-accent" />
       </div>
     );
   }

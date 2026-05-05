@@ -52,7 +52,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
 
   if (loading) {
     return (
-      <div className="p-6 text-center text-cult-medium-gray text-sm animate-pulse">Loading templates...</div>
+      <div className="p-6 text-center text-cult-border text-sm animate-pulse">Loading templates...</div>
     );
   }
 
@@ -61,8 +61,8 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-bold text-cult-white uppercase tracking-wider">Manage Templates</h2>
-          <p className="text-xs text-cult-medium-gray mt-0.5">{templates.length} template{templates.length !== 1 ? 's' : ''} saved</p>
+          <h2 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">Manage Templates</h2>
+          <p className="text-xs text-cult-border mt-0.5">{templates.length} template{templates.length !== 1 ? 's' : ''} saved</p>
         </div>
         <div className="flex items-center gap-2">
           {templates.length > 0 && (
@@ -83,7 +83,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
           {!inline && (
             <button
               onClick={onClose}
-              className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="p-2 text-cult-border hover:text-cult-text-primary transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -104,9 +104,9 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
 
       {/* Template list by room type */}
       {templates.length === 0 && !creatingNew ? (
-        <div className="py-8 text-center border border-dashed border-cult-dark-gray/40 rounded">
-          <p className="text-sm text-cult-medium-gray">No templates yet</p>
-          <p className="text-xs text-cult-dark-gray mt-1">Create templates to quickly apply standard schedules to rooms.</p>
+        <div className="py-8 text-center border border-dashed border-cult-surface/40 rounded">
+          <p className="text-sm text-cult-border">No templates yet</p>
+          <p className="text-xs text-cult-surface mt-1">Create templates to quickly apply standard schedules to rooms.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -117,35 +117,35 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
             })
             .map(([roomType, typeTemplates]) => (
               <div key={roomType}>
-                <div className="text-[10px] font-bold text-cult-dark-gray uppercase tracking-widest mb-1 px-1">{roomType}</div>
+                <div className="text-[10px] font-bold text-cult-surface uppercase tracking-widest mb-1 px-1">{roomType}</div>
                 {typeTemplates.map((tmpl) => {
                   const isExpanded = expandedId === tmpl.id;
                   const isEditing = editingTemplateId === tmpl.id;
 
                   return (
-                    <div key={tmpl.id} className="border border-cult-dark-gray/40 rounded-sm mb-1.5 overflow-hidden">
+                    <div key={tmpl.id} className="border border-cult-surface/40 rounded-sm mb-1.5 overflow-hidden">
                       {/* Template header row */}
                       <button
                         onClick={() => setExpandedId(isExpanded ? null : tmpl.id)}
-                        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-cult-charcoal/30 transition-colors text-left"
+                        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-cult-surface-raised/30 transition-colors text-left"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-cult-medium-gray" /> : <ChevronRight className="w-3.5 h-3.5 text-cult-medium-gray" />}
-                          <span className="text-xs font-bold text-cult-white truncate">{tmpl.name}</span>
+                          {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-cult-border" /> : <ChevronRight className="w-3.5 h-3.5 text-cult-border" />}
+                          <span className="text-xs font-bold text-cult-text-primary truncate">{tmpl.name}</span>
                           {tmpl.is_default && (
                             <span className="text-[9px] text-cult-warning uppercase font-bold px-1 py-0.5 bg-cult-warning-muted border border-cult-warning/20 rounded-sm flex-shrink-0">
                               Default
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-cult-dark-gray flex-shrink-0 ml-2">{tmpl.schedules.length} schedules</span>
+                        <span className="text-[10px] text-cult-surface flex-shrink-0 ml-2">{tmpl.schedules.length} schedules</span>
                       </button>
 
                       {/* Expanded detail */}
                       {isExpanded && !isEditing && (
-                        <div className="border-t border-cult-dark-gray/30 px-3 py-3 bg-cult-charcoal/10">
+                        <div className="border-t border-cult-surface/30 px-3 py-3 bg-cult-surface-raised/10">
                           {tmpl.description && (
-                            <p className="text-xs text-cult-medium-gray mb-3">{tmpl.description}</p>
+                            <p className="text-xs text-cult-border mb-3">{tmpl.description}</p>
                           )}
 
                           {/* Schedule items */}
@@ -156,7 +156,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
                           </div>
 
                           {/* Action buttons */}
-                          <div className="flex items-center gap-2 pt-2 border-t border-cult-dark-gray/20">
+                          <div className="flex items-center gap-2 pt-2 border-t border-cult-surface/20">
                             <button
                               onClick={() => setEditingTemplateId(tmpl.id)}
                               className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-cult-info bg-cult-info-muted border border-cult-info/20 hover:bg-cult-info-muted rounded-sm transition-colors"
@@ -188,7 +188,7 @@ export function TemplateManager({ onClose, inline = false }: TemplateManagerProp
 
                       {/* Inline edit form */}
                       {isExpanded && isEditing && (
-                        <div className="border-t border-cult-dark-gray/30 bg-cult-charcoal/10">
+                        <div className="border-t border-cult-surface/30 bg-cult-surface-raised/10">
                           <TemplateEditor
                             existing={tmpl}
                             onSave={async (input) => {
@@ -250,18 +250,18 @@ function ScheduleItemRow({ item }: { item: TemplateScheduleItem }) {
   }
 
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 bg-cult-near-black/50 rounded-sm">
+    <div className="flex items-center gap-2 px-2 py-1.5 bg-cult-surface/50 rounded-sm">
       <span
         className="w-2 h-2 rounded-full flex-shrink-0"
         style={{ backgroundColor: config.color }}
       />
-      <span className="text-xs font-semibold text-cult-white flex-shrink-0">{config.label}</span>
-      <span className="text-[10px] text-cult-medium-gray">{frequency}</span>
+      <span className="text-xs font-semibold text-cult-text-primary flex-shrink-0">{config.label}</span>
+      <span className="text-[10px] text-cult-border">{frequency}</span>
       {isPhaseDay && (
         <span className="text-[9px] text-violet-400 bg-violet-950/40 px-1 rounded font-semibold">Phase</span>
       )}
       <span className={`text-[9px] ml-auto uppercase font-semibold ${
-        item.priority === 'high' ? 'text-cult-warning' : item.priority === 'low' ? 'text-cult-dark-gray' : 'text-cult-medium-gray'
+        item.priority === 'high' ? 'text-cult-warning' : item.priority === 'low' ? 'text-cult-surface' : 'text-cult-border'
       }`}>
         {item.priority}
       </span>
@@ -302,8 +302,8 @@ function TemplateEditor({ existing, onSave, onCancel }: TemplateEditorProps) {
     setSchedules((prev) => prev.map((s, i) => i === index ? { ...s, ...updates } : s));
   };
 
-  const inputClass = 'w-full bg-cult-charcoal/60 border border-cult-dark-gray/40 rounded px-2.5 py-1.5 text-sm text-cult-white focus:outline-none focus:border-violet-500/50';
-  const labelClass = 'text-[10px] font-semibold text-cult-medium-gray uppercase tracking-wider mb-1';
+  const inputClass = 'w-full bg-cult-surface-raised/60 border border-cult-surface/40 rounded px-2.5 py-1.5 text-sm text-cult-text-primary focus:outline-none focus:border-violet-500/50';
+  const labelClass = 'text-[10px] font-semibold text-cult-border uppercase tracking-wider mb-1';
 
   return (
     <div className="p-4 space-y-4">
@@ -354,7 +354,7 @@ function TemplateEditor({ existing, onSave, onCancel }: TemplateEditorProps) {
         </div>
 
         {schedules.length === 0 && !addingSchedule ? (
-          <p className="text-xs text-cult-dark-gray py-3 text-center border border-dashed border-cult-dark-gray/30 rounded">No schedules — add some below</p>
+          <p className="text-xs text-cult-surface py-3 text-center border border-dashed border-cult-surface/30 rounded">No schedules — add some below</p>
         ) : (
           <div className="space-y-1.5">
             {schedules.map((s, i) => (
@@ -383,8 +383,8 @@ function TemplateEditor({ existing, onSave, onCancel }: TemplateEditorProps) {
       </div>
 
       {/* Save / Cancel */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-cult-dark-gray/30">
-        <button onClick={onCancel} className="px-3 py-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors">
+      <div className="flex items-center justify-end gap-2 pt-2 border-t border-cult-surface/30">
+        <button onClick={onCancel} className="px-3 py-1.5 text-xs text-cult-border hover:text-cult-text-primary transition-colors">
           Cancel
         </button>
         <button
@@ -414,20 +414,20 @@ function ScheduleItemEditor({
   const config = TASK_TYPE_CONFIG[item.task_type] ?? TASK_TYPE_CONFIG.custom;
   const isPhaseDay = item.scheduling_mode === 'phase_day';
 
-  const selectClass = 'bg-cult-charcoal/60 border border-cult-dark-gray/40 rounded px-2 py-1 text-xs text-cult-white focus:outline-none focus:border-violet-500/50';
-  const numClass = 'bg-cult-charcoal/60 border border-cult-dark-gray/40 rounded px-2 py-1 text-xs text-cult-white text-center w-16 focus:outline-none focus:border-violet-500/50';
+  const selectClass = 'bg-cult-surface-raised/60 border border-cult-surface/40 rounded px-2 py-1 text-xs text-cult-text-primary focus:outline-none focus:border-violet-500/50';
+  const numClass = 'bg-cult-surface-raised/60 border border-cult-surface/40 rounded px-2 py-1 text-xs text-cult-text-primary text-center w-16 focus:outline-none focus:border-violet-500/50';
 
   return (
-    <div className="border border-cult-dark-gray/30 rounded-sm bg-cult-near-black/50 overflow-hidden">
+    <div className="border border-cult-surface/30 rounded-sm bg-cult-surface/50 overflow-hidden">
       {/* Summary row */}
       <div className="flex items-center gap-2 px-2.5 py-2">
-        <button onClick={() => setExpanded(!expanded)} className="text-cult-medium-gray hover:text-cult-white transition-colors">
+        <button onClick={() => setExpanded(!expanded)} className="text-cult-border hover:text-cult-text-primary transition-colors">
           {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </button>
         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: config.color }} />
-        <span className="text-xs font-semibold text-cult-white">{config.label}</span>
+        <span className="text-xs font-semibold text-cult-text-primary">{config.label}</span>
         {isPhaseDay && <span className="text-[9px] text-violet-400 bg-violet-950/40 px-1 rounded">Phase</span>}
-        <span className="text-[10px] text-cult-dark-gray ml-auto mr-1">{item.priority}</span>
+        <span className="text-[10px] text-cult-surface ml-auto mr-1">{item.priority}</span>
         <button onClick={onRemove} className="text-cult-danger/50 hover:text-cult-danger transition-colors p-0.5">
           <X className="w-3 h-3" />
         </button>
@@ -435,10 +435,10 @@ function ScheduleItemEditor({
 
       {/* Expanded editor */}
       {expanded && (
-        <div className="px-3 pb-3 pt-1 border-t border-cult-dark-gray/20 space-y-2">
+        <div className="px-3 pb-3 pt-1 border-t border-cult-surface/20 space-y-2">
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="text-[9px] text-cult-dark-gray">Task Type</label>
+              <label className="text-[9px] text-cult-surface">Task Type</label>
               <select
                 value={item.task_type}
                 onChange={(e) => onChange({ task_type: e.target.value as TaskType })}
@@ -450,7 +450,7 @@ function ScheduleItemEditor({
               </select>
             </div>
             <div>
-              <label className="text-[9px] text-cult-dark-gray">Mode</label>
+              <label className="text-[9px] text-cult-surface">Mode</label>
               <select
                 value={item.scheduling_mode ?? 'calendar'}
                 onChange={(e) => onChange({ scheduling_mode: e.target.value as SchedulingMode })}
@@ -461,7 +461,7 @@ function ScheduleItemEditor({
               </select>
             </div>
             <div>
-              <label className="text-[9px] text-cult-dark-gray">Priority</label>
+              <label className="text-[9px] text-cult-surface">Priority</label>
               <select
                 value={item.priority}
                 onChange={(e) => onChange({ priority: e.target.value as 'low' | 'medium' | 'high' })}
@@ -477,7 +477,7 @@ function ScheduleItemEditor({
           {isPhaseDay ? (
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="text-[9px] text-cult-dark-gray">Start Day</label>
+                <label className="text-[9px] text-cult-surface">Start Day</label>
                 <input
                   type="number" min={1}
                   value={item.phase_day_start ?? ''}
@@ -487,7 +487,7 @@ function ScheduleItemEditor({
                 />
               </div>
               <div>
-                <label className="text-[9px] text-cult-dark-gray">End Day</label>
+                <label className="text-[9px] text-cult-surface">End Day</label>
                 <input
                   type="number" min={1}
                   value={item.phase_day_end ?? ''}
@@ -497,7 +497,7 @@ function ScheduleItemEditor({
                 />
               </div>
               <div>
-                <label className="text-[9px] text-cult-dark-gray">Every N days</label>
+                <label className="text-[9px] text-cult-surface">Every N days</label>
                 <input
                   type="number" min={1}
                   value={item.interval_days ?? ''}
@@ -510,7 +510,7 @@ function ScheduleItemEditor({
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-[9px] text-cult-dark-gray">Recurrence</label>
+                <label className="text-[9px] text-cult-surface">Recurrence</label>
                 <select
                   value={item.recurrence}
                   onChange={(e) => onChange({ recurrence: e.target.value as TemplateScheduleItem['recurrence'] })}
@@ -524,7 +524,7 @@ function ScheduleItemEditor({
               </div>
               {(item.recurrence === 'weekly' || item.recurrence === 'biweekly') && (
                 <div>
-                  <label className="text-[9px] text-cult-dark-gray">Days</label>
+                  <label className="text-[9px] text-cult-surface">Days</label>
                   <div className="flex gap-0.5 mt-0.5">
                     {DAY_NAMES.map((d, di) => (
                       <button
@@ -537,7 +537,7 @@ function ScheduleItemEditor({
                         className={`w-6 h-6 text-[9px] font-bold rounded transition-colors ${
                           (item.day_of_week ?? []).includes(di)
                             ? 'bg-violet-600 text-white'
-                            : 'bg-cult-charcoal text-cult-dark-gray hover:text-cult-medium-gray'
+                            : 'bg-cult-surface-raised text-cult-surface hover:text-cult-border'
                         }`}
                       >
                         {d.charAt(0)}
@@ -551,7 +551,7 @@ function ScheduleItemEditor({
 
           {/* Notes */}
           <div>
-            <label className="text-[9px] text-cult-dark-gray">Notes</label>
+            <label className="text-[9px] text-cult-surface">Notes</label>
             <input
               type="text"
               value={item.notes ?? ''}
@@ -584,7 +584,7 @@ function NewScheduleItemForm({
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [notes, setNotes] = useState('');
 
-  const selectClass = 'bg-cult-charcoal/60 border border-cult-dark-gray/40 rounded px-2 py-1.5 text-xs text-cult-white focus:outline-none focus:border-violet-500/50';
+  const selectClass = 'bg-cult-surface-raised/60 border border-cult-surface/40 rounded px-2 py-1.5 text-xs text-cult-text-primary focus:outline-none focus:border-violet-500/50';
 
   const handleAdd = () => {
     const item: TemplateScheduleItem = {
@@ -608,7 +608,7 @@ function NewScheduleItemForm({
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Task Type</label>
+          <label className="text-[9px] text-cult-surface font-semibold uppercase">Task Type</label>
           <select value={taskType} onChange={(e) => setTaskType(e.target.value as TaskType)} className={selectClass + ' w-full'}>
             {TASK_TYPES.map((tt) => (
               <option key={tt} value={tt}>{TASK_TYPE_CONFIG[tt]?.label ?? tt}</option>
@@ -616,14 +616,14 @@ function NewScheduleItemForm({
           </select>
         </div>
         <div>
-          <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Mode</label>
+          <label className="text-[9px] text-cult-surface font-semibold uppercase">Mode</label>
           <select value={mode} onChange={(e) => setMode(e.target.value as SchedulingMode)} className={selectClass + ' w-full'}>
             <option value="calendar">Calendar</option>
             <option value="phase_day">Phase Day</option>
           </select>
         </div>
         <div>
-          <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Priority</label>
+          <label className="text-[9px] text-cult-surface font-semibold uppercase">Priority</label>
           <select value={priority} onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')} className={selectClass + ' w-full'}>
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -635,22 +635,22 @@ function NewScheduleItemForm({
       {mode === 'phase_day' ? (
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Start Day</label>
+            <label className="text-[9px] text-cult-surface font-semibold uppercase">Start Day</label>
             <input type="number" min={1} value={phaseDayStart} onChange={(e) => setPhaseDayStart(e.target.value)} className={selectClass + ' w-full'} placeholder="1" />
           </div>
           <div>
-            <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">End Day</label>
+            <label className="text-[9px] text-cult-surface font-semibold uppercase">End Day</label>
             <input type="number" min={1} value={phaseDayEnd} onChange={(e) => setPhaseDayEnd(e.target.value)} className={selectClass + ' w-full'} placeholder="—" />
           </div>
           <div>
-            <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Every N days</label>
+            <label className="text-[9px] text-cult-surface font-semibold uppercase">Every N days</label>
             <input type="number" min={1} value={intervalDays} onChange={(e) => setIntervalDays(e.target.value)} className={selectClass + ' w-full'} placeholder="—" />
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Recurrence</label>
+            <label className="text-[9px] text-cult-surface font-semibold uppercase">Recurrence</label>
             <select value={recurrence} onChange={(e) => setRecurrence(e.target.value as typeof recurrence)} className={selectClass + ' w-full'}>
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -660,7 +660,7 @@ function NewScheduleItemForm({
           </div>
           {(recurrence === 'weekly' || recurrence === 'biweekly') && (
             <div>
-              <label className="text-[9px] text-cult-dark-gray font-semibold uppercase">Days</label>
+              <label className="text-[9px] text-cult-surface font-semibold uppercase">Days</label>
               <div className="flex gap-0.5 mt-1 mb-1 flex-wrap">
                 {([
                   { label: 'Weekdays', days: [1, 2, 3, 4, 5] },
@@ -672,7 +672,7 @@ function NewScheduleItemForm({
                     key={preset.label}
                     type="button"
                     onClick={() => setDayOfWeek([...preset.days])}
-                    className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-cult-charcoal/50 border border-cult-dark-gray/50 text-cult-medium-gray hover:border-cult-medium-gray hover:text-cult-white transition-colors rounded-sm"
+                    className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider bg-cult-surface-raised/50 border border-cult-surface/50 text-cult-border hover:border-cult-border hover:text-cult-text-primary transition-colors rounded-sm"
                   >
                     {preset.label}
                   </button>
@@ -684,7 +684,7 @@ function NewScheduleItemForm({
                     key={di}
                     onClick={() => setDayOfWeek((prev) => prev.includes(di) ? prev.filter((x) => x !== di) : [...prev, di].sort())}
                     className={`w-6 h-6 text-[9px] font-bold rounded transition-colors ${
-                      dayOfWeek.includes(di) ? 'bg-violet-600 text-white' : 'bg-cult-charcoal text-cult-dark-gray'
+                      dayOfWeek.includes(di) ? 'bg-violet-600 text-white' : 'bg-cult-surface-raised text-cult-surface'
                     }`}
                   >
                     {d.charAt(0)}
@@ -697,7 +697,7 @@ function NewScheduleItemForm({
       )}
 
       <div className="flex items-center gap-2 justify-end">
-        <button onClick={onCancel} className="px-2.5 py-1.5 text-xs text-cult-medium-gray hover:text-cult-white transition-colors">Cancel</button>
+        <button onClick={onCancel} className="px-2.5 py-1.5 text-xs text-cult-border hover:text-cult-text-primary transition-colors">Cancel</button>
         <button
           onClick={handleAdd}
           className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-cult-success hover:bg-cult-success text-white rounded transition-colors"

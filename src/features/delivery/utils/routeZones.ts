@@ -8,7 +8,7 @@ export interface RouteZone {
 }
 
 const ZONES: RouteZone[] = [
-  { id: 'local', label: 'Local', color: 'text-cult-silver', bgColor: 'bg-cult-charcoal', borderColor: 'border-cult-medium-gray', dotColor: 'bg-cult-silver' },
+  { id: 'local', label: 'Local', color: 'text-cult-text-secondary', bgColor: 'bg-cult-surface-raised', borderColor: 'border-cult-border', dotColor: 'bg-cult-text-secondary' },
   { id: 'east_valley', label: 'East Valley', color: 'text-teal-400', bgColor: 'bg-teal-900/30', borderColor: 'border-teal-600', dotColor: 'bg-teal-400' },
   { id: 'west_valley', label: 'West Valley', color: 'text-amber-400', bgColor: 'bg-amber-900/30', borderColor: 'border-amber-600', dotColor: 'bg-amber-400' },
   { id: 'tucson', label: 'Tucson', color: 'text-sky-400', bgColor: 'bg-sky-900/30', borderColor: 'border-sky-600', dotColor: 'bg-sky-400' },

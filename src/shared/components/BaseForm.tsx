@@ -31,7 +31,7 @@ export function BaseForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {children}
 
-      <div className="flex justify-end gap-3 pt-6 border-t border-cult-medium-gray">
+      <div className="flex justify-end gap-3 pt-6 border-t border-cult-border">
         <Button
           type="button"
           variant="secondary"

@@ -83,27 +83,27 @@ export function SalesOverview() {
   }
 
   if (loading) {
-    return <div className="text-cult-light-gray">Loading sales overview...</div>;
+    return <div className="text-cult-text-muted">Loading sales overview...</div>;
   }
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">Sales Overview</h2>
+      <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide mb-4">Sales Overview</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-cult-black p-4 border border-cult-medium-gray">
-          <p className="text-cult-light-gray text-sm uppercase tracking-wider">Sold Today</p>
-          <p className="text-2xl font-bold text-cult-white mt-2">${stats.todayRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-cult-light-gray text-sm mt-1">{stats.todayOrders} {stats.todayOrders === 1 ? 'order' : 'orders'}</p>
+        <div className="bg-cult-black p-4 border border-cult-border">
+          <p className="text-cult-text-muted text-sm uppercase tracking-wider">Sold Today</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">${stats.todayRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-cult-text-muted text-sm mt-1">{stats.todayOrders} {stats.todayOrders === 1 ? 'order' : 'orders'}</p>
         </div>
-        <div className="bg-cult-black p-4 border border-cult-medium-gray">
-          <p className="text-cult-light-gray text-sm uppercase tracking-wider">Scheduled This Week</p>
-          <p className="text-2xl font-bold text-cult-white mt-2">${stats.weekRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-cult-light-gray text-sm mt-1">{stats.weekOrders} {stats.weekOrders === 1 ? 'order' : 'orders'}</p>
+        <div className="bg-cult-black p-4 border border-cult-border">
+          <p className="text-cult-text-muted text-sm uppercase tracking-wider">Scheduled This Week</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">${stats.weekRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-cult-text-muted text-sm mt-1">{stats.weekOrders} {stats.weekOrders === 1 ? 'order' : 'orders'}</p>
         </div>
-        <div className="bg-cult-black p-4 border border-cult-medium-gray">
-          <p className="text-cult-light-gray text-sm uppercase tracking-wider">Projected Month Total</p>
-          <p className="text-2xl font-bold text-cult-white mt-2">${stats.monthRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-cult-light-gray text-sm mt-1">{stats.monthOrders} {stats.monthOrders === 1 ? 'order' : 'orders'}</p>
+        <div className="bg-cult-black p-4 border border-cult-border">
+          <p className="text-cult-text-muted text-sm uppercase tracking-wider">Projected Month Total</p>
+          <p className="text-2xl font-bold text-cult-text-primary mt-2">${stats.monthRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-cult-text-muted text-sm mt-1">{stats.monthOrders} {stats.monthOrders === 1 ? 'order' : 'orders'}</p>
         </div>
       </div>
     </div>

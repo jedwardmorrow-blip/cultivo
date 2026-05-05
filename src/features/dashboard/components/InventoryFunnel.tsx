@@ -41,14 +41,14 @@ export function InventoryFunnel({ stages }: Props) {
           return (
             <div
               key={stage.label}
-              className="flex items-center gap-4 px-3.5 py-2.5 bg-white/[0.03] rounded-xl hover:bg-white/[0.06] transition-all duration-200"
+              className="flex items-center gap-4 px-3.5 py-2.5 bg-cult-surface-inset rounded-cult hover:bg-cult-surface-raised transition-all duration-200"
             >
               <div className="w-[100px] text-xs font-medium text-cult-text-secondary">
                 {stage.label}
               </div>
-              <div className="flex-1 h-6 bg-white/[0.04] rounded-xl overflow-hidden">
+              <div className="flex-1 h-6 bg-cult-surface-inset rounded-cult overflow-hidden">
                 <div
-                  className="h-full rounded-xl flex items-center pl-2.5 text-[0.6875rem] font-semibold text-cult-surface transition-all duration-1000 ease-cult"
+                  className="h-full rounded-cult flex items-center pl-2.5 text-[0.6875rem] font-semibold text-cult-surface transition-all duration-1000 ease-cult"
                   style={{ width: `${pct}%`, backgroundColor: stage.color }}
                 >
                   {stage.lbs >= 5 ? `${stage.lbs.toFixed(1)} lbs` : ''}
@@ -74,7 +74,7 @@ export function InventoryFunnel({ stages }: Props) {
 
       {/* SKU yield projection callout */}
       {hasProjections && (
-        <div className="mt-3.5 px-3.5 py-2.5 bg-white/[0.03] rounded-xl flex items-center gap-4 border-l-2 border-cult-success">
+        <div className="mt-3.5 px-3.5 py-2.5 bg-cult-surface-inset rounded-cult flex items-center gap-4 border-l-2 border-cult-success">
           <span className="text-[0.6875rem] text-cult-text-secondary font-medium">
             Est. output →
           </span>
@@ -119,7 +119,7 @@ export function InventoryFunnel({ stages }: Props) {
       )}
 
       {packagedStage && finishedUpstream > 10 && packagedStage.lbs < 5 && (
-        <div className="mt-3.5 px-3.5 py-2.5 bg-white/[0.03] rounded-xl text-[0.6875rem] font-light text-cult-text-secondary flex items-center gap-2.5 border-l-2 border-cult-stage-harvest">
+        <div className="mt-3.5 px-3.5 py-2.5 bg-cult-surface-inset rounded-cult text-[0.6875rem] font-light text-cult-text-secondary flex items-center gap-2.5 border-l-2 border-cult-stage-harvest">
           <strong className="text-cult-stage-harvest font-semibold">Bottleneck:</strong>
           ~{finishedUpstream.toFixed(0)} lbs finished-equiv upstream, only {packagedStage.lbs.toFixed(1)} lbs packaged. Revenue at {fmtMoney(finishedUpstream * 2000)}.
         </div>

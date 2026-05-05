@@ -93,7 +93,7 @@ function BuildingStructure() {
         dominantBaseline="central"
         fill="#404040"
         fontSize={7}
-        fontFamily="'Montserrat', system-ui"
+        fontFamily="'IBM Plex Sans', system-ui"
         fontWeight={300}
         opacity={0.25}
         letterSpacing="0.2em"
@@ -113,14 +113,14 @@ function BuildingStructure() {
         stroke="#2E2E2E" strokeWidth={0.5} strokeDasharray="4,3" opacity={0.3}
       />
 
-      {/* Wing labels — Montserrat light weight for architectural wayfinding */}
+      {/* Wing labels — light-weight architectural wayfinding */}
       <text
         x={WING_LABELS.west.x}
         y={WING_LABELS.west.y}
         textAnchor="middle"
         fill="#404040"
         fontSize={7}
-        fontFamily="'Montserrat', system-ui"
+        fontFamily="'IBM Plex Sans', system-ui"
         fontWeight={300}
         opacity={0.2}
         letterSpacing="0.15em"
@@ -133,7 +133,7 @@ function BuildingStructure() {
         textAnchor="middle"
         fill="#404040"
         fontSize={7}
-        fontFamily="'Montserrat', system-ui"
+        fontFamily="'IBM Plex Sans', system-ui"
         fontWeight={300}
         opacity={0.2}
         letterSpacing="0.15em"
@@ -148,7 +148,7 @@ function BuildingStructure() {
         textAnchor="middle"
         fill="#404040"
         fontSize={8}
-        fontFamily="'Montserrat', system-ui"
+        fontFamily="'IBM Plex Sans', system-ui"
         fontWeight={300}
         opacity={0.15}
         letterSpacing="0.15em"
@@ -162,7 +162,7 @@ function BuildingStructure() {
         <line x1={0} y1={-10} x2={0} y2={10} stroke="#404040" strokeWidth={0.8} />
         <line x1={-10} y1={0} x2={10} y2={0} stroke="#404040" strokeWidth={0.8} />
         <polygon points="0,-12 -2.5,-7 2.5,-7" fill="#404040" />
-        <text x={0} y={-15} textAnchor="middle" fill="#404040" fontSize={7} fontFamily="'Montserrat', system-ui" fontWeight={700}>N</text>
+        <text x={0} y={-15} textAnchor="middle" fill="#404040" fontSize={7} fontFamily="'IBM Plex Sans', system-ui" fontWeight={700}>N</text>
       </g>
     </g>
   );
@@ -270,7 +270,7 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
         {/* Selected room context badge */}
         {selectedCode && (
           <div
-            className="absolute bottom-6 right-6 flex items-center gap-1.5 bg-cult-near-black/90 border border-cult-border px-2.5 py-1"
+            className="absolute bottom-6 right-6 flex items-center gap-1.5 bg-cult-surface/90 border border-cult-border px-2.5 py-1"
             style={{ animation: 'badgeSlideIn 0.2s ease-out both' }}
           >
             <style>{`
@@ -279,8 +279,8 @@ function BuildingMapSVGInner({ opsRooms, selectedCode, hoveredCode, onHover, onC
                 to { opacity: 1; transform: translateX(0); }
               }
             `}</style>
-            <div className="w-1.5 h-1.5 rounded-full bg-cult-white animate-pulse" />
-            <span className="text-cult-white font-mono text-[10px] font-bold tracking-wide">{selectedCode}</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-cult-accent animate-pulse" />
+            <span className="text-cult-text-primary font-mono text-[10px] font-bold tracking-wide">{selectedCode}</span>
           </div>
         )}
         {/* Global keyframes — always rendered so draw-in animation works on load */}

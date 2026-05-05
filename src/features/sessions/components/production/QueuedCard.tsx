@@ -31,7 +31,7 @@ export function QueuedCard({ item, onStart }: QueuedCardProps) {
   return (
     <motion.div
       variants={staggerItem}
-      className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] backdrop-blur-xl relative overflow-hidden transition-all hover:bg-white/[0.04] hover:border-white/[0.12] group"
+      className="rounded-cult border border-dashed border-cult-border bg-cult-surface-inset relative overflow-hidden transition-colors hover:bg-cult-surface-subtle hover:border-cult-border-strong group"
       style={{ minHeight: '72px' }}
     >
       {/* Subtle ambient glow */}
@@ -83,7 +83,7 @@ export function QueuedCard({ item, onStart }: QueuedCardProps) {
         <button
           type="button"
           onClick={() => onStart(item)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 opacity-70 group-hover:opacity-100"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-cult text-xs font-semibold transition-all active:scale-95 opacity-70 group-hover:opacity-100"
           style={{
             backgroundColor: `${color.rgba}0.10)`,
             color: `${color.rgba}0.85)`,

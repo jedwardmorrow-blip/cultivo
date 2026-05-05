@@ -56,33 +56,33 @@ export const OrderStatusGroup = memo(function OrderStatusGroup({
     <div className={`border-2 ${statusColor}`}>
       <button
         onClick={() => onToggleStatus(monthStatusKey)}
-        className="w-full px-6 py-3 flex items-center justify-between hover:bg-cult-near-black/50 transition-colors"
+        className="w-full px-6 py-3 flex items-center justify-between hover:bg-cult-surface/50 transition-colors"
       >
         <div className="flex items-center gap-4">
           {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-cult-white" />
+            <ChevronDown className="w-5 h-5 text-cult-text-primary" />
           ) : (
-            <ChevronRight className="w-5 h-5 text-cult-light-gray" />
+            <ChevronRight className="w-5 h-5 text-cult-text-muted" />
           )}
           <div className="text-left">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide">
               {statusGroup.statusName}
             </h3>
-            <p className="text-xs text-cult-light-gray mt-0.5">
+            <p className="text-xs text-cult-text-muted mt-0.5">
               {statusGroup.orders.length} {statusGroup.orders.length === 1 ? 'order' : 'orders'}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs text-cult-light-gray">Total Value</p>
-          <p className="text-lg font-semibold text-cult-white">
+          <p className="text-xs text-cult-text-muted">Total Value</p>
+          <p className="text-lg font-semibold text-cult-text-primary">
             ${statusGroup.orders.reduce((sum, o) => sum + (o.total_amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
       </button>
 
       {isExpanded && (
-        <div className="border-t-2 border-cult-medium-gray p-4 space-y-4">
+        <div className="border-t-2 border-cult-border p-4 space-y-4">
           <OrdersList
             orders={statusGroup.orders}
             expandedOrders={expandedOrders}

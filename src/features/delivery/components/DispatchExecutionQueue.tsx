@@ -59,8 +59,8 @@ function PriorityBadge({ priority }: { priority: number }) {
     : priority <= 40
     ? { style: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30', label: 'High' }
     : priority <= 60
-    ? { style: 'bg-cult-mid-gray/20 text-cult-text-muted border-cult-dark-gray', label: 'Normal' }
-    : { style: 'bg-cult-mid-gray/10 text-cult-text-faint border-cult-dark-gray/50', label: 'Low' };
+    ? { style: 'bg-cult-mid-gray/20 text-cult-text-muted border-cult-surface', label: 'Normal' }
+    : { style: 'bg-cult-mid-gray/10 text-cult-text-faint border-cult-surface/50', label: 'Low' };
 
   return (
     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold border ${config.style}`}>
@@ -86,10 +86,10 @@ function DispatchCard({
   const StageIcon = stageStyle.icon;
 
   return (
-    <div className={`rounded-xl border overflow-hidden transition-all duration-200 ${
+    <div className={`rounded-cult border overflow-hidden transition-all duration-200 ${
       isInProgress
         ? `${stageStyle.border} ${stageStyle.bg} shadow-[0_0_12px_rgba(255,255,255,0.03)]`
-        : 'border-cult-dark-gray/60 bg-gradient-to-r from-cult-mid-gray/[0.03] to-transparent hover:border-cult-dark-gray'
+        : 'border-cult-surface/60 bg-gradient-to-r from-cult-mid-gray/[0.03] to-transparent hover:border-cult-surface'
     }`}>
       <div className="px-4 py-3.5 flex items-center justify-between gap-4">
         {/* Left: stage icon + info */}
@@ -106,15 +106,15 @@ function DispatchCard({
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-cult-text-muted">
               <span className="font-mono text-cult-text-faint">{item.batch_number}</span>
-              <span className="w-px h-3 bg-cult-dark-gray/40" />
+              <span className="w-px h-3 bg-cult-surface/40" />
               <span className={stageStyle.color}>
                 {PROCESSING_STAGE_LABELS[item.processing_stage as ProcessingStage]}
               </span>
-              <span className="w-px h-3 bg-cult-dark-gray/40" />
+              <span className="w-px h-3 bg-cult-surface/40" />
               <span>{TREATMENT_TYPE_LABELS[item.treatment_type as TreatmentType]}</span>
               {item.quantity_g != null && (
                 <>
-                  <span className="w-px h-3 bg-cult-dark-gray/40" />
+                  <span className="w-px h-3 bg-cult-surface/40" />
                   <span className="font-semibold text-cult-text-secondary">{formatG(item.quantity_g)}</span>
                 </>
               )}
@@ -140,7 +140,7 @@ function DispatchCard({
             <button
               type="button"
               onClick={() => onStartSession(item)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cult-accent text-cult-black text-xs font-bold hover:bg-cult-accent/90 transition-all hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-cult bg-cult-accent text-cult-black text-xs font-bold hover:bg-cult-accent/90 transition-all hover:shadow-[0_0_12px_rgba(255,255,255,0.1)]"
             >
               <Play className="w-3.5 h-3.5" />
               Start Session
@@ -150,7 +150,7 @@ function DispatchCard({
             <button
               type="button"
               onClick={() => onComplete(item.id)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cult-success-muted text-cult-success border border-cult-success/30 text-xs font-bold hover:bg-cult-success/25 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-cult bg-cult-success-muted text-cult-success border border-cult-success/30 text-xs font-bold hover:bg-cult-success/25 transition-all"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               Mark Complete
@@ -166,7 +166,7 @@ function DispatchCard({
             <span>Progress</span>
             <span className="tabular-nums">{item.quantity_units_completed ?? 0} / {item.quantity_units_target} units</span>
           </div>
-          <div className="h-1 rounded-full bg-cult-dark-gray/40 overflow-hidden">
+          <div className="h-1 rounded-full bg-cult-surface/40 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-700 ${stageStyle.color.replace('text-', 'bg-')}`}
               style={{
@@ -235,7 +235,7 @@ export function DispatchExecutionQueue() {
   return (
     <HubShell section="Production Queue" icon={Zap} kpis={kpis}>
       {error && (
-        <div className="mb-4 p-3.5 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] flex items-center gap-3 text-sm text-cult-danger">
+        <div className="mb-4 p-3.5 rounded-cult border border-cult-danger/30 bg-cult-danger/[0.06] flex items-center gap-3 text-sm text-cult-danger">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={reload} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
@@ -244,7 +244,7 @@ export function DispatchExecutionQueue() {
 
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
-        <div className="flex items-center gap-1 border border-cult-dark-gray/60 rounded-xl p-1">
+        <div className="flex items-center gap-1 border border-cult-surface/60 rounded-cult p-1">
           {(['all', 'buck', 'trim_to_stock', 'package_to_order', 'pack_to_stock'] as StageFilter[]).map((f) => (
             <button
               key={f}
@@ -292,7 +292,7 @@ export function DispatchExecutionQueue() {
       {/* Queue */}
       {ordered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-cult-text-muted">
-          <div className="w-16 h-16 rounded-2xl bg-cult-mid-gray/10 border border-cult-dark-gray/30 flex items-center justify-center mb-5">
+          <div className="w-16 h-16 rounded-cult bg-cult-mid-gray/10 border border-cult-surface/30 flex items-center justify-center mb-5">
             <Package className="w-8 h-8 opacity-30" />
           </div>
           <p className="text-base font-bold text-cult-text-secondary">Queue is clear</p>

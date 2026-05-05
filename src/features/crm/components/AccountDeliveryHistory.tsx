@@ -13,7 +13,7 @@ function getStatusStyle(status: string): string {
     case 'delivered': return 'bg-cult-success-muted text-cult-success';
     case 'completed': return 'bg-cult-success-muted text-cult-success';
     case 'ready_for_delivery': return 'bg-cult-info-muted text-cult-info';
-    default: return 'bg-cult-medium-gray/30 text-cult-silver';
+    default: return 'bg-cult-border/30 text-cult-text-secondary';
   }
 }
 
@@ -29,9 +29,9 @@ function getStatusLabel(status: string): string {
 export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: AccountDeliveryHistoryProps) {
   if (loading) {
     return (
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-8">
+      <div className="bg-cult-surface border border-cult-border rounded-lg p-8">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cult-white" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cult-accent" />
         </div>
       </div>
     );
@@ -41,23 +41,23 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
   const totalValue = deliveries.reduce((sum, d) => sum + Number(d.total_amount), 0);
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
-      <div className="px-5 py-4 border-b border-cult-charcoal flex items-center justify-between">
+    <div className="bg-cult-surface border border-cult-border rounded-lg overflow-hidden">
+      <div className="px-5 py-4 border-b border-cult-surface-raised flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Truck className="w-4 h-4 text-cult-silver" />
-          <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Delivery History</h3>
+          <Truck className="w-4 h-4 text-cult-text-secondary" />
+          <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">Delivery History</h3>
           {periodLabel && (
-            <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-2 py-0.5 rounded-full">
+            <span className="text-xs text-cult-text-muted bg-cult-surface px-2 py-0.5 rounded-full">
               {periodLabel}
             </span>
           )}
         </div>
-        <span className="text-xs text-cult-light-gray">{deliveries.length} deliveries</span>
+        <span className="text-xs text-cult-text-muted">{deliveries.length} deliveries</span>
       </div>
 
       {deliveries.length > 0 && (
-        <div className="px-5 py-3 border-b border-cult-charcoal/50 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs text-cult-silver">
+        <div className="px-5 py-3 border-b border-cult-surface-raised/50 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs text-cult-text-secondary">
             <CheckCircle2 className="w-3.5 h-3.5 text-cult-success" />
             <span>{totalDelivered} completed</span>
           </div>
@@ -65,20 +65,20 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
         </div>
       )}
 
-      <div className="divide-y divide-cult-charcoal/50 max-h-[350px] overflow-y-auto">
+      <div className="divide-y divide-cult-surface-raised/50 max-h-[350px] overflow-y-auto">
         {deliveries.map((delivery) => (
           <div key={delivery.order_id} className="px-5 py-3 flex items-center gap-3">
-            <div className="p-1.5 rounded bg-cult-dark-gray flex-shrink-0">
-              <Package className="w-3.5 h-3.5 text-cult-silver" />
+            <div className="p-1.5 rounded bg-cult-surface flex-shrink-0">
+              <Package className="w-3.5 h-3.5 text-cult-text-secondary" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-cult-white">{delivery.order_number}</span>
+                <span className="text-sm font-medium text-cult-text-primary">{delivery.order_number}</span>
                 <span className={`px-1.5 py-0.5 text-xs rounded ${getStatusStyle(delivery.status)}`}>
                   {getStatusLabel(delivery.status)}
                 </span>
               </div>
-              <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-silver">
+              <div className="flex items-center gap-3 mt-0.5 text-xs text-cult-text-secondary">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {formatDate(delivery.order_date)}
@@ -87,9 +87,9 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
               </div>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-semibold text-cult-white">{formatCurrency(Number(delivery.total_amount))}</p>
+              <p className="text-sm font-semibold text-cult-text-primary">{formatCurrency(Number(delivery.total_amount))}</p>
               {delivery.scheduled_delivery_date && (
-                <p className="text-xs text-cult-light-gray">
+                <p className="text-xs text-cult-text-muted">
                   Del: {formatDate(delivery.scheduled_delivery_date)}
                 </p>
               )}
@@ -97,7 +97,7 @@ export function AccountDeliveryHistory({ deliveries, loading, periodLabel }: Acc
           </div>
         ))}
         {deliveries.length === 0 && (
-          <div className="px-5 py-8 text-center text-sm text-cult-light-gray">
+          <div className="px-5 py-8 text-center text-sm text-cult-text-muted">
             No delivery history yet.
           </div>
         )}

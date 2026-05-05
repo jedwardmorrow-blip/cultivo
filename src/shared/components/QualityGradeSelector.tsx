@@ -20,15 +20,15 @@ export function QualityGradeSelector({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-cult-white mb-2">{label}</label>
+      <label className="block text-sm font-medium text-cult-text-primary mb-2">{label}</label>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => onChange(null)}
           className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded border transition-all ${
             isSkipped
-              ? 'bg-cult-medium-gray/30 text-cult-white border-cult-silver'
-              : 'bg-transparent text-cult-lighter-gray border-cult-medium-gray hover:border-cult-silver'
+              ? 'bg-cult-border/30 text-cult-text-primary border-cult-text-secondary'
+              : 'bg-transparent text-cult-text-muted border-cult-border hover:border-cult-text-secondary'
           }`}
         >
           Skip
@@ -44,7 +44,7 @@ export function QualityGradeSelector({
               className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded border transition-all ${
                 isSelected
                   ? `${colors.bg} ${colors.text} ${colors.border} ring-1 ring-current`
-                  : `bg-transparent text-cult-lighter-gray border-cult-medium-gray hover:${colors.border} hover:${colors.text}`
+                  : `bg-transparent text-cult-text-muted border-cult-border hover:${colors.border} hover:${colors.text}`
               }`}
             >
               {g.label}

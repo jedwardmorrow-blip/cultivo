@@ -73,11 +73,11 @@ export function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, 
   const selectedDate = selectedDay !== null ? new Date(year, month, selectedDay) : null;
 
   return (
-    <div className="border border-cult-dark-gray/50 rounded-sm overflow-hidden">
+    <div className="border border-cult-surface/50 rounded-sm overflow-hidden">
       {/* Day-of-week header */}
-      <div className="grid grid-cols-7 bg-cult-charcoal/30 border-b border-cult-dark-gray/50">
+      <div className="grid grid-cols-7 bg-cult-surface-raised/30 border-b border-cult-surface/50">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="py-2.5 text-center text-[10px] sm:text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
+          <div key={name} className="py-2.5 text-center text-[10px] sm:text-xs text-cult-border uppercase tracking-wider font-semibold">
             {name.charAt(0)}<span className="hidden sm:inline">{name.slice(1)}</span>
           </div>
         ))}
@@ -89,7 +89,7 @@ export function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, 
           <div className="grid grid-cols-7">
             {row.map((cell, colIdx) => {
               if (!cell) {
-                return <div key={`blank-${rowIdx}-${colIdx}`} className="min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 bg-cult-near-black/50" />;
+                return <div key={`blank-${rowIdx}-${colIdx}`} className="min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-surface/20 bg-cult-surface/50" />;
               }
               const isToday = cell.iso === today;
               const taskTypes = getTaskTypesForDay(cell.date);
@@ -104,14 +104,14 @@ export function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, 
                   tabIndex={0}
                   onClick={() => setSelectedDay(isSelected ? null : cell.num)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedDay(isSelected ? null : cell.num); } }}
-                  className={`min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-dark-gray/20 p-1 sm:p-2 transition-colors cursor-pointer ${
+                  className={`min-h-[56px] sm:min-h-[90px] border-b border-r border-cult-surface/20 p-1 sm:p-2 transition-colors cursor-pointer ${
                     isSelected
                       ? 'bg-cult-success-muted ring-1 ring-inset ring-cult-success/40'
                       : isToday
                         ? 'bg-cult-success-muted hover:bg-cult-success-muted'
                         : isWeekend
-                          ? 'bg-cult-charcoal/5 hover:bg-cult-charcoal/25'
-                          : 'hover:bg-cult-charcoal/25'
+                          ? 'bg-cult-surface-raised/5 hover:bg-cult-surface-raised/25'
+                          : 'hover:bg-cult-surface-raised/25'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -119,14 +119,14 @@ export function MonthCalendarGrid({ year, month, today, rooms, schedulesByRoom, 
                       className={`text-xs font-mono font-bold ${
                         isToday
                           ? 'bg-cult-success text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs'
-                          : 'text-cult-light-gray text-[10px] sm:text-xs'
+                          : 'text-cult-text-muted text-[10px] sm:text-xs'
                       }`}
                     >
                       {cell.num}
                     </span>
                     {roomCount > 0 && (
-                      <span className="text-xs text-cult-medium-gray font-mono">
-                        {roomCount} <span className="text-cult-dark-gray">rm</span>
+                      <span className="text-xs text-cult-border font-mono">
+                        {roomCount} <span className="text-cult-surface">rm</span>
                       </span>
                     )}
                   </div>

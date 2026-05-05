@@ -98,7 +98,7 @@ export function ForecastSummaryPanel() {
                     const hasCommitted = row.committed_yield_grams > 0 || row.committed_revenue > 0;
                     return (
                       <tr key={row.month} className="border-b border-cult-border/30 hover:bg-cult-surface/40 transition-colors">
-                        <td className="py-1.5 pr-4 font-semibold text-cult-white">{formatMonth(row.month)}</td>
+                        <td className="py-1.5 pr-4 font-semibold text-cult-text-primary">{formatMonth(row.month)}</td>
                         {/* Projected */}
                         <td className={`text-right py-1.5 px-2 ${hasProjected ? 'text-violet-300' : 'text-cult-text-muted'}`}>
                           {formatGrams(row.projected_yield_grams)}
@@ -124,7 +124,7 @@ export function ForecastSummaryPanel() {
                   })}
                 </tbody>
               </table>
-              <div className="flex items-center gap-4 pt-2 text-xs text-cult-silver">
+              <div className="flex items-center gap-4 pt-2 text-xs text-cult-text-secondary">
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-violet-500 inline-block" /> Projected — from planned cycles</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-cult-success inline-block" /> Committed — active plant groups</span>
               </div>

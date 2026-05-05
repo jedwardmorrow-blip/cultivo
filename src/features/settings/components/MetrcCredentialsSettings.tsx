@@ -146,16 +146,16 @@ export function MetrcCredentialsSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <span className="text-cult-lighter-gray">Loading Metrc credentials...</span>
+        <span className="text-cult-text-muted">Loading Metrc credentials...</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+    <div className="bg-cult-surface border border-cult-border p-8">
       <div className="flex items-center gap-3 mb-6">
-        <Shield className="w-6 h-6 text-cult-white" />
-        <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+        <Shield className="w-6 h-6 text-cult-text-primary" />
+        <h2 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">
           Metrc API Credentials
         </h2>
       </div>
@@ -170,13 +170,13 @@ export function MetrcCredentialsSettings() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+            <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
               State *
             </label>
             <select
               value={form.state_code}
               onChange={(e) => handleStateChange(e.target.value)}
-              className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+              className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
             >
               <option value="">Select state...</option>
               <option value="AZ">Arizona (AZ)</option>
@@ -185,22 +185,22 @@ export function MetrcCredentialsSettings() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+            <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
               API Base URL *
             </label>
             <input
               type="text"
               value={form.api_base_url}
               onChange={(e) => setForm(prev => ({ ...prev, api_base_url: e.target.value }))}
-              className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all font-mono text-sm"
+              className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all font-mono text-sm"
               placeholder="https://az.metrc.com"
             />
-            <p className="mt-1 text-xs text-cult-lighter-gray">Auto-filled when state is selected. Editable if needed.</p>
+            <p className="mt-1 text-xs text-cult-text-muted">Auto-filled when state is selected. Editable if needed.</p>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+          <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
             API Key {existingId ? '(leave blank to keep existing)' : '*'}
           </label>
           <div className="relative">
@@ -208,14 +208,14 @@ export function MetrcCredentialsSettings() {
               type={showKey ? 'text' : 'password'}
               value={form.api_key}
               onChange={(e) => setForm(prev => ({ ...prev, api_key: e.target.value }))}
-              className="w-full px-4 py-3 pr-12 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all font-mono text-sm"
+              className="w-full px-4 py-3 pr-12 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all font-mono text-sm"
               placeholder={existingId ? '••••••••••••••••' : 'Enter your Metrc API key'}
               autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowKey(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-lighter-gray hover:text-cult-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-text-primary transition-colors"
               tabIndex={-1}
             >
               {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -224,20 +224,20 @@ export function MetrcCredentialsSettings() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+          <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
             Facility License Number *
           </label>
           <input
             type="text"
             value={form.facility_license}
             onChange={(e) => setForm(prev => ({ ...prev, facility_license: e.target.value }))}
-            className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+            className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
             placeholder="e.g. 00000026DCAF76394520"
           />
         </div>
       </div>
 
-      <div className="border-t border-cult-medium-gray mt-8 pt-6 space-y-4">
+      <div className="border-t border-cult-border mt-8 pt-6 space-y-4">
         {testResult && (
           <div className={`p-3 border flex items-start gap-2 ${
             testResult.success
@@ -258,7 +258,7 @@ export function MetrcCredentialsSettings() {
         <button
           onClick={handleTestConnection}
           disabled={testing}
-          className="flex items-center gap-2 px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Wifi className="w-4 h-4" />
           {testing ? 'Testing...' : 'Test Connection'}
@@ -267,7 +267,7 @@ export function MetrcCredentialsSettings() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Saving...' : 'Save Credentials'}

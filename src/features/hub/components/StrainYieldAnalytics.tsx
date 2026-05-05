@@ -18,7 +18,7 @@ function formatPct(v: number | null): string {
 }
 
 function VariancePill({ value }: { value: number | null }) {
-  if (value == null) return <span className="text-cult-charcoal text-[10px]">—</span>;
+  if (value == null) return <span className="text-cult-surface-raised text-[10px]">—</span>;
   const pct = (value * 100).toFixed(1);
   const isPositive = value >= 0;
   return (
@@ -35,7 +35,7 @@ const CONFIDENCE_STYLES: Record<string, string> = {
   high: 'bg-cult-success-muted text-cult-success border-cult-success/30',
   medium: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
   low: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
-  fallback: 'bg-cult-charcoal/30 text-cult-lighter-gray border-cult-charcoal/50',
+  fallback: 'bg-cult-surface-raised/30 text-cult-text-muted border-cult-surface-raised/50',
 };
 
 type SortField = 'strain' | 'harvests' | 'wet_per_plant' | 'dry_ratio' | 'buck_yield' | 'trim_yield' | 'overall';
@@ -73,8 +73,8 @@ function StrainMetricsTable({ metrics }: { metrics: StrainYieldMetrics[] }) {
   const SortHeader = ({ field, label, className = '' }: { field: SortField; label: string; className?: string }) => (
     <button
       onClick={() => toggleSort(field)}
-      className={`flex items-center gap-1 text-[9px] uppercase tracking-wider font-montserrat font-bold hover:text-cult-silver transition-colors ${
-        sortField === field ? 'text-cult-off-white' : 'text-cult-charcoal'
+      className={`flex items-center gap-1 text-[9px] uppercase tracking-wider font-mono font-bold hover:text-cult-text-secondary transition-colors ${
+        sortField === field ? 'text-cult-text-primary' : 'text-cult-surface-raised'
       } ${className}`}
     >
       {label}
@@ -83,9 +83,9 @@ function StrainMetricsTable({ metrics }: { metrics: StrainYieldMetrics[] }) {
   );
 
   return (
-    <div className="bg-cult-near-black/50 rounded-cult border border-cult-charcoal/30 overflow-hidden">
+    <div className="bg-cult-surface/50 rounded-cult border border-cult-surface-raised/30 overflow-hidden">
       {/* Table header */}
-      <div className="grid grid-cols-7 gap-2 px-4 py-3 border-b border-cult-charcoal/40 bg-cult-black/30">
+      <div className="grid grid-cols-7 gap-2 px-4 py-3 border-b border-cult-surface-raised/40 bg-cult-black/30">
         <SortHeader field="strain" label="Strain" />
         <SortHeader field="harvests" label="Harvests" className="text-right justify-end" />
         <SortHeader field="wet_per_plant" label="Wet/Plant" className="text-right justify-end" />
@@ -97,7 +97,7 @@ function StrainMetricsTable({ metrics }: { metrics: StrainYieldMetrics[] }) {
 
       {/* Table rows */}
       {sorted.length === 0 ? (
-        <div className="px-4 py-8 text-center text-cult-charcoal text-[11px] uppercase tracking-widest font-montserrat">
+        <div className="px-4 py-8 text-center text-cult-surface-raised text-[11px] uppercase tracking-widest font-mono">
           No strain yield data yet
         </div>
       ) : (
@@ -105,47 +105,47 @@ function StrainMetricsTable({ metrics }: { metrics: StrainYieldMetrics[] }) {
           <div key={m.strain}>
             <button
               onClick={() => setExpanded(expanded === m.strain ? null : m.strain)}
-              className="w-full grid grid-cols-7 gap-2 px-4 py-2.5 text-[11px] hover:bg-cult-charcoal/20 transition-colors border-b border-cult-charcoal/10"
+              className="w-full grid grid-cols-7 gap-2 px-4 py-2.5 text-[11px] hover:bg-cult-surface-raised/20 transition-colors border-b border-cult-surface-raised/10"
             >
-              <span className="text-cult-off-white font-medium text-left truncate">{m.strain}</span>
-              <span className="text-cult-silver text-right">{m.harvest_batch_count}</span>
-              <span className="text-cult-silver text-right">{m.avg_wet_per_plant ? `${Number(m.avg_wet_per_plant).toFixed(0)}g` : '—'}</span>
-              <span className="text-cult-silver text-right">{formatPct(m.avg_dry_wet_ratio)}</span>
-              <span className="text-cult-silver text-right">{formatPct(m.avg_buck_yield_ratio)}</span>
-              <span className="text-cult-silver text-right">{formatPct(m.avg_trim_yield_ratio)}</span>
-              <span className={`text-right font-medium ${m.avg_overall_conversion_ratio ? 'text-cult-off-white' : 'text-cult-charcoal'}`}>
+              <span className="text-cult-text-primary font-medium text-left truncate">{m.strain}</span>
+              <span className="text-cult-text-secondary text-right">{m.harvest_batch_count}</span>
+              <span className="text-cult-text-secondary text-right">{m.avg_wet_per_plant ? `${Number(m.avg_wet_per_plant).toFixed(0)}g` : '—'}</span>
+              <span className="text-cult-text-secondary text-right">{formatPct(m.avg_dry_wet_ratio)}</span>
+              <span className="text-cult-text-secondary text-right">{formatPct(m.avg_buck_yield_ratio)}</span>
+              <span className="text-cult-text-secondary text-right">{formatPct(m.avg_trim_yield_ratio)}</span>
+              <span className={`text-right font-medium ${m.avg_overall_conversion_ratio ? 'text-cult-text-primary' : 'text-cult-surface-raised'}`}>
                 {formatPct(m.avg_overall_conversion_ratio)}
               </span>
             </button>
 
             {expanded === m.strain && (
-              <div className="px-4 py-3 bg-cult-black/40 border-b border-cult-charcoal/20">
+              <div className="px-4 py-3 bg-cult-black/40 border-b border-cult-surface-raised/20">
                 <div className="grid grid-cols-3 gap-4 text-[10px]">
                   <div className="space-y-1.5">
-                    <p className="text-cult-charcoal uppercase tracking-wider font-montserrat font-bold text-[9px]">Harvest</p>
-                    <p className="text-cult-lighter-gray">Batches: <span className="text-cult-silver">{m.harvest_batch_count}</span></p>
-                    <p className="text-cult-lighter-gray">Avg Wet/Plant: <span className="text-cult-silver">{m.avg_wet_per_plant ? `${Number(m.avg_wet_per_plant).toFixed(0)}g` : '—'}</span></p>
+                    <p className="text-cult-surface-raised uppercase tracking-wider font-mono font-bold text-[9px]">Harvest</p>
+                    <p className="text-cult-text-muted">Batches: <span className="text-cult-text-secondary">{m.harvest_batch_count}</span></p>
+                    <p className="text-cult-text-muted">Avg Wet/Plant: <span className="text-cult-text-secondary">{m.avg_wet_per_plant ? `${Number(m.avg_wet_per_plant).toFixed(0)}g` : '—'}</span></p>
                     {m.stddev_wet_per_plant && (
-                      <p className="text-cult-lighter-gray">Std Dev: <span className="text-cult-silver">±{Number(m.stddev_wet_per_plant).toFixed(0)}g</span></p>
+                      <p className="text-cult-text-muted">Std Dev: <span className="text-cult-text-secondary">±{Number(m.stddev_wet_per_plant).toFixed(0)}g</span></p>
                     )}
-                    <p className="text-cult-lighter-gray">Wet/SqFt: <span className="text-cult-silver">{m.avg_wet_per_sqft_room ? `${Number(m.avg_wet_per_sqft_room).toFixed(1)}g` : '—'}</span></p>
+                    <p className="text-cult-text-muted">Wet/SqFt: <span className="text-cult-text-secondary">{m.avg_wet_per_sqft_room ? `${Number(m.avg_wet_per_sqft_room).toFixed(1)}g` : '—'}</span></p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-cult-charcoal uppercase tracking-wider font-montserrat font-bold text-[9px]">Drying → Bucking</p>
-                    <p className="text-cult-lighter-gray">Dry:Wet: <span className="text-cult-silver">{formatPct(m.avg_dry_wet_ratio)}</span></p>
+                    <p className="text-cult-surface-raised uppercase tracking-wider font-mono font-bold text-[9px]">Drying → Bucking</p>
+                    <p className="text-cult-text-muted">Dry:Wet: <span className="text-cult-text-secondary">{formatPct(m.avg_dry_wet_ratio)}</span></p>
                     {m.stddev_dry_wet_ratio && (
-                      <p className="text-cult-lighter-gray">Std Dev: <span className="text-cult-silver">±{(Number(m.stddev_dry_wet_ratio) * 100).toFixed(1)}%</span></p>
+                      <p className="text-cult-text-muted">Std Dev: <span className="text-cult-text-secondary">±{(Number(m.stddev_dry_wet_ratio) * 100).toFixed(1)}%</span></p>
                     )}
-                    <p className="text-cult-lighter-gray">Buck Batches: <span className="text-cult-silver">{m.bucking_batch_count}</span></p>
-                    <p className="text-cult-lighter-gray">Flower Ratio: <span className="text-cult-silver">{formatPct(m.avg_buck_flower_ratio)}</span></p>
-                    <p className="text-cult-lighter-gray">Smalls Ratio: <span className="text-cult-silver">{formatPct(m.avg_buck_smalls_ratio)}</span></p>
+                    <p className="text-cult-text-muted">Buck Batches: <span className="text-cult-text-secondary">{m.bucking_batch_count}</span></p>
+                    <p className="text-cult-text-muted">Flower Ratio: <span className="text-cult-text-secondary">{formatPct(m.avg_buck_flower_ratio)}</span></p>
+                    <p className="text-cult-text-muted">Smalls Ratio: <span className="text-cult-text-secondary">{formatPct(m.avg_buck_smalls_ratio)}</span></p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-cult-charcoal uppercase tracking-wider font-montserrat font-bold text-[9px]">Trimming</p>
-                    <p className="text-cult-lighter-gray">Trim Batches: <span className="text-cult-silver">{m.trim_batch_count}</span></p>
-                    <p className="text-cult-lighter-gray">Bigs Ratio: <span className="text-cult-silver">{formatPct(m.avg_trim_bigs_ratio)}</span></p>
-                    <p className="text-cult-lighter-gray">Smalls Ratio: <span className="text-cult-silver">{formatPct(m.avg_trim_smalls_ratio)}</span></p>
-                    <p className="text-cult-lighter-gray">Overall Conv: <span className="text-cult-off-white font-medium">{formatPct(m.avg_overall_conversion_ratio)}</span></p>
+                    <p className="text-cult-surface-raised uppercase tracking-wider font-mono font-bold text-[9px]">Trimming</p>
+                    <p className="text-cult-text-muted">Trim Batches: <span className="text-cult-text-secondary">{m.trim_batch_count}</span></p>
+                    <p className="text-cult-text-muted">Bigs Ratio: <span className="text-cult-text-secondary">{formatPct(m.avg_trim_bigs_ratio)}</span></p>
+                    <p className="text-cult-text-muted">Smalls Ratio: <span className="text-cult-text-secondary">{formatPct(m.avg_trim_smalls_ratio)}</span></p>
+                    <p className="text-cult-text-muted">Overall Conv: <span className="text-cult-text-primary font-medium">{formatPct(m.avg_overall_conversion_ratio)}</span></p>
                   </div>
                 </div>
               </div>
@@ -166,7 +166,7 @@ function ActivePredictionsGrid({ predictions }: { predictions: Map<string, Batch
 
   if (preds.length === 0) {
     return (
-      <div className="p-6 text-center text-cult-charcoal text-[11px] uppercase tracking-widest font-montserrat">
+      <div className="p-6 text-center text-cult-surface-raised text-[11px] uppercase tracking-widest font-mono">
         No active batch predictions
       </div>
     );
@@ -210,8 +210,8 @@ function ActivePredictionsGrid({ predictions }: { predictions: Map<string, Batch
       </div>
 
       {/* Batch prediction list */}
-      <div className="bg-cult-near-black/50 rounded-cult border border-cult-charcoal/30 overflow-hidden">
-        <div className="grid grid-cols-8 gap-2 px-4 py-2.5 border-b border-cult-charcoal/40 bg-cult-black/30 text-[9px] uppercase tracking-wider font-montserrat font-bold text-cult-charcoal">
+      <div className="bg-cult-surface/50 rounded-cult border border-cult-surface-raised/30 overflow-hidden">
+        <div className="grid grid-cols-8 gap-2 px-4 py-2.5 border-b border-cult-surface-raised/40 bg-cult-black/30 text-[9px] uppercase tracking-wider font-mono font-bold text-cult-surface-raised">
           <span>Batch</span>
           <span>Strain</span>
           <span className="text-right">Plants</span>
@@ -222,16 +222,16 @@ function ActivePredictionsGrid({ predictions }: { predictions: Map<string, Batch
           <span className="text-right">Confidence</span>
         </div>
         {preds.map(p => (
-          <div key={p.batch_id} className="grid grid-cols-8 gap-2 px-4 py-2 text-[11px] border-b border-cult-charcoal/10 hover:bg-cult-charcoal/10 transition-colors">
-            <span className="text-cult-off-white font-medium truncate">{p.batch_number}</span>
-            <span className="text-cult-silver truncate">{p.strain}</span>
-            <span className="text-cult-silver text-right">{p.plant_count}</span>
-            <span className="text-cult-lighter-gray text-right">{p.room_code || '—'}</span>
-            <span className="text-cult-silver text-right">{formatGrams(p.predicted_wet)}</span>
-            <span className={`text-right font-medium ${p.actual_wet ? 'text-cult-off-white' : 'text-cult-charcoal'}`}>
+          <div key={p.batch_id} className="grid grid-cols-8 gap-2 px-4 py-2 text-[11px] border-b border-cult-surface-raised/10 hover:bg-cult-surface-raised/10 transition-colors">
+            <span className="text-cult-text-primary font-medium truncate">{p.batch_number}</span>
+            <span className="text-cult-text-secondary truncate">{p.strain}</span>
+            <span className="text-cult-text-secondary text-right">{p.plant_count}</span>
+            <span className="text-cult-text-muted text-right">{p.room_code || '—'}</span>
+            <span className="text-cult-text-secondary text-right">{formatGrams(p.predicted_wet)}</span>
+            <span className={`text-right font-medium ${p.actual_wet ? 'text-cult-text-primary' : 'text-cult-surface-raised'}`}>
               {formatGrams(p.actual_wet)}
             </span>
-            <span className="text-cult-silver text-right">{formatGrams(p.predicted_dry)}</span>
+            <span className="text-cult-text-secondary text-right">{formatGrams(p.predicted_dry)}</span>
             <span className="text-right">
               <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${CONFIDENCE_STYLES[p.confidence]}`}>
                 {p.confidence}
@@ -248,10 +248,10 @@ function SummaryCard({ label, value, sub, highlight }: {
   label: string; value: string; sub: string; highlight?: boolean;
 }) {
   return (
-    <div className="bg-cult-near-black/50 border border-cult-charcoal/30 rounded-cult p-3">
-      <p className="text-[9px] text-cult-charcoal uppercase tracking-wider font-montserrat font-bold mb-1">{label}</p>
-      <p className={`text-lg font-bold font-montserrat ${highlight ? 'text-cult-success' : 'text-cult-off-white'}`}>{value}</p>
-      <p className="text-[10px] text-cult-lighter-gray mt-0.5">{sub}</p>
+    <div className="bg-cult-surface/50 border border-cult-surface-raised/30 rounded-cult p-3">
+      <p className="text-[9px] text-cult-surface-raised uppercase tracking-wider font-mono font-bold mb-1">{label}</p>
+      <p className={`text-lg font-bold font-mono ${highlight ? 'text-cult-success' : 'text-cult-text-primary'}`}>{value}</p>
+      <p className="text-[10px] text-cult-text-muted mt-0.5">{sub}</p>
     </div>
   );
 }
@@ -270,9 +270,9 @@ export function StrainYieldAnalytics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-3 text-cult-silver">
+        <div className="flex items-center gap-3 text-cult-text-secondary">
           <RefreshCw className="w-5 h-5 animate-spin" />
-          <span className="text-sm uppercase tracking-widest font-montserrat">Loading yield analytics...</span>
+          <span className="text-sm uppercase tracking-widest font-mono">Loading yield analytics...</span>
         </div>
       </div>
     );
@@ -282,7 +282,7 @@ export function StrainYieldAnalytics() {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <AlertTriangle className="w-8 h-8 text-cult-warning" />
-        <p className="text-cult-silver text-sm">{strainMetrics.error}</p>
+        <p className="text-cult-text-secondary text-sm">{strainMetrics.error}</p>
       </div>
     );
   }
@@ -292,16 +292,16 @@ export function StrainYieldAnalytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-cult-off-white uppercase tracking-wider font-montserrat">
+          <h1 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider font-mono">
             Strain Yield Analytics
           </h1>
-          <p className="text-[11px] text-cult-lighter-gray uppercase tracking-widest mt-1 font-montserrat">
+          <p className="text-[11px] text-cult-text-muted uppercase tracking-widest mt-1 font-mono">
             Predictive modeling · Strain performance · Yield tracking
           </p>
         </div>
         <button
           onClick={() => { strainMetrics.reload(); }}
-          className="p-2 text-cult-silver hover:text-cult-white hover:bg-cult-charcoal/50 rounded-cult transition-all"
+          className="p-2 text-cult-text-secondary hover:text-cult-text-primary hover:bg-cult-surface-raised/50 rounded-cult transition-all"
           title="Refresh"
         >
           <RefreshCw className="w-4 h-4" />
@@ -309,13 +309,13 @@ export function StrainYieldAnalytics() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 bg-cult-near-black/50 rounded-cult p-1 border border-cult-charcoal/30 w-fit">
+      <div className="flex items-center gap-1 bg-cult-surface/50 rounded-cult p-1 border border-cult-surface-raised/30 w-fit">
         <button
           onClick={() => setActiveTab('predictions')}
-          className={`px-4 py-2 text-[11px] uppercase tracking-widest font-montserrat font-bold rounded transition-all flex items-center gap-2 ${
+          className={`px-4 py-2 text-[11px] uppercase tracking-widest font-mono font-bold rounded transition-all flex items-center gap-2 ${
             activeTab === 'predictions'
-              ? 'bg-cult-charcoal text-cult-off-white'
-              : 'text-cult-lighter-gray hover:text-cult-silver'
+              ? 'bg-cult-surface-raised text-cult-text-primary'
+              : 'text-cult-text-muted hover:text-cult-text-secondary'
           }`}
         >
           <Target className="w-3.5 h-3.5" />
@@ -323,10 +323,10 @@ export function StrainYieldAnalytics() {
         </button>
         <button
           onClick={() => setActiveTab('metrics')}
-          className={`px-4 py-2 text-[11px] uppercase tracking-widest font-montserrat font-bold rounded transition-all flex items-center gap-2 ${
+          className={`px-4 py-2 text-[11px] uppercase tracking-widest font-mono font-bold rounded transition-all flex items-center gap-2 ${
             activeTab === 'metrics'
-              ? 'bg-cult-charcoal text-cult-off-white'
-              : 'text-cult-lighter-gray hover:text-cult-silver'
+              ? 'bg-cult-surface-raised text-cult-text-primary'
+              : 'text-cult-text-muted hover:text-cult-text-secondary'
           }`}
         >
           <Dna className="w-3.5 h-3.5" />

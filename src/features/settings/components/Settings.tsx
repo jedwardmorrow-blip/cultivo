@@ -250,7 +250,7 @@ export function Settings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading settings...</div>
+        <div className="text-cult-text-muted">Loading settings...</div>
       </div>
     );
   }
@@ -278,8 +278,8 @@ export function Settings() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-h1 font-bold text-cult-white uppercase tracking-wider">Settings</h1>
-        <p className="text-cult-light-gray mt-2">Configure application settings and manage resources</p>
+        <h1 className="text-h1 font-bold text-cult-text-primary uppercase tracking-wider">Settings</h1>
+        <p className="text-cult-text-muted mt-2">Configure application settings and manage resources</p>
       </div>
 
       {dbStatus && !dbStatus.hasPermissions && (
@@ -287,7 +287,7 @@ export function Settings() {
           <div className="flex items-start gap-3">
             <span className="text-cult-danger text-xl">⚠️</span>
             <div>
-              <p className="text-cult-white font-medium">Database Permission Issue</p>
+              <p className="text-cult-text-primary font-medium">Database Permission Issue</p>
               <p className="text-cult-text-secondary text-sm mt-1">{dbStatus.message}</p>
               <p className="text-cult-text-muted text-xs mt-2">
                 Please ensure database migrations have been applied and RLS policies are configured correctly.
@@ -306,7 +306,7 @@ export function Settings() {
         </div>
       )}
 
-      <div className="mb-6 flex gap-2 border-b border-cult-medium-gray flex-wrap">
+      <div className="mb-6 flex gap-2 border-b border-cult-border flex-wrap">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -315,8 +315,8 @@ export function Settings() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200 uppercase tracking-wider ${
                 activeTab === tab.id
-                  ? 'bg-cult-white text-cult-black'
-                  : 'bg-transparent text-cult-white hover:bg-cult-white hover:text-cult-black'
+                  ? 'bg-cult-accent text-cult-opaque-black'
+                  : 'bg-transparent text-cult-text-primary hover:bg-cult-accent-hover hover:text-cult-black'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -332,19 +332,19 @@ export function Settings() {
             <div
               className={`mb-6 p-4 border ${
                 message.type === 'success'
-                  ? 'bg-cult-success/10 border-cult-success text-cult-white'
-                  : 'bg-cult-danger-muted border-cult-danger text-cult-white'
+                  ? 'bg-cult-success/10 border-cult-success text-cult-text-primary'
+                  : 'bg-cult-danger-muted border-cult-danger text-cult-text-primary'
               }`}
             >
               {message.text}
             </div>
           )}
 
-          <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+          <div className="bg-cult-surface border border-cult-border p-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <SettingsIcon className="w-6 h-6 text-cult-white" />
-            <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+            <SettingsIcon className="w-6 h-6 text-cult-text-primary" />
+            <h2 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">
               Operations Configuration
             </h2>
           </div>
@@ -352,7 +352,7 @@ export function Settings() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Trim Lead Time (Days Before Delivery)
                 </label>
                 <input
@@ -361,15 +361,15 @@ export function Settings() {
                   max="30"
                   value={settings.trim_lead_time_days}
                   onChange={(e) => handleChange('trim_lead_time_days', Number(e.target.value))}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
-                <p className="mt-2 text-xs text-cult-lighter-gray">
+                <p className="mt-2 text-xs text-cult-text-muted">
                   Number of days before the delivery date that trim work must be completed
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Packaging Lead Time (Days Before Delivery)
                 </label>
                 <input
@@ -378,15 +378,15 @@ export function Settings() {
                   max="30"
                   value={settings.packaging_lead_time_days}
                   onChange={(e) => handleChange('packaging_lead_time_days', Number(e.target.value))}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
-                <p className="mt-2 text-xs text-cult-lighter-gray">
+                <p className="mt-2 text-xs text-cult-text-muted">
                   Number of days before the delivery date that packaging work must be completed
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Default Overage Percentage
                 </label>
                 <input
@@ -395,15 +395,15 @@ export function Settings() {
                   max="100"
                   value={settings.default_overage_percentage}
                   onChange={(e) => handleChange('default_overage_percentage', Number(e.target.value))}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
-                <p className="mt-2 text-xs text-cult-lighter-gray">
+                <p className="mt-2 text-xs text-cult-text-muted">
                   Extra percentage to add to weight calculations (e.g., 10 for 10% overage)
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Notification Threshold (Days)
                 </label>
                 <input
@@ -412,9 +412,9 @@ export function Settings() {
                   max="30"
                   value={settings.notification_threshold_days}
                   onChange={(e) => handleChange('notification_threshold_days', Number(e.target.value))}
-                  className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                 />
-                <p className="mt-2 text-xs text-cult-lighter-gray">
+                <p className="mt-2 text-xs text-cult-text-muted">
                   Days in advance to send notifications for upcoming deadlines
                 </p>
               </div>
@@ -422,11 +422,11 @@ export function Settings() {
           </div>
         </div>
 
-        <div className="border-t border-cult-medium-gray pt-6 flex items-center justify-between">
+        <div className="border-t border-cult-border pt-6 flex items-center justify-between">
           <button
             onClick={handleReset}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RotateCcw className="w-4 h-4" />
             Reset to Defaults
@@ -435,7 +435,7 @@ export function Settings() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Changes'}
@@ -443,23 +443,23 @@ export function Settings() {
         </div>
       </div>
 
-          <div className="mt-8 bg-cult-near-black border border-cult-medium-gray p-6">
-            <h3 className="text-sm font-semibold text-cult-white mb-4 uppercase tracking-wider">
+          <div className="mt-8 bg-cult-surface border border-cult-border p-6">
+            <h3 className="text-sm font-semibold text-cult-text-primary mb-4 uppercase tracking-wider">
               How Lead Times Work
             </h3>
-            <div className="space-y-3 text-sm text-cult-light-gray">
+            <div className="space-y-3 text-sm text-cult-text-muted">
               <p>
-                <span className="text-cult-white font-medium">Trim Lead Time:</span> This setting determines
+                <span className="text-cult-text-primary font-medium">Trim Lead Time:</span> This setting determines
                 when trim work needs to be completed before a delivery. For example, if set to 2 days and an
                 order is scheduled for delivery on Friday, the trim work should be completed by Wednesday.
               </p>
               <p>
-                <span className="text-cult-white font-medium">Packaging Lead Time:</span> This setting
+                <span className="text-cult-text-primary font-medium">Packaging Lead Time:</span> This setting
                 determines when packaging needs to be completed before delivery. For example, if set to 1 day
                 and an order is scheduled for delivery on Friday, packaging should be completed by Thursday.
               </p>
               <p>
-                <span className="text-cult-white font-medium">Overage Percentage:</span> Extra material to
+                <span className="text-cult-text-primary font-medium">Overage Percentage:</span> Extra material to
                 account for waste, quality control, and variance. Applied to all weight calculations to ensure
                 sufficient inventory.
               </p>
@@ -474,50 +474,50 @@ export function Settings() {
             <div
               className={`mb-6 p-4 border ${
                 message.type === 'success'
-                  ? 'bg-cult-success/10 border-cult-success text-cult-white'
-                  : 'bg-cult-danger-muted border-cult-danger text-cult-white'
+                  ? 'bg-cult-success/10 border-cult-success text-cult-text-primary'
+                  : 'bg-cult-danger-muted border-cult-danger text-cult-text-primary'
               }`}
             >
               {message.text}
             </div>
           )}
 
-          <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+          <div className="bg-cult-surface border border-cult-border p-8">
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-6">
-                <Navigation className="w-6 h-6 text-cult-white" />
-                <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+                <Navigation className="w-6 h-6 text-cult-text-primary" />
+                <h2 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">
                   Routing & Directions Configuration
                 </h2>
               </div>
 
               <div className="space-y-6">
-                <div className="p-4 bg-cult-black border border-cult-medium-gray">
-                  <p className="text-sm text-cult-white font-medium uppercase tracking-wider mb-1">API Key</p>
-                  <p className="text-sm text-cult-light-gray">
-                    The OpenRouteService API key is managed as a Supabase Edge Function secret and is not exposed to the browser. To rotate the key, update the <code className="text-cult-white">ORS_API_KEY</code> secret in the Supabase dashboard.
+                <div className="p-4 bg-cult-black border border-cult-border">
+                  <p className="text-sm text-cult-text-primary font-medium uppercase tracking-wider mb-1">API Key</p>
+                  <p className="text-sm text-cult-text-muted">
+                    The OpenRouteService API key is managed as a Supabase Edge Function secret and is not exposed to the browser. To rotate the key, update the <code className="text-cult-text-primary">ORS_API_KEY</code> secret in the Supabase dashboard.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                       API Provider
                     </label>
                     <select
                       value={settings.routing_api_provider}
                       onChange={(e) => setSettings({ ...settings, routing_api_provider: e.target.value })}
-                      className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                      className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                     >
                       <option value="openrouteservice">OpenRouteService</option>
                     </select>
-                    <p className="mt-2 text-xs text-cult-lighter-gray">
+                    <p className="mt-2 text-xs text-cult-text-muted">
                       Routing service to use for calculating directions
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                       Route Cache Duration (Days)
                     </label>
                     <input
@@ -526,109 +526,109 @@ export function Settings() {
                       max="90"
                       value={settings.route_cache_days}
                       onChange={(e) => setSettings({ ...settings, route_cache_days: Number(e.target.value) })}
-                      className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                      className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                     />
-                    <p className="mt-2 text-xs text-cult-lighter-gray">
+                    <p className="mt-2 text-xs text-cult-text-muted">
                       Days before cached routes expire and need refresh
                     </p>
                   </div>
                 </div>
 
-                <div className="border-t border-cult-medium-gray pt-6">
-                  <h3 className="text-sm font-semibold text-cult-white mb-4 uppercase tracking-wider">
+                <div className="border-t border-cult-border pt-6">
+                  <h3 className="text-sm font-semibold text-cult-text-primary mb-4 uppercase tracking-wider">
                     Facility Location
                   </h3>
-                  <p className="text-sm text-cult-light-gray mb-4">
+                  <p className="text-sm text-cult-text-muted mb-4">
                     This address is used as the origin point for all delivery routes
                   </p>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Street Address
                       </label>
                       <input
                         type="text"
                         value={settings.facility_address}
                         onChange={(e) => setSettings({ ...settings, facility_address: e.target.value })}
-                        className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                        className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                           City
                         </label>
                         <input
                           type="text"
                           value={settings.facility_city}
                           onChange={(e) => setSettings({ ...settings, facility_city: e.target.value })}
-                          className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                          className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                           State
                         </label>
                         <input
                           type="text"
                           value={settings.facility_state}
                           onChange={(e) => setSettings({ ...settings, facility_state: e.target.value })}
-                          className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                          className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                           ZIP Code
                         </label>
                         <input
                           type="text"
                           value={settings.facility_postal_code}
                           onChange={(e) => setSettings({ ...settings, facility_postal_code: e.target.value })}
-                          className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                          className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                       <div>
-                        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                           Latitude
                         </label>
                         <input
                           type="text"
                           value={settings.facility_latitude}
                           onChange={(e) => setSettings({ ...settings, facility_latitude: e.target.value })}
-                          className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all font-mono"
+                          className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all font-mono"
                           placeholder="33.417454"
                         />
-                        <p className="mt-1 text-xs text-cult-lighter-gray">
+                        <p className="mt-1 text-xs text-cult-text-muted">
                           Geographic latitude coordinate
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                           Longitude
                         </label>
                         <input
                           type="text"
                           value={settings.facility_longitude}
                           onChange={(e) => setSettings({ ...settings, facility_longitude: e.target.value })}
-                          className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all font-mono"
+                          className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all font-mono"
                           placeholder="-111.994514"
                         />
-                        <p className="mt-1 text-xs text-cult-lighter-gray">
+                        <p className="mt-1 text-xs text-cult-text-muted">
                           Geographic longitude coordinate (negative for west)
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-cult-black border border-cult-medium-gray">
-                      <p className="text-xs text-cult-light-gray">
+                    <div className="mt-4 p-3 bg-cult-black border border-cult-border">
+                      <p className="text-xs text-cult-text-muted">
                         <strong>Note:</strong> Coordinates are automatically used for route calculations.
                         If you change the address above, you may want to geocode it to get updated coordinates,
                         or manually enter the latitude and longitude values.
@@ -639,11 +639,11 @@ export function Settings() {
               </div>
             </div>
 
-            <div className="border-t border-cult-medium-gray pt-6 flex items-center justify-end">
+            <div className="border-t border-cult-border pt-6 flex items-center justify-end">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
                 {saving ? 'Saving...' : 'Save Routing Settings'}
@@ -655,22 +655,22 @@ export function Settings() {
             <RouteTestingTool />
           </div>
 
-          <div className="mt-8 bg-cult-near-black border border-cult-medium-gray p-6">
-            <h3 className="text-sm font-semibold text-cult-white mb-4 uppercase tracking-wider">
+          <div className="mt-8 bg-cult-surface border border-cult-border p-6">
+            <h3 className="text-sm font-semibold text-cult-text-primary mb-4 uppercase tracking-wider">
               How Routing Works
             </h3>
-            <div className="space-y-3 text-sm text-cult-light-gray">
+            <div className="space-y-3 text-sm text-cult-text-muted">
               <p>
-                <span className="text-cult-white font-medium">Route Caching:</span> Once a route is calculated between two locations, it's stored in the database for fast reuse. Routes are automatically recalculated when they exceed the cache duration.
+                <span className="text-cult-text-primary font-medium">Route Caching:</span> Once a route is calculated between two locations, it's stored in the database for fast reuse. Routes are automatically recalculated when they exceed the cache duration.
               </p>
               <p>
-                <span className="text-cult-white font-medium">API Usage:</span> With the free tier (2,000 requests/day), you'll use approximately 5-10 API calls per week for new customers and address changes. All existing routes are loaded from cache.
+                <span className="text-cult-text-primary font-medium">API Usage:</span> With the free tier (2,000 requests/day), you'll use approximately 5-10 API calls per week for new customers and address changes. All existing routes are loaded from cache.
               </p>
               <p>
-                <span className="text-cult-white font-medium">Geocoding:</span> Customer addresses are automatically geocoded (converted to GPS coordinates) when saved. This enables instant route calculations without additional API calls.
+                <span className="text-cult-text-primary font-medium">Geocoding:</span> Customer addresses are automatically geocoded (converted to GPS coordinates) when saved. This enables instant route calculations without additional API calls.
               </p>
               <p>
-                <span className="text-cult-white font-medium">Multi-Stop Routes:</span> When planning deliveries with multiple stops, cached route segments are combined automatically for zero API cost.
+                <span className="text-cult-text-primary font-medium">Multi-Stop Routes:</span> When planning deliveries with multiple stops, cached route segments are combined automatically for zero API cost.
               </p>
             </div>
           </div>

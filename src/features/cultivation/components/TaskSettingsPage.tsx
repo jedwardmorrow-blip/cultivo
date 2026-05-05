@@ -12,19 +12,19 @@ export function TaskSettingsPage() {
     <div className="space-y-5 pb-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-3xl font-bold text-cult-white">Task Settings</h1>
-        <p className="text-cult-light-gray mt-1 text-sm sm:text-base">Manage task types and schedule templates</p>
+        <h1 className="text-xl sm:text-3xl font-bold text-cult-text-primary">Task Settings</h1>
+        <p className="text-cult-text-muted mt-1 text-sm sm:text-base">Manage task types and schedule templates</p>
       </div>
 
       {/* Tab bar */}
-      <div className="flex border-b border-cult-dark-gray">
+      <div className="flex border-b border-cult-surface">
         <button
           type="button"
           onClick={() => setTab('task-types')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${
             tab === 'task-types'
-              ? 'border-cult-accent text-cult-white'
-              : 'border-transparent text-cult-medium-gray hover:text-cult-light-gray'
+              ? 'border-cult-accent text-cult-text-primary'
+              : 'border-transparent text-cult-border hover:text-cult-text-muted'
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
@@ -35,8 +35,8 @@ export function TaskSettingsPage() {
           onClick={() => setTab('templates')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${
             tab === 'templates'
-              ? 'border-cult-accent text-cult-white'
-              : 'border-transparent text-cult-medium-gray hover:text-cult-light-gray'
+              ? 'border-cult-accent text-cult-text-primary'
+              : 'border-transparent text-cult-border hover:text-cult-text-muted'
           }`}
         >
           <Layout className="w-3.5 h-3.5" />
@@ -47,7 +47,7 @@ export function TaskSettingsPage() {
       {/* Content */}
       {tab === 'task-types' && <TaskTypesOverlay inline onClose={() => {}} />}
       {tab === 'templates' && (
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-sm p-5">
+        <div className="bg-cult-surface border border-cult-surface rounded-sm p-5">
           <TemplateManager inline onClose={() => {}} />
         </div>
       )}

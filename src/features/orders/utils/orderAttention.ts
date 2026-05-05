@@ -93,14 +93,14 @@ export function getOrderAge(createdAt: string | null): string {
 }
 
 export function getOrderAgeColor(createdAt: string | null, status: string | null): string {
-  if (!createdAt) return 'text-cult-silver';
+  if (!createdAt) return 'text-cult-text-secondary';
   const now = new Date();
   const created = new Date(createdAt);
   const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
 
   if (status === 'submitted' && diffHours > 72) return 'text-cult-danger';
   if (status === 'submitted' && diffHours > 24) return 'text-cult-warning';
-  return 'text-cult-silver';
+  return 'text-cult-text-secondary';
 }
 
 /**

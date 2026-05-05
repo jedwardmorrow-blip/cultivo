@@ -45,8 +45,8 @@ export const GRADE_COLOR_MAP: Record<string, { bg: string; text: string; border:
     border: 'border-rose-700/50',
   },
   gray: {
-    bg: 'bg-cult-medium-gray/20',
-    text: 'text-cult-lighter-gray',
-    border: 'border-cult-medium-gray/50',
+    bg: 'bg-cult-border/20',
+    text: 'text-cult-text-muted',
+    border: 'border-cult-border/50',
   },
 };

@@ -24,8 +24,8 @@ function ViewShell({ title, subtitle, children }: { title: string; subtitle: str
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">{title}</h1>
-        <p className="text-cult-light-gray text-sm mt-2">{subtitle}</p>
+        <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">{title}</h1>
+        <p className="font-mono uppercase tracking-[0.12em] text-[10px] text-cult-text-muted mt-1.5">{subtitle}</p>
       </div>
       {children}
     </div>
@@ -76,8 +76,8 @@ export function UnifiedInventoryViewWrapper() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">Inventory</h1>
-        <p className="text-cult-light-gray text-sm mt-2">
+        <h1 className="text-3xl font-bold text-cult-text-primary">Inventory</h1>
+        <p className="text-cult-text-muted text-sm mt-2">
           {activeStage === 'all' && 'View all inventory across all stages'}
           {activeStage === 'binned' && 'Fresh flower directly from harvest, ready for processing'}
           {activeStage === 'bucked' && 'Flower that has been bucked and is ready for trimming'}
@@ -87,21 +87,21 @@ export function UnifiedInventoryViewWrapper() {
       </div>
 
       {/* Stage tabs */}
-      <div className="flex gap-1 p-1 bg-cult-dark-gray rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-cult-surface rounded-lg w-fit">
         {STAGE_TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveStage(key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
               activeStage === key
-                ? 'bg-cult-medium-gray text-cult-white shadow-sm'
-                : 'text-cult-silver hover:text-cult-white'
+                ? 'bg-cult-border text-cult-text-primary shadow-sm'
+                : 'text-cult-text-secondary hover:text-cult-text-primary'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
             {label}
             <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
-              activeStage === key ? 'bg-cult-lighter-gray/30 text-cult-white' : 'bg-cult-medium-gray/50 text-cult-lighter-gray'
+              activeStage === key ? 'bg-cult-text-muted/30 text-cult-text-primary' : 'bg-cult-border/50 text-cult-text-muted'
             }`}>
               {stageCounts[key]}
             </span>

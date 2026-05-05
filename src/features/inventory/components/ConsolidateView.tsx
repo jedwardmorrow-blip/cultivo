@@ -293,9 +293,9 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
 
   if (groups.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-cult-light-gray">
+      <div className="flex flex-col items-center justify-center py-20 text-cult-text-muted">
         <CheckCircle className="w-12 h-12 text-cult-success/60 mb-4" />
-        <h3 className="text-lg font-medium text-cult-white mb-1">Inventory is clean</h3>
+        <h3 className="text-lg font-medium text-cult-text-primary mb-1">Inventory is clean</h3>
         <p className="text-sm">No combinable fragment groups found. Each strain/batch/stage has a single package.</p>
       </div>
     );
@@ -312,12 +312,12 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search strain, batch, or category..."
-            className="w-full pl-9 pr-8 py-1.5 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-white placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-info focus:border-cult-info"
+            className="w-full pl-9 pr-8 py-1.5 bg-cult-surface border border-cult-border rounded-lg text-sm text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-info focus:border-cult-info"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-light-gray"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-cult-text-muted hover:text-cult-text-muted"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -325,17 +325,17 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
         </div>
         <div className="flex items-center gap-6 text-sm">
           <div>
-            <span className="text-cult-light-gray">Groups: </span>
-            <span className="text-cult-white font-semibold">
+            <span className="text-cult-text-muted">Groups: </span>
+            <span className="text-cult-text-primary font-semibold">
               {filteredGroups.length !== groups.length ? `${filteredGroups.length}/` : ''}{groups.length}
             </span>
           </div>
           <div>
-            <span className="text-cult-light-gray">Fragments: </span>
+            <span className="text-cult-text-muted">Fragments: </span>
             <span className="text-cult-warning font-semibold">{totalFragments}</span>
           </div>
           <div>
-            <span className="text-cult-light-gray">After: </span>
+            <span className="text-cult-text-muted">After: </span>
             <span className="text-cult-success font-semibold">{totalAfterConsolidate}</span>
           </div>
         </div>
@@ -370,18 +370,18 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                   className="flex items-center gap-3 flex-1 text-left"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-cult-light-gray flex-shrink-0" />
+                    <ChevronDown className="w-4 h-4 text-cult-text-muted flex-shrink-0" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-cult-light-gray flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-cult-text-muted flex-shrink-0" />
                   )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-cult-white font-semibold truncate">{group.strain}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-cult-surface text-cult-light-gray border border-cult-border">
+                      <span className="text-cult-text-primary font-semibold truncate">{group.strain}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-cult-surface text-cult-text-muted border border-cult-border">
                         {group.categoryLabel}
                       </span>
                     </div>
-                    <div className="text-xs text-cult-light-gray mt-0.5">
+                    <div className="text-xs text-cult-text-muted mt-0.5">
                       Batch {group.batchNumber} · {group.packages.length} packages · {formatQty(group.totalQty, group.unit)} total
                     </div>
                   </div>
@@ -389,7 +389,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
 
                 <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                   {!isExpanded && (
-                    <div className="hidden sm:flex items-center gap-1 text-xs text-cult-light-gray">
+                    <div className="hidden sm:flex items-center gap-1 text-xs text-cult-text-muted">
                       {group.packages
                         .sort((a, b) => a.qty - b.qty)
                         .slice(0, 5)
@@ -425,7 +425,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                         }}
                         className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                           selectedCount >= 2
-                            ? 'bg-cult-surface text-cult-light-gray border border-cult-border hover:bg-cult-surface-raised'
+                            ? 'bg-cult-surface text-cult-text-muted border border-cult-border hover:bg-cult-surface-raised'
                             : 'bg-cult-info text-white hover:bg-cult-info/80'
                         }`}
                       >
@@ -498,8 +498,8 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                               onClick={() => togglePackage(group.key, pkg.id)}
                               className={`cursor-pointer transition-colors ${
                                 isChecked
-                                  ? 'bg-cult-info-muted text-cult-white'
-                                  : 'text-cult-light-gray hover:bg-cult-surface/30'
+                                  ? 'bg-cult-info-muted text-cult-text-primary'
+                                  : 'text-cult-text-muted hover:bg-cult-surface/30'
                               }`}
                             >
                               <td className="px-3 py-1.5">
@@ -525,7 +525,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
                                     onChange={(e) => {
                                       if (e.target.value) handleReclassify(pkg, e.target.value);
                                     }}
-                                    className="bg-cult-surface border border-cult-border rounded px-2 py-0.5 text-xs text-cult-light-gray focus:outline-none focus:ring-1 focus:ring-cult-info cursor-pointer w-full"
+                                    className="bg-cult-surface border border-cult-border rounded px-2 py-0.5 text-xs text-cult-text-muted focus:outline-none focus:ring-1 focus:ring-cult-info cursor-pointer w-full"
                                   >
                                     <option value="">Move to...</option>
                                     {targets.map((cat) => (
@@ -572,7 +572,7 @@ export function ConsolidateView({ items, onDataRefresh }: ConsolidateViewProps) 
 
       {/* No results for search */}
       {filteredGroups.length === 0 && searchQuery && (
-        <div className="text-center py-10 text-cult-light-gray text-sm">
+        <div className="text-center py-10 text-cult-text-muted text-sm">
           No groups matching "{searchQuery}"
         </div>
       )}

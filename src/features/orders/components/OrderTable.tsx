@@ -46,11 +46,11 @@ function AttentionBadge({ flag }: { flag: AttentionFlag }) {
 
 function SortIcon({ field, currentField, direction }: { field: SortField; currentField: SortField; direction: SortDirection }) {
   if (field !== currentField) {
-    return <ChevronUp className="w-3 h-3 text-cult-medium-gray" />;
+    return <ChevronUp className="w-3 h-3 text-cult-border" />;
   }
   return direction === 'asc'
-    ? <ChevronUp className="w-3 h-3 text-cult-white" />
-    : <ChevronDown className="w-3 h-3 text-cult-white" />;
+    ? <ChevronUp className="w-3 h-3 text-cult-text-primary" />
+    : <ChevronDown className="w-3 h-3 text-cult-text-primary" />;
 }
 
 export const OrderTable = memo(function OrderTable({
@@ -120,7 +120,7 @@ export const OrderTable = memo(function OrderTable({
 
   const allSelected = orders.length > 0 && selectedIds.size === orders.length;
 
-  const thClass = 'px-3 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide cursor-pointer hover:text-cult-white transition-colors select-none';
+  const thClass = 'px-3 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wide cursor-pointer hover:text-cult-text-primary transition-colors select-none';
   const thSortable = (field: SortField, label: string, align?: string) => (
     <th
       className={`${thClass} ${align === 'right' ? 'text-right' : ''}`}
@@ -134,17 +134,17 @@ export const OrderTable = memo(function OrderTable({
   );
 
   return (
-    <div className="bg-cult-graphite border border-cult-charcoal rounded-cult overflow-hidden">
+    <div className="bg-cult-surface border border-cult-surface-raised rounded-cult overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-cult-charcoal bg-cult-near-black">
+            <tr className="border-b border-cult-surface-raised bg-cult-surface">
               <th className="w-10 px-3 py-3">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={onToggleSelectAll}
-                  className="w-3.5 h-3.5 rounded border-cult-charcoal bg-cult-near-black text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
+                  className="w-3.5 h-3.5 rounded border-cult-surface-raised bg-cult-surface text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
                 />
               </th>
               {thSortable('order_number', 'Order')}
@@ -157,7 +157,7 @@ export const OrderTable = memo(function OrderTable({
               <th className={`${thClass} w-8`}></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-charcoal/60">
+          <tbody className="divide-y divide-cult-surface-raised/60">
             {sortedOrders.map((order) => {
               const isSelected = selectedOrderId === order.id;
               const isChecked = selectedIds.has(order.id);
@@ -177,8 +177,8 @@ export const OrderTable = memo(function OrderTable({
                   onClick={() => onSelectOrder(order.id)}
                   className={`cursor-pointer transition-all duration-150 group ${
                     isSelected
-                      ? 'bg-cult-charcoal/80 border-l-2 border-l-cult-green'
-                      : 'hover:bg-cult-graphite/80 border-l-2 border-l-transparent'
+                      ? 'bg-cult-surface-raised/80 border-l-2 border-l-cult-green'
+                      : 'hover:bg-cult-surface/80 border-l-2 border-l-transparent'
                   }`}
                 >
                   <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
@@ -186,13 +186,13 @@ export const OrderTable = memo(function OrderTable({
                       type="checkbox"
                       checked={isChecked}
                       onChange={(e) => shiftSelectClick(order.id, e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey)}
-                      className="w-3.5 h-3.5 rounded border-cult-charcoal bg-cult-near-black text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
+                      className="w-3.5 h-3.5 rounded border-cult-surface-raised bg-cult-surface text-cult-green focus:ring-cult-green/50 focus:ring-offset-0 cursor-pointer accent-emerald-500"
                     />
                   </td>
 
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-cult-off-white tracking-wide">
+                      <span className="text-sm font-bold text-cult-text-primary tracking-wide">
                         {order.order_number}
                       </span>
                       {(order as OrderExtended).is_sample && (
@@ -207,7 +207,7 @@ export const OrderTable = memo(function OrderTable({
                           Scheduled
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-white/[0.03] text-cult-lighter-gray border border-cult-charcoal rounded uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-cult-surface-inset text-cult-text-muted border border-cult-surface-raised rounded uppercase tracking-wider">
                           <CalendarCheck className="w-2.5 h-2.5" />
                           Unscheduled
                         </span>
@@ -244,7 +244,7 @@ export const OrderTable = memo(function OrderTable({
                             e.stopPropagation();
                             onStatusChange(order.id, nextStatus);
                           }}
-                          className="p-1 rounded hover:bg-white/10 transition-all text-cult-lighter-gray hover:text-cult-green opacity-0 group-hover:opacity-100"
+                          className="p-1 rounded hover:bg-white/10 transition-all text-cult-text-muted hover:text-cult-green opacity-0 group-hover:opacity-100"
                         >
                           <ArrowRight className="w-3.5 h-3.5" />
                         </button>
@@ -253,7 +253,7 @@ export const OrderTable = memo(function OrderTable({
                   </td>
 
                   <td className="px-3 py-3">
-                    <span className="text-sm text-cult-off-white">
+                    <span className="text-sm text-cult-text-primary">
                       {order.customer_name || 'Unknown'}
                     </span>
                   </td>
@@ -261,15 +261,15 @@ export const OrderTable = memo(function OrderTable({
                   <td className="px-3 py-3">
                     <div className="flex flex-col gap-1">
                       {deliveryDate ? (
-                        <span className="text-sm text-cult-silver flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-cult-lighter-gray" />
+                        <span className="text-sm text-cult-text-secondary flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 text-cult-text-muted" />
                           {parseDeliveryDate(deliveryDate)?.toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                           }) ?? 'No date'}
                         </span>
                       ) : (
-                        <span className="text-xs text-cult-lighter-gray">No date</span>
+                        <span className="text-xs text-cult-text-muted">No date</span>
                       )}
                       {turnaroundDays !== null && (
                         <span className={`inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-xs font-semibold border ${
@@ -286,8 +286,8 @@ export const OrderTable = memo(function OrderTable({
                   </td>
 
                   <td className="px-3 py-3">
-                    <span className="text-sm text-cult-silver flex items-center gap-1.5">
-                      <Package className="w-3 h-3 text-cult-lighter-gray" />
+                    <span className="text-sm text-cult-text-secondary flex items-center gap-1.5">
+                      <Package className="w-3 h-3 text-cult-text-muted" />
                       {order.item_count || 0}
                     </span>
                   </td>
@@ -301,8 +301,8 @@ export const OrderTable = memo(function OrderTable({
                   <td className="px-3 py-3">
                     {order.created_at ? (
                       <div>
-                        <span className="text-sm text-cult-silver flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-cult-lighter-gray" />
+                        <span className="text-sm text-cult-text-secondary flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 text-cult-text-muted" />
                           {new Date(order.created_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -311,12 +311,12 @@ export const OrderTable = memo(function OrderTable({
                         <span className={`text-xs ${ageColor} ml-[18px]`}>{age}</span>
                       </div>
                     ) : (
-                      <span className="text-xs text-cult-lighter-gray">--</span>
+                      <span className="text-xs text-cult-text-muted">--</span>
                     )}
                   </td>
 
                   <td className="px-3 py-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Copy className="w-3.5 h-3.5 text-cult-silver hover:text-cult-white cursor-pointer" title="Clone order" />
+                    <Copy className="w-3.5 h-3.5 text-cult-text-secondary hover:text-cult-text-primary cursor-pointer" title="Clone order" />
                   </td>
                 </tr>
               );
@@ -326,8 +326,8 @@ export const OrderTable = memo(function OrderTable({
       </div>
       {sortedOrders.length === 0 && (
         <div className="py-16 text-center">
-          <Package className="w-12 h-12 text-cult-charcoal mx-auto mb-3" />
-          <p className="text-cult-silver text-sm">No orders match your filters</p>
+          <Package className="w-12 h-12 text-cult-surface-raised mx-auto mb-3" />
+          <p className="text-cult-text-secondary text-sm">No orders match your filters</p>
         </div>
       )}
     </div>

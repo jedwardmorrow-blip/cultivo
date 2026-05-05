@@ -28,37 +28,37 @@ export function ActivePackagingSessionsTable({ sessions, onComplete, onCancel }:
   };
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray mb-6">
-      <div className="p-4 border-b border-cult-medium-gray">
-        <h2 className="text-lg font-bold text-cult-white">Active Packaging Sessions</h2>
+    <div className="bg-cult-surface rounded-lg shadow border border-cult-border mb-6">
+      <div className="p-4 border-b border-cult-border">
+        <h2 className="text-lg font-bold text-cult-text-primary">Active Packaging Sessions</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+          <thead className="bg-cult-surface border-b border-cult-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Packager</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Strain</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">Package ID</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-cult-silver uppercase tracking-wider">Pull (g)</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Elapsed</th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">Action</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Packager</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Strain</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Package ID</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Pull (g)</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Elapsed</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-cult-medium-gray">
+          <tbody className="divide-y divide-cult-border">
             {sessions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center">
-                  <p className="text-cult-light-gray text-sm">No active packaging sessions</p>
-                  <p className="text-cult-silver text-xs mt-1">Start a new package to begin packaging</p>
+                  <p className="text-cult-text-muted text-sm">No active packaging sessions</p>
+                  <p className="text-cult-text-secondary text-xs mt-1">Start a new package to begin packaging</p>
                 </td>
               </tr>
             ) : (
               sessions.map((session) => (
-                <tr key={session.id} className="hover:bg-cult-dark-gray/50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-medium text-cult-white">{session.packager_name}</td>
-                  <td className="px-4 py-3 text-sm text-cult-white">{session.strain}</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray">{session.package_id}</td>
-                  <td className="px-4 py-3 text-sm text-right text-cult-white">{session.pull_weight != null ? session.pull_weight.toFixed(1) : '-'}</td>
+                <tr key={session.id} className="hover:bg-cult-surface/50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-cult-text-primary">{session.packager_name}</td>
+                  <td className="px-4 py-3 text-sm text-cult-text-primary">{session.strain}</td>
+                  <td className="px-4 py-3 text-sm text-cult-text-muted">{session.package_id}</td>
+                  <td className="px-4 py-3 text-sm text-right text-cult-text-primary">{session.pull_weight != null ? session.pull_weight.toFixed(1) : '-'}</td>
                   <td className="px-4 py-3 text-sm text-center font-medium">
                     {session.is_paused ? (
                       <span className="text-cult-warning">PAUSED</span>

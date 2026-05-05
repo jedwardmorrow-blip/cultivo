@@ -177,31 +177,31 @@ export function ConversionsManagement() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide mb-4">
+        <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide mb-4">
           Conversion Rates & Yield Analysis
         </h2>
-        <p className="text-cult-light-gray">
+        <p className="text-cult-text-muted">
           Track and analyze conversion rates from bulk inventory to packaged units. Use historical data to project outcomes and plan inventory needs.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+        <div className="bg-cult-surface border border-cult-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <BarChart3 className="w-6 h-6 text-cult-white" />
-            <h3 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+            <BarChart3 className="w-6 h-6 text-cult-text-primary" />
+            <h3 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
               Conversion Statistics
             </h3>
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+            <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
               Filter by Strain
             </label>
             <select
               value={selectedStrain}
               onChange={(e) => setSelectedStrain(e.target.value)}
-              className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+              className="w-full px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
             >
               <option value="all">All Strains</option>
               {strains.map((strain) => (
@@ -213,12 +213,12 @@ export function ConversionsManagement() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-cult-light-gray">Loading conversion data...</div>
+            <div className="text-center py-12 text-cult-text-muted">Loading conversion data...</div>
           ) : conversionStats.length === 0 ? (
             <div className="text-center py-12">
-              <AlertCircle className="w-12 h-12 text-cult-light-gray mx-auto mb-4" />
-              <p className="text-cult-light-gray">No conversion data available yet.</p>
-              <p className="text-sm text-cult-lighter-gray mt-2">
+              <AlertCircle className="w-12 h-12 text-cult-text-muted mx-auto mb-4" />
+              <p className="text-cult-text-muted">No conversion data available yet.</p>
+              <p className="text-sm text-cult-text-muted mt-2">
                 Complete packaging sessions to start tracking conversion rates.
               </p>
             </div>
@@ -230,12 +230,12 @@ export function ConversionsManagement() {
                 return (
                   <div
                     key={index}
-                    className="p-4 bg-cult-dark-gray border border-cult-medium-gray"
+                    className="p-4 bg-cult-surface border border-cult-border"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="text-lg font-bold text-cult-white">{stat.strain}</h4>
-                        <p className="text-sm text-cult-light-gray">
+                        <h4 className="text-lg font-bold text-cult-text-primary">{stat.strain}</h4>
+                        <p className="text-sm text-cult-text-muted">
                           {stat.source_type} → {stat.target_type}
                         </p>
                       </div>
@@ -243,7 +243,7 @@ export function ConversionsManagement() {
                         <div className={`text-xs font-bold uppercase tracking-wider ${confidence.color}`}>
                           {confidence.level} Confidence
                         </div>
-                        <div className="text-xs text-cult-lighter-gray mt-1">
+                        <div className="text-xs text-cult-text-muted mt-1">
                           {stat.total_conversions} sample{stat.total_conversions !== 1 ? 's' : ''}
                         </div>
                       </div>
@@ -251,43 +251,43 @@ export function ConversionsManagement() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
                       <div>
-                        <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">
+                        <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">
                           Avg Yield
                         </p>
                         <div className="flex items-center gap-2">
                           {getTrendIcon(stat.min_yield, stat.max_yield, stat.avg_yield_percentage)}
-                          <span className="text-lg font-bold text-cult-white">
+                          <span className="text-lg font-bold text-cult-text-primary">
                             {stat.avg_yield_percentage?.toFixed(1)}%
                           </span>
                         </div>
                       </div>
                       <div>
-                        <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">
+                        <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">
                           Units per Gram
                         </p>
-                        <span className="text-lg font-bold text-cult-white">
+                        <span className="text-lg font-bold text-cult-text-primary">
                           {stat.avg_units_per_gram?.toFixed(3)}
                         </span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                      <div className="p-2 bg-cult-near-black">
-                        <p className="text-cult-lighter-gray mb-1">Min</p>
+                      <div className="p-2 bg-cult-surface">
+                        <p className="text-cult-text-muted mb-1">Min</p>
                         <p className="font-bold text-cult-danger">{stat.min_yield?.toFixed(1)}%</p>
                       </div>
-                      <div className="p-2 bg-cult-near-black">
-                        <p className="text-cult-lighter-gray mb-1">Std Dev</p>
+                      <div className="p-2 bg-cult-surface">
+                        <p className="text-cult-text-muted mb-1">Std Dev</p>
                         <p className="font-bold text-cult-warning">{stat.std_dev_yield?.toFixed(1)}%</p>
                       </div>
-                      <div className="p-2 bg-cult-near-black">
-                        <p className="text-cult-lighter-gray mb-1">Max</p>
+                      <div className="p-2 bg-cult-surface">
+                        <p className="text-cult-text-muted mb-1">Max</p>
                         <p className="font-bold text-cult-success">{stat.max_yield?.toFixed(1)}%</p>
                       </div>
                     </div>
 
                     {stat.last_conversion_date && (
-                      <p className="text-xs text-cult-lighter-gray mt-3">
+                      <p className="text-xs text-cult-text-muted mt-3">
                         Last recorded: {new Date(stat.last_conversion_date).toLocaleDateString()}
                       </p>
                     )}
@@ -298,10 +298,10 @@ export function ConversionsManagement() {
           )}
         </div>
 
-        <div className="bg-cult-near-black border border-cult-medium-gray p-6">
+        <div className="bg-cult-surface border border-cult-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <Calculator className="w-6 h-6 text-cult-white" />
-            <h3 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+            <Calculator className="w-6 h-6 text-cult-text-primary" />
+            <h3 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
               Projection Calculator
             </h3>
           </div>
@@ -315,8 +315,8 @@ export function ConversionsManagement() {
                 }}
                 className={`flex-1 px-4 py-2 border-2 transition-all font-medium uppercase tracking-wider text-sm ${
                   calculatorMode === 'forward'
-                    ? 'bg-cult-white text-cult-black border-cult-white'
-                    : 'bg-cult-dark-gray text-cult-white border-cult-medium-gray hover:border-cult-white'
+                    ? 'bg-cult-accent text-cult-opaque-black border-cult-accent'
+                    : 'bg-cult-surface text-cult-text-primary border-cult-border hover:border-cult-accent'
                 }`}
               >
                 Weight → Units
@@ -328,8 +328,8 @@ export function ConversionsManagement() {
                 }}
                 className={`flex-1 px-4 py-2 border-2 transition-all font-medium uppercase tracking-wider text-sm ${
                   calculatorMode === 'reverse'
-                    ? 'bg-cult-white text-cult-black border-cult-white'
-                    : 'bg-cult-dark-gray text-cult-white border-cult-medium-gray hover:border-cult-white'
+                    ? 'bg-cult-accent text-cult-opaque-black border-cult-accent'
+                    : 'bg-cult-surface text-cult-text-primary border-cult-border hover:border-cult-accent'
                 }`}
               >
                 Units → Weight
@@ -338,7 +338,7 @@ export function ConversionsManagement() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Strain
                 </label>
                 <select
@@ -347,7 +347,7 @@ export function ConversionsManagement() {
                     setCalcStrain(e.target.value);
                     setProjection(null);
                   }}
-                  className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                  className="w-full px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                 >
                   <option value="">Select strain...</option>
                   {strains.map((strain) => (
@@ -360,7 +360,7 @@ export function ConversionsManagement() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Source Type
                   </label>
                   <select
@@ -369,7 +369,7 @@ export function ConversionsManagement() {
                       setCalcSourceType(e.target.value);
                       setProjection(null);
                     }}
-                    className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                   >
                     <option value="flower">Flower</option>
                     <option value="smalls">Smalls</option>
@@ -378,7 +378,7 @@ export function ConversionsManagement() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Target Size
                   </label>
                   <select
@@ -387,7 +387,7 @@ export function ConversionsManagement() {
                       setCalcTargetType(e.target.value);
                       setProjection(null);
                     }}
-                    className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                   >
                     <option value="3.5g">3.5g</option>
                     <option value="14g">14g</option>
@@ -398,7 +398,7 @@ export function ConversionsManagement() {
 
               {calculatorMode === 'forward' ? (
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Input Weight (grams)
                   </label>
                   <input
@@ -411,12 +411,12 @@ export function ConversionsManagement() {
                       setProjection(null);
                     }}
                     placeholder="Enter weight in grams"
-                    className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                   />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Target Units
                   </label>
                   <input
@@ -429,14 +429,14 @@ export function ConversionsManagement() {
                       setProjection(null);
                     }}
                     placeholder="Enter number of units"
-                    className="w-full px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                    className="w-full px-4 py-2 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                   />
                 </div>
               )}
 
               <button
                 onClick={calculateProjection}
-                className="w-full px-4 py-3 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all font-medium uppercase tracking-wider"
+                className="w-full px-4 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider"
               >
                 Calculate
               </button>
@@ -444,29 +444,29 @@ export function ConversionsManagement() {
           </div>
 
           {projection && (
-            <div className="p-4 bg-cult-dark-gray border-2 border-cult-success">
-              <h4 className="text-lg font-bold text-cult-white mb-4 uppercase tracking-wide">
+            <div className="p-4 bg-cult-surface border-2 border-cult-success">
+              <h4 className="text-lg font-bold text-cult-text-primary mb-4 uppercase tracking-wide">
                 Projection Results
               </h4>
 
               {calculatorMode === 'forward' ? (
                 <div className="space-y-3">
-                  <div className="p-3 bg-cult-near-black">
-                    <p className="text-sm text-cult-light-gray mb-1">Expected Output</p>
+                  <div className="p-3 bg-cult-surface">
+                    <p className="text-sm text-cult-text-muted mb-1">Expected Output</p>
                     <p className="text-2xl font-bold text-cult-success">
                       {projection.expectedUnits} units
                     </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-3 bg-cult-near-black">
-                      <p className="text-xs text-cult-lighter-gray mb-1">Minimum</p>
-                      <p className="text-lg font-bold text-cult-white">
+                    <div className="p-3 bg-cult-surface">
+                      <p className="text-xs text-cult-text-muted mb-1">Minimum</p>
+                      <p className="text-lg font-bold text-cult-text-primary">
                         {projection.minUnits} units
                       </p>
                     </div>
-                    <div className="p-3 bg-cult-near-black">
-                      <p className="text-xs text-cult-lighter-gray mb-1">Maximum</p>
-                      <p className="text-lg font-bold text-cult-white">
+                    <div className="p-3 bg-cult-surface">
+                      <p className="text-xs text-cult-text-muted mb-1">Maximum</p>
+                      <p className="text-lg font-bold text-cult-text-primary">
                         {projection.maxUnits} units
                       </p>
                     </div>
@@ -474,22 +474,22 @@ export function ConversionsManagement() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="p-3 bg-cult-near-black">
-                    <p className="text-sm text-cult-light-gray mb-1">Required Input Weight</p>
+                  <div className="p-3 bg-cult-surface">
+                    <p className="text-sm text-cult-text-muted mb-1">Required Input Weight</p>
                     <p className="text-2xl font-bold text-cult-success">
                       {projection.requiredWeight}g
                     </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-3 bg-cult-near-black">
-                      <p className="text-xs text-cult-lighter-gray mb-1">Minimum</p>
-                      <p className="text-lg font-bold text-cult-white">
+                    <div className="p-3 bg-cult-surface">
+                      <p className="text-xs text-cult-text-muted mb-1">Minimum</p>
+                      <p className="text-lg font-bold text-cult-text-primary">
                         {projection.minWeight}g
                       </p>
                     </div>
-                    <div className="p-3 bg-cult-near-black">
-                      <p className="text-xs text-cult-lighter-gray mb-1">Maximum</p>
-                      <p className="text-lg font-bold text-cult-white">
+                    <div className="p-3 bg-cult-surface">
+                      <p className="text-xs text-cult-text-muted mb-1">Maximum</p>
+                      <p className="text-lg font-bold text-cult-text-primary">
                         {projection.maxWeight}g
                       </p>
                     </div>
@@ -497,13 +497,13 @@ export function ConversionsManagement() {
                 </div>
               )}
 
-              <div className="mt-4 p-2 bg-cult-near-black text-center">
-                <p className="text-xs text-cult-lighter-gray">
-                  Confidence Level: <span className="font-bold text-cult-white">{projection.confidence}</span>
+              <div className="mt-4 p-2 bg-cult-surface text-center">
+                <p className="text-xs text-cult-text-muted">
+                  Confidence Level: <span className="font-bold text-cult-text-primary">{projection.confidence}</span>
                 </p>
               </div>
 
-              <p className="text-xs text-cult-light-gray mt-4 italic">
+              <p className="text-xs text-cult-text-muted mt-4 italic">
                 Projections are based on historical conversion data from the last 90 days.
                 Ranges represent 95% confidence intervals.
               </p>

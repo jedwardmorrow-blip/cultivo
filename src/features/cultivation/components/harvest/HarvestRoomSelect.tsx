@@ -1,8 +1,8 @@
 import { Flower, ChevronRight } from 'lucide-react';
 import type { GrowRoom, PlantGroup } from '../../types';
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-const GLASS_HOVER = 'hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300';
+const GLASS = 'rounded-cult border border-cult-border bg-cult-surface';
+const GLASS_HOVER = 'hover:bg-cult-surface-raised hover:border-cult-border-strong transition-colors duration-150';
 
 interface HarvestRoomSelectProps {
   flowerRooms: GrowRoom[];

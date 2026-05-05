@@ -409,12 +409,12 @@ export default function CalendarPage() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-1">
-            <h1 className="font-display text-2xl text-cult-white tracking-wide">Calendar</h1>
+            <h1 className="font-display text-2xl text-cult-text-primary tracking-wide">Calendar</h1>
             {canViewAllTodos && (
               <button
                 onClick={() => { setTeamView(!teamView); setFilterUser('all') }}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono
-                  bg-cult-muted border border-cult-border text-cult-text hover:text-cult-white transition-colors"
+                  bg-cult-muted border border-cult-border text-cult-text hover:text-cult-text-primary transition-colors"
               >
                 {teamView ? <User size={13} /> : <Users size={13} />}
                 {teamView ? 'My Calendar' : 'Team Calendar'}
@@ -436,7 +436,7 @@ export default function CalendarPage() {
                 <ChevronLeft size={16} className="text-cult-gold" />
               </button>
 
-              <h2 className="font-display text-lg text-cult-white min-w-[180px] text-center">
+              <h2 className="font-display text-lg text-cult-text-primary min-w-[180px] text-center">
                 {monthName}
               </h2>
 
@@ -457,7 +457,7 @@ export default function CalendarPage() {
                   <select
                     value={filterUser}
                     onChange={(e) => setFilterUser(e.target.value)}
-                    className="bg-transparent text-xs font-mono text-cult-white outline-none cursor-pointer"
+                    className="bg-transparent text-xs font-mono text-cult-text-primary outline-none cursor-pointer"
                   >
                     <option value="all" className="bg-cult-dark">All Members</option>
                     {teamMembers.map(m => (
@@ -543,7 +543,7 @@ export default function CalendarPage() {
                       ? 'text-cult-text'
                       : isTodayDate
                         ? 'text-cult-gold'
-                        : 'text-cult-white'
+                        : 'text-cult-text-primary'
                   }`}
                 >
                   {date.getDate()}
@@ -566,7 +566,7 @@ export default function CalendarPage() {
         <div className="w-80 flex-shrink-0 flex flex-col bg-cult-dark border border-cult-border rounded-lg overflow-hidden">
           {/* Detail Header */}
           <div className="bg-cult-muted border-b border-cult-border px-4 py-3">
-            <h3 className="font-display text-sm text-cult-white tracking-wide">
+            <h3 className="font-display text-sm text-cult-text-primary tracking-wide">
               {new Intl.DateTimeFormat('en-US', {
                 weekday: 'long',
                 month: 'short',
@@ -678,7 +678,7 @@ function TodoDetailItem({
           className={`text-xs ${
             todo.completed
               ? 'text-cult-text line-through'
-              : 'text-cult-white'
+              : 'text-cult-text-primary'
           }`}
         >
           {todo.title}

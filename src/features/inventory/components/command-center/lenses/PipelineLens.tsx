@@ -95,22 +95,22 @@ export function PipelineLens({ onBatchClick }: PipelineLensProps) {
     <div className="space-y-4">
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Batches</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">{kpis.batchCount}</p>
           <p className="text-[10px] text-white/30">{kpis.uniqueStrains} strains</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Sellable</span>
           <p className="text-xl font-bold text-emerald-400 tabular-nums mt-1">{gramsToLbs(kpis.totalSellable)} lbs</p>
           <p className="text-[10px] text-white/30">ready to move</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Pipeline</span>
           <p className="text-xl font-bold text-amber-400 tabular-nums mt-1">{gramsToLbs(kpis.totalPipeline)} lbs</p>
           <p className="text-[10px] text-white/30">in process</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Total Potential</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">{gramsToLbs(kpis.totalPotential)} lbs</p>
           <p className="text-[10px] text-white/30">all material</p>
@@ -127,7 +127,7 @@ export function PipelineLens({ onBatchClick }: PipelineLensProps) {
             onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
             placeholder="Search batch or strain…"
             aria-label="Search batches"
-            className="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none"
+            className="glass-input w-full pl-8 pr-3 py-1.5 rounded-cult text-sm text-white placeholder:text-white/30 focus:outline-none"
           />
         </div>
         <button
@@ -188,10 +188,10 @@ export function PipelineLens({ onBatchClick }: PipelineLensProps) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.02, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                       onClick={() => setSelectedBatchId((prev) => (prev === batch.batch_id ? null : batch.batch_id))}
-                      className={`w-full flex items-center gap-0 rounded-xl transition-all active:scale-[0.995] ${
+                      className={`w-full flex items-center gap-0 rounded-cult transition-all active:scale-[0.995] ${
                         selectedBatchId === batch.batch_id
                           ? 'bg-cult-surface-overlay ring-1 ring-cult-border-active'
-                          : 'hover:bg-cult-near-black'
+                          : 'hover:bg-cult-surface'
                       } py-2 px-2`}
                     >
                       {/* Batch label */}
@@ -284,25 +284,25 @@ function BatchDetailSidebar({ batch }: { batch: BatchDetailRow }) {
 
       {/* Weight KPIs */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-cult-near-black rounded-xl p-3 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-3 border border-cult-border-subtle">
           <span className="text-[10px] text-white/40 uppercase tracking-wider">Sellable</span>
           <p className="text-lg font-bold text-emerald-400 tabular-nums mt-0.5">
             {gramsToLbs(batch.sellable_now_g)} lbs
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-3 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-3 border border-cult-border-subtle">
           <span className="text-[10px] text-white/40 uppercase tracking-wider">Pipeline</span>
           <p className="text-lg font-bold text-amber-400 tabular-nums mt-0.5">
             {gramsToLbs(batch.pipeline_raw_g)} lbs
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-3 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-3 border border-cult-border-subtle">
           <span className="text-[10px] text-white/40 uppercase tracking-wider">Total</span>
           <p className="text-lg font-bold text-white tabular-nums mt-0.5">
             {gramsToLbs(batch.total_potential_g)} lbs
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-3 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-3 border border-cult-border-subtle">
           <span className="text-[10px] text-white/40 uppercase tracking-wider">Waste</span>
           <p className="text-lg font-bold text-rose-400/70 tabular-nums mt-0.5">
             {gramsToLbs(batch.waste_grams)} lbs
@@ -326,7 +326,7 @@ function BatchDetailSidebar({ batch }: { batch: BatchDetailRow }) {
                   style={{ backgroundColor: stage.color, opacity: 0.85 }}
                 />
                 <span className="text-xs text-white/60 w-14">{stage.label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-cult-near-black overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-cult-surface overflow-hidden">
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${pct}%`, backgroundColor: stage.color, opacity: 0.75 }}
@@ -414,7 +414,7 @@ function PipelineOverview({ batches }: { batches: BatchDetailRow[] }) {
       {/* Stage aggregation */}
       <div>
         <span className="text-xs text-white/40 uppercase tracking-wider font-medium">Weight by Stage</span>
-        <div className="flex h-3 rounded-full overflow-hidden bg-cult-near-black mt-2">
+        <div className="flex h-3 rounded-full overflow-hidden bg-cult-surface mt-2">
           {stageAgg.map((s) => (
             <div
               key={s.key}

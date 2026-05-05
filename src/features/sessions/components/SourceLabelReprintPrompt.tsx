@@ -285,10 +285,10 @@ export function SourceLabelReprintPrompt({
           <h3 className="text-sm font-bold text-cult-warning/80 mb-1">
             Reprint Source Label?
           </h3>
-          <p className="text-sm text-cult-silver mb-3">
+          <p className="text-sm text-cult-text-secondary mb-3">
             <span className="font-mono text-cult-warning">{sourcePackageId}</span> now has{' '}
-            <span className="font-bold text-cult-white">{remainingWeight.toFixed(1)}g</span> remaining
-            <span className="text-cult-light-gray"> (was {originalWeight.toFixed(1)}g, pulled {pullWeight.toFixed(1)}g)</span>.
+            <span className="font-bold text-cult-text-primary">{remainingWeight.toFixed(1)}g</span> remaining
+            <span className="text-cult-text-muted"> (was {originalWeight.toFixed(1)}g, pulled {pullWeight.toFixed(1)}g)</span>.
             {' '}The physical label still shows the old weight.
           </p>
 
@@ -321,7 +321,7 @@ export function SourceLabelReprintPrompt({
               </button>
               <button
                 onClick={onDone}
-                className="flex items-center gap-1 px-4 py-1.5 bg-cult-dark-gray hover:bg-cult-medium-gray text-cult-silver rounded text-sm transition"
+                className="flex items-center gap-1 px-4 py-1.5 bg-cult-surface hover:bg-cult-border text-cult-text-secondary rounded text-sm transition"
               >
                 <X className="w-3 h-3" />
                 Skip

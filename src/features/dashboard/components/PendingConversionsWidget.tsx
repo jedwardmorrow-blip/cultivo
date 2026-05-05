@@ -32,10 +32,10 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
   if (isLoading) {
     return (
       <div className="animate-pulse">
-        <div className="h-6 bg-cult-dark-gray rounded w-48 mb-4"></div>
+        <div className="h-6 bg-cult-surface rounded w-48 mb-4"></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="h-24 bg-cult-dark-gray rounded"></div>
-          <div className="h-24 bg-cult-dark-gray rounded"></div>
+          <div className="h-24 bg-cult-surface rounded"></div>
+          <div className="h-24 bg-cult-surface rounded"></div>
         </div>
       </div>
     );
@@ -59,16 +59,16 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
       <div>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Package className="w-6 h-6 text-cult-white" />
-            <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+            <Package className="w-6 h-6 text-cult-text-primary" />
+            <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
               Pending Conversions
             </h2>
           </div>
         </div>
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-6 text-center">
           <CheckCircle2 className="w-12 h-12 text-cult-success mx-auto mb-3" />
-          <p className="text-cult-light-gray text-sm">All sessions finalized</p>
-          <p className="text-cult-light-gray text-xs mt-1">
+          <p className="text-cult-text-muted text-sm">All sessions finalized</p>
+          <p className="text-cult-text-muted text-xs mt-1">
             No sessions awaiting conversion to inventory
           </p>
         </div>
@@ -106,15 +106,15 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Package className="w-6 h-6 text-cult-white" />
-          <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+          <Package className="w-6 h-6 text-cult-text-primary" />
+          <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
             Pending Conversions
           </h2>
         </div>
         {onNavigateToConversions && (
           <button
             onClick={onNavigateToConversions}
-            className="flex items-center gap-2 text-sm font-medium text-cult-white hover:text-cult-green transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-cult-text-primary hover:text-cult-green transition-colors"
           >
             View All
             <ArrowRight className="w-4 h-4" />
@@ -125,13 +125,13 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Sessions */}
         <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-4">
-          <div className="text-xs font-medium text-cult-light-gray uppercase tracking-wide mb-2">
+          <div className="text-xs font-medium text-cult-text-muted uppercase tracking-wide mb-2">
             Pending Sessions
           </div>
-          <div className="text-3xl font-bold text-cult-white mb-1">
+          <div className="text-3xl font-bold text-cult-text-primary mb-1">
             {totalSessions}
           </div>
-          <div className="flex flex-wrap gap-2 text-xs text-cult-light-gray">
+          <div className="flex flex-wrap gap-2 text-xs text-cult-text-muted">
             {trimCount > 0 && <span>{trimCount} trim</span>}
             {packagingCount > 0 && <span>{packagingCount} pkg</span>}
             {buckingCount > 0 && <span>{buckingCount} buck</span>}
@@ -141,12 +141,12 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
         {/* Pending Weight */}
         {totalWeight > 0 && (
           <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-4">
-            <div className="text-xs font-medium text-cult-light-gray uppercase tracking-wide mb-2">
+            <div className="text-xs font-medium text-cult-text-muted uppercase tracking-wide mb-2">
               Total Weight
             </div>
-            <div className="text-3xl font-bold text-cult-white">
+            <div className="text-3xl font-bold text-cult-text-primary">
               {totalWeight.toFixed(0)}
-              <span className="text-base font-normal text-cult-light-gray ml-1">g</span>
+              <span className="text-base font-normal text-cult-text-muted ml-1">g</span>
             </div>
           </div>
         )}
@@ -154,10 +154,10 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
         {/* Pending Units */}
         {totalUnits > 0 && (
           <div className="bg-cult-surface-raised border border-cult-border rounded-cult p-4">
-            <div className="text-xs font-medium text-cult-light-gray uppercase tracking-wide mb-2">
+            <div className="text-xs font-medium text-cult-text-muted uppercase tracking-wide mb-2">
               Total Units
             </div>
-            <div className="text-3xl font-bold text-cult-white">
+            <div className="text-3xl font-bold text-cult-text-primary">
               {totalUnits}
             </div>
           </div>
@@ -170,12 +170,12 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
             : 'bg-cult-surface-raised border-cult-border'
         }`}>
           <div className={`text-xs font-medium uppercase tracking-wide mb-2 ${
-            isUrgent ? 'text-cult-warning' : 'text-cult-light-gray'
+            isUrgent ? 'text-cult-warning' : 'text-cult-text-muted'
           }`}>
             Oldest Pending
           </div>
           <div className={`text-3xl font-bold ${
-            isUrgent ? 'text-cult-warning' : 'text-cult-white'
+            isUrgent ? 'text-cult-warning' : 'text-cult-text-primary'
           }`}>
             {daysSinceOldest !== null ? (
               <>
@@ -185,7 +185,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
                 </span>
               </>
             ) : (
-              <span className="text-cult-light-gray">&mdash;</span>
+              <span className="text-cult-text-muted">&mdash;</span>
             )}
           </div>
           {isUrgent && (
@@ -202,7 +202,7 @@ export function PendingConversionsWidget({ onNavigateToConversions }: PendingCon
         <div className="mt-4">
           <button
             onClick={onNavigateToConversions}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cult-white text-cult-black hover:bg-cult-green transition-all duration-200 font-bold uppercase tracking-wider text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-green transition-all duration-200 font-bold uppercase tracking-wider text-sm"
           >
             <Package className="w-5 h-5" />
             Finalize Pending Sessions

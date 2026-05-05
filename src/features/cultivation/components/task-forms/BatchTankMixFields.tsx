@@ -67,8 +67,8 @@ interface Props {
   roomId: string;
 }
 
-const inputClass = 'w-full bg-cult-charcoal border border-cult-dark-gray text-cult-white text-sm py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent tabular-nums';
-const labelClass = 'block text-[10px] text-cult-medium-gray uppercase tracking-wider font-semibold mb-1';
+const inputClass = 'w-full bg-cult-surface-raised border border-cult-surface text-cult-text-primary text-sm py-2.5 px-3 rounded-sm focus:outline-none focus:border-cult-accent tabular-nums';
+const labelClass = 'block text-[10px] text-cult-border uppercase tracking-wider font-semibold mb-1';
 
 /** Format a large mL number with comma separation */
 function fmtMl(ml: number): string {
@@ -84,7 +84,7 @@ function PhaseLabel({ phase, week }: { phase: string; week: number }) {
   const labels: Record<string, string> = { clone: 'Clone', veg: 'Veg', flower: 'Flower' };
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-sm border ${colors[phase] ?? 'bg-cult-charcoal/40 text-cult-silver border-cult-dark-gray/50'}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-sm border ${colors[phase] ?? 'bg-cult-surface-raised/40 text-cult-text-secondary border-cult-surface/50'}`}>
       {labels[phase] ?? phase} W{week}
     </span>
   );
@@ -105,17 +105,17 @@ function ProductRow({ entry, gallons, override, onOverride }: {
 
   return (
     <div className={`flex items-center gap-3 py-2.5 px-3 rounded-sm border transition-colors ${
-      isOverridden ? 'bg-cult-warning-muted border-cult-warning/30' : 'bg-cult-charcoal/30 border-cult-dark-gray/40'
+      isOverridden ? 'bg-cult-warning-muted border-cult-warning/30' : 'bg-cult-surface-raised/30 border-cult-surface/40'
     }`}>
       {/* Product info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-cult-white">{entry.product.name}</span>
+          <span className="text-sm font-semibold text-cult-text-primary">{entry.product.name}</span>
           {isVariable && (
             <span className="text-[9px] uppercase tracking-wider text-cult-warning bg-cult-warning-muted px-1.5 py-0.5 rounded-sm">pH Up</span>
           )}
           {entry.notes && (
-            <span className="text-[9px] text-cult-medium-gray italic truncate">{entry.notes}</span>
+            <span className="text-[9px] text-cult-border italic truncate">{entry.notes}</span>
           )}
         </div>
       </div>
@@ -133,17 +133,17 @@ function ProductRow({ entry, gallons, override, onOverride }: {
             onChange={(e) => onOverride(entry.product.id, Number(e.target.value))}
             onBlur={() => setEditing(false)}
             autoFocus
-            className="w-full bg-cult-near-black border border-cult-accent text-cult-white text-xs text-right py-1 px-2 rounded-sm focus:outline-none tabular-nums"
+            className="w-full bg-cult-surface border border-cult-accent text-cult-text-primary text-xs text-right py-1 px-2 rounded-sm focus:outline-none tabular-nums"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-xs text-cult-light-gray hover:text-cult-white transition-colors tabular-nums"
+            className="text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors tabular-nums"
             title="Click to adjust rate"
           >
-            {effectiveRate} {hasRange && <span className="text-cult-medium-gray">({entry.ml_per_gal}-{entry.ml_per_gal_max})</span>}
-            <span className="text-cult-medium-gray ml-1">mL/gal</span>
+            {effectiveRate} {hasRange && <span className="text-cult-border">({entry.ml_per_gal}-{entry.ml_per_gal_max})</span>}
+            <span className="text-cult-border ml-1">mL/gal</span>
           </button>
         )}
       </div>
@@ -151,9 +151,9 @@ function ProductRow({ entry, gallons, override, onOverride }: {
       {/* Total mL */}
       <div className="w-24 text-right">
         {!isVariable && gallons > 0 ? (
-          <span className="text-sm font-mono font-bold text-cult-white">{fmtMl(totalMl)} <span className="text-[10px] text-cult-medium-gray font-normal">mL</span></span>
+          <span className="text-sm font-mono font-bold text-cult-text-primary">{fmtMl(totalMl)} <span className="text-[10px] text-cult-border font-normal">mL</span></span>
         ) : (
-          <span className="text-xs text-cult-dark-gray">—</span>
+          <span className="text-xs text-cult-surface">—</span>
         )}
       </div>
     </div>
@@ -165,7 +165,7 @@ function TargetBadge({ label, value, unit, inRange }: { label: string; value: st
     <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border text-xs ${
       inRange === true ? 'border-cult-success/40 bg-cult-success-muted text-cult-success'
         : inRange === false ? 'border-cult-danger/40 bg-cult-danger-muted text-cult-danger'
-          : 'border-cult-dark-gray/50 bg-cult-charcoal/20 text-cult-medium-gray'
+          : 'border-cult-surface/50 bg-cult-surface-raised/20 text-cult-border'
     }`}>
       <span className="uppercase tracking-wider text-[10px] font-semibold opacity-70">{label}</span>
       <span className="font-mono font-semibold">{value}</span>
@@ -256,7 +256,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
   if (loading) {
     return (
       <div className="py-6 text-center">
-        <div className="animate-pulse text-sm text-cult-medium-gray">Loading feed recipe...</div>
+        <div className="animate-pulse text-sm text-cult-border">Loading feed recipe...</div>
       </div>
     );
   }
@@ -305,7 +305,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
         </div>
 
         {/* Manual readings */}
-        <div className="border-t border-cult-dark-gray/40 pt-4">
+        <div className="border-t border-cult-surface/40 pt-4">
           <div className="flex items-center gap-2 mb-3">
             <span className={labelClass}>Post-Mix Readings</span>
             <span className="text-[9px] text-cult-danger uppercase tracking-wider font-semibold">Required</span>
@@ -320,7 +320,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                 className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                   data.reading_mode === 'ec'
                     ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
-                    : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
+                    : 'text-cult-border border-cult-surface/50 hover:text-cult-text-muted'
                 }`}
               >
                 EC
@@ -331,7 +331,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                 className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                   data.reading_mode === 'ppm'
                     ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
-                    : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
+                    : 'text-cult-border border-cult-surface/50 hover:text-cult-text-muted'
                 }`}
               >
                 PPM
@@ -361,7 +361,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                       type="button"
                       onClick={() => set('ppm_scale', '500')}
                       className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm border transition-colors ${
-                        data.ppm_scale === '500' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-dark-gray border-cult-dark-gray/40'
+                        data.ppm_scale === '500' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-surface border-cult-surface/40'
                       }`}
                     >
                       500
@@ -370,7 +370,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                       type="button"
                       onClick={() => set('ppm_scale', '700')}
                       className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm border transition-colors ${
-                        data.ppm_scale === '700' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-dark-gray border-cult-dark-gray/40'
+                        data.ppm_scale === '700' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-surface border-cult-surface/40'
                       }`}
                     >
                       700
@@ -418,16 +418,16 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
         <div className="flex items-center gap-2">
           <Beaker className="w-4 h-4 text-cult-info" />
           <PhaseLabel phase={recipe.phase} week={recipe.week_number} />
-          <span className="text-[10px] text-cult-medium-gray">Day {daysInStage ?? '?'}</span>
+          <span className="text-[10px] text-cult-border">Day {daysInStage ?? '?'}</span>
         </div>
-        <span className="text-[10px] text-cult-dark-gray uppercase tracking-wider">{recipe.program_name}</span>
+        <span className="text-[10px] text-cult-surface uppercase tracking-wider">{recipe.program_name}</span>
       </div>
 
       {/* ── Target ranges (collapsible) ── */}
       <button
         type="button"
         onClick={() => setShowTargets((v) => !v)}
-        className="flex items-center gap-1.5 text-[10px] text-cult-medium-gray hover:text-cult-light-gray uppercase tracking-wider font-semibold transition-colors"
+        className="flex items-center gap-1.5 text-[10px] text-cult-border hover:text-cult-text-muted uppercase tracking-wider font-semibold transition-colors"
       >
         {showTargets ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         Target Ranges
@@ -470,8 +470,8 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
         <div className="flex items-center justify-between mb-2">
           <span className={labelClass}>Mixing Order</span>
           {gallons > 0 && (
-            <span className="text-[10px] text-cult-medium-gray">
-              Total for <span className="font-mono font-bold text-cult-white">{gallons}</span> gal
+            <span className="text-[10px] text-cult-border">
+              Total for <span className="font-mono font-bold text-cult-text-primary">{gallons}</span> gal
             </span>
           )}
         </div>
@@ -489,7 +489,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
       </div>
 
       {/* ── Completion readings ── */}
-      <div className="border-t border-cult-dark-gray/40 pt-4">
+      <div className="border-t border-cult-surface/40 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <span className={labelClass}>Post-Mix Readings</span>
           <span className="text-[9px] text-cult-danger uppercase tracking-wider font-semibold">Required</span>
@@ -504,7 +504,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
               className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                 data.reading_mode === 'ec'
                   ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
-                  : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
+                  : 'text-cult-border border-cult-surface/50 hover:text-cult-text-muted'
               }`}
             >
               EC
@@ -515,7 +515,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
               className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-sm border transition-colors ${
                 data.reading_mode === 'ppm'
                   ? 'bg-cult-info/20 text-cult-info border-cult-info/40'
-                  : 'text-cult-medium-gray border-cult-dark-gray/50 hover:text-cult-light-gray'
+                  : 'text-cult-border border-cult-surface/50 hover:text-cult-text-muted'
               }`}
             >
               PPM
@@ -545,7 +545,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                     type="button"
                     onClick={() => set('ppm_scale', '500')}
                     className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm border transition-colors ${
-                      data.ppm_scale === '500' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-dark-gray border-cult-dark-gray/40'
+                      data.ppm_scale === '500' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-surface border-cult-surface/40'
                     }`}
                   >
                     500
@@ -554,7 +554,7 @@ export function BatchTankMixFields({ data, onChange, roomId }: Props) {
                     type="button"
                     onClick={() => set('ppm_scale', '700')}
                     className={`px-2 py-0.5 text-[10px] font-semibold rounded-sm border transition-colors ${
-                      data.ppm_scale === '700' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-dark-gray border-cult-dark-gray/40'
+                      data.ppm_scale === '700' ? 'bg-cult-accent/20 text-cult-accent border-cult-accent/40' : 'text-cult-surface border-cult-surface/40'
                     }`}
                   >
                     700

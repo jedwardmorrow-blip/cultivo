@@ -30,7 +30,7 @@ const STATUS_TONE: Record<
   },
   abandoned: {
     label: 'Abandoned',
-    className: 'bg-white/[0.04] border-white/[0.10] text-cult-text-muted',
+    className: 'bg-cult-surface-inset border-cult-border-subtle text-cult-text-muted',
     Icon: XCircle,
   },
 };
@@ -50,19 +50,19 @@ export function PlantAuditHub({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
+          <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">
             Plant Audit
           </h1>
-          <p className="text-sm text-cult-text-secondary mt-1">
-            Walk the rooms, confirm counts, fix the baseline.
+          <p className="text-sm text-cult-text-secondary mt-1.5">
+            Walk the rooms, confirm counts, fix the baseline
           </p>
         </div>
         <button
           type="button"
           onClick={onStartNew}
-          className="px-5 py-2.5 rounded-xl bg-cult-accent text-cult-opaque-black font-bold hover:bg-cult-accent-hover transition flex items-center gap-2"
+          className="px-5 py-2 rounded border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black transition-colors flex items-center gap-2 font-mono uppercase tracking-[0.16em] text-[11px]"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           Start New Audit
         </button>
       </div>
@@ -73,9 +73,9 @@ export function PlantAuditHub({
         </div>
       )}
 
-      <div className="glass-card rounded-cult border border-white/[0.10] overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02]">
-          <div className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
+      <div className="bg-cult-surface rounded-cult border border-cult-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset">
+          <div className="font-mono uppercase tracking-[0.14em] text-[11px] text-cult-text-muted">
             Active Audits
           </div>
         </div>
@@ -90,7 +90,7 @@ export function PlantAuditHub({
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-cult-border-subtle">
             {active.map((s) => {
               const tone = STATUS_TONE[s.status];
               const Icon = tone.Icon;
@@ -99,7 +99,7 @@ export function PlantAuditHub({
                   key={s.id}
                   type="button"
                   onClick={() => onResume(s.id)}
-                  className="w-full p-4 flex items-center justify-between gap-4 hover:bg-white/[0.04] transition text-left"
+                  className="w-full p-4 flex items-center justify-between gap-4 hover:bg-cult-surface-subtle transition-colors text-left"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-bold text-cult-text-primary truncate">
@@ -116,7 +116,7 @@ export function PlantAuditHub({
                     )}
                   </div>
                   <div
-                    className={`px-2.5 py-1 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${tone.className}`}
+                    className={`px-2.5 py-1 rounded border font-mono uppercase tracking-[0.14em] text-[10px] flex items-center gap-1.5 ${tone.className}`}
                   >
                     <Icon className="w-3 h-3" />
                     {tone.label}
@@ -129,13 +129,13 @@ export function PlantAuditHub({
       </div>
 
       {sessions.filter((s) => s.status === 'applied' || s.status === 'abandoned').length > 0 && (
-        <div className="glass-card rounded-cult border border-white/[0.10] overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02]">
-            <div className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
+        <div className="bg-cult-surface rounded-cult border border-cult-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset">
+            <div className="font-mono uppercase tracking-[0.14em] text-[11px] text-cult-text-muted">
               Recent
             </div>
           </div>
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-cult-border-subtle">
             {sessions
               .filter((s) => s.status === 'applied' || s.status === 'abandoned')
               .slice(0, 10)
@@ -156,7 +156,7 @@ export function PlantAuditHub({
                       </div>
                     </div>
                     <div
-                      className={`px-2.5 py-1 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${tone.className}`}
+                      className={`px-2.5 py-1 rounded border font-mono uppercase tracking-[0.14em] text-[10px] flex items-center gap-1.5 ${tone.className}`}
                     >
                       <Icon className="w-3 h-3" />
                       {tone.label}

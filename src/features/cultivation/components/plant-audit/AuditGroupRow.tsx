@@ -159,7 +159,7 @@ export function AuditGroupRow({
     if (status === 'orphan_created') {
       return 'bg-cult-pending/10 border-cult-pending/30';
     }
-    return 'bg-white/[0.04] border-white/[0.10]';
+    return 'bg-cult-surface-inset border-cult-border-subtle';
   })();
 
   return (
@@ -188,13 +188,13 @@ export function AuditGroupRow({
               onChange={(e) => setPhysicalInput(e.target.value)}
               disabled={disabled || saving}
               placeholder="Count"
-              className="glass-input w-20 px-2 py-1.5 rounded-xl text-center text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
+              className="glass-input w-20 px-2 py-1.5 rounded-cult text-center text-cult-text-primary focus:border-cult-accent focus:ring-2 focus:ring-cult-accent/20"
             />
             <button
               type="button"
               onClick={handleConfirm}
               disabled={disabled || saving || !hasValidPhysical}
-              className="p-2 rounded-xl bg-cult-success/20 border border-cult-success/40 text-cult-success hover:bg-cult-success/30 transition disabled:opacity-40"
+              className="p-2 rounded-cult bg-cult-success/20 border border-cult-success/40 text-cult-success hover:bg-cult-success/30 transition disabled:opacity-40"
               title="Confirm count"
             >
               <Check className="w-4 h-4" />
@@ -203,7 +203,7 @@ export function AuditGroupRow({
               type="button"
               onClick={() => setShowNotFoundForm(true)}
               disabled={disabled || saving}
-              className="p-2 rounded-xl bg-cult-danger/20 border border-cult-danger/40 text-cult-danger hover:bg-cult-danger/30 transition disabled:opacity-40"
+              className="p-2 rounded-cult bg-cult-danger/20 border border-cult-danger/40 text-cult-danger hover:bg-cult-danger/30 transition disabled:opacity-40"
               title="Not found"
             >
               <Trash2 className="w-4 h-4" />
@@ -212,7 +212,7 @@ export function AuditGroupRow({
               type="button"
               onClick={handleSkip}
               disabled={disabled || saving}
-              className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.10] text-cult-text-secondary hover:bg-white/[0.08] transition disabled:opacity-40"
+              className="p-2 rounded border border-cult-border-subtle bg-cult-surface-inset text-cult-text-secondary hover:bg-cult-surface-subtle transition-colors disabled:opacity-40"
               title="Skip"
             >
               <SkipForward className="w-4 h-4" />
@@ -248,7 +248,7 @@ export function AuditGroupRow({
                 type="button"
                 onClick={handleReset}
                 disabled={disabled || saving}
-                className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.10] text-cult-text-secondary hover:bg-white/[0.08] transition disabled:opacity-40"
+                className="p-2 rounded border border-cult-border-subtle bg-cult-surface-inset text-cult-text-secondary hover:bg-cult-surface-subtle transition-colors disabled:opacity-40"
                 title="Reset"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -281,10 +281,10 @@ export function AuditGroupRow({
               key={opt.value}
               type="button"
               onClick={() => setCause(opt.value)}
-              className={`px-2 py-1 text-xs rounded-xl border transition ${
+              className={`px-2 py-1 text-xs rounded-cult border transition ${
                 cause === opt.value
                   ? 'bg-cult-danger/20 border-cult-danger/40 text-cult-danger'
-                  : 'bg-white/[0.04] border-white/[0.10] text-cult-text-secondary hover:bg-white/[0.06]'
+                  : 'bg-cult-surface-inset border-cult-border-subtle text-cult-text-secondary hover:bg-cult-surface-subtle'
               }`}
             >
               {opt.label}
@@ -306,10 +306,10 @@ export function AuditGroupRow({
                 key={opt.value}
                 type="button"
                 onClick={() => setCause(opt.value)}
-                className={`px-2 py-1 text-xs rounded-xl border transition ${
+                className={`px-2 py-1 text-xs rounded-cult border transition ${
                   cause === opt.value
                     ? 'bg-cult-danger/20 border-cult-danger/40 text-cult-danger'
-                    : 'bg-white/[0.04] border-white/[0.10] text-cult-text-secondary hover:bg-white/[0.06]'
+                    : 'bg-cult-surface-inset border-cult-border-subtle text-cult-text-secondary hover:bg-cult-surface-subtle'
                 }`}
               >
                 {opt.label}
@@ -321,14 +321,14 @@ export function AuditGroupRow({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Notes (optional)"
-            className="glass-input w-full px-2 py-1.5 rounded-xl text-sm text-cult-text-primary focus:border-cult-danger focus:ring-2 focus:ring-cult-danger/20"
+            className="glass-input w-full px-2 py-1.5 rounded-cult text-sm text-cult-text-primary focus:border-cult-danger focus:ring-2 focus:ring-cult-danger/20"
           />
           <div className="flex gap-2">
             <button
               type="button"
               onClick={handleNotFound}
               disabled={saving}
-              className="flex-1 px-3 py-1.5 rounded-xl bg-cult-danger text-white text-xs font-bold hover:bg-cult-danger/80 transition disabled:opacity-50"
+              className="flex-1 px-3 py-1.5 rounded-cult bg-cult-danger text-white text-xs font-bold hover:bg-cult-danger/80 transition disabled:opacity-50"
             >
               Confirm Not Found
             </button>
@@ -336,7 +336,7 @@ export function AuditGroupRow({
               type="button"
               onClick={() => setShowNotFoundForm(false)}
               disabled={saving}
-              className="px-3 py-1.5 rounded-xl border border-white/[0.15] text-cult-text-secondary text-xs hover:bg-white/[0.06] transition"
+              className="px-3 py-1.5 rounded border border-cult-border text-cult-text-secondary text-xs hover:bg-cult-surface-subtle transition-colors"
             >
               Cancel
             </button>

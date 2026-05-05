@@ -175,6 +175,7 @@ export function DistributionCommandCenter() {
 
   return (
     <div onDragEnd={handleDragEnd}>
+      <h1 className="sr-only">Distribution Command Center</h1>
       {/* KPI Strip */}
       <DistributionKpiStrip
         shippingToday={data.shippingToday}
@@ -193,7 +194,7 @@ export function DistributionCommandCenter() {
       <div className="flex justify-end mb-3">
         <button
           onClick={() => setShowQuickDispatch(true)}
-          className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-xl
+          className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-cult
             bg-[#E8E0D4]/10 text-[#E8E0D4] border border-[#E8E0D4]/20
             hover:bg-[#E8E0D4]/15 hover:border-[#E8E0D4]/30 transition-all
             shadow-[0_0_12px_rgba(232,224,212,0.06)]"

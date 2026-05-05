@@ -18,8 +18,8 @@ interface PlantGroupDetailPanelProps {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-cult-light-gray uppercase tracking-wider">{label}</span>
-      <span className="text-cult-white text-sm font-semibold">{value}</span>
+      <span className="text-xs text-cult-text-muted uppercase tracking-wider">{label}</span>
+      <span className="text-cult-text-primary text-sm font-semibold">{value}</span>
     </div>
   );
 }
@@ -60,21 +60,21 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
-      <div className="bg-cult-near-black border-l border-cult-medium-gray w-full max-w-sm h-full overflow-y-auto">
-        <div className="p-5 border-b border-cult-medium-gray">
+      <div className="bg-cult-surface border-l border-cult-border w-full max-w-sm h-full overflow-y-auto">
+        <div className="p-5 border-b border-cult-border">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-bold text-cult-white">{batchNumber ?? '—'}</span>
+                <span className="font-mono text-sm font-bold text-cult-text-primary">{batchNumber ?? '—'}</span>
                 {group.is_mother && (
                   <span className="text-xs border border-cult-warning/40 text-cult-warning px-1.5 py-0.5 uppercase tracking-wider">Mother</span>
                 )}
               </div>
-              <div className="text-xs text-cult-light-gray">{group.strains?.name ?? 'Unknown Strain'}</div>
+              <div className="text-xs text-cult-text-muted">{group.strains?.name ?? 'Unknown Strain'}</div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="p-2 text-cult-border hover:text-cult-text-primary transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -84,7 +84,7 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
               {onMove && (
                 <button
                   onClick={() => { onClose(); onMove(); }}
-                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
                 >
                   <Home className="w-3.5 h-3.5" />
                   Move
@@ -116,18 +116,18 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
 
           {group.notes && (
             <div>
-              <span className="text-xs text-cult-light-gray uppercase tracking-wider">Notes</span>
-              <p className="text-cult-white text-sm mt-1">{group.notes}</p>
+              <span className="text-xs text-cult-text-muted uppercase tracking-wider">Notes</span>
+              <p className="text-cult-text-primary text-sm mt-1">{group.notes}</p>
             </div>
           )}
 
-          <div className="flex border-b border-cult-medium-gray">
+          <div className="flex border-b border-cult-border">
             <button
               onClick={() => setActiveTab('history')}
               className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold transition-colors ${
                 activeTab === 'history'
-                  ? 'text-cult-white border-b-2 border-white -mb-px'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray'
+                  ? 'text-cult-text-primary border-b-2 border-white -mb-px'
+                  : 'text-cult-border hover:text-cult-text-muted'
               }`}
             >
               History
@@ -136,8 +136,8 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
               onClick={() => setActiveTab('plants')}
               className={`px-4 py-2 text-xs uppercase tracking-wider font-semibold transition-colors ${
                 activeTab === 'plants'
-                  ? 'text-cult-white border-b-2 border-white -mb-px'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray'
+                  ? 'text-cult-text-primary border-b-2 border-white -mb-px'
+                  : 'text-cult-border hover:text-cult-text-muted'
               }`}
             >
               Plant IDs
@@ -150,17 +150,17 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
 
           {activeTab === 'history' && (
             loading ? (
-              <p className="text-cult-medium-gray text-sm">Loading history...</p>
+              <p className="text-cult-border text-sm">Loading history...</p>
             ) : (
               <>
                 {group.source_type === 'clone' && (
                   <div>
-                    <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs text-cult-text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Scissors className="w-3 h-3" />
                       Cut Sessions
                     </h4>
                     {cutSessions.length === 0 ? (
-                      <p className="text-cult-medium-gray text-xs">No cut sessions recorded</p>
+                      <p className="text-cult-border text-xs">No cut sessions recorded</p>
                     ) : (
                       <div className="space-y-2">
                         {cutSessions.map((cs, idx) => {
@@ -169,13 +169,13 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
                           const motherStrain = cs.mother_group?.strains?.name ?? 'Unknown';
                           const label = motherBatch ? `${motherBatch} — ${motherStrain}` : motherStrain;
                           return (
-                            <div key={cs.id} className="flex items-start gap-2 text-xs border-l-2 border-cult-dark-gray pl-2">
+                            <div key={cs.id} className="flex items-start gap-2 text-xs border-l-2 border-cult-surface pl-2">
                               <div className="flex-1 min-w-0">
-                                <div className="text-cult-white font-semibold truncate">Cut {idx + 1}: {label}</div>
+                                <div className="text-cult-text-primary font-semibold truncate">Cut {idx + 1}: {label}</div>
                                 {motherPlantId && (
-                                  <div className="text-cult-light-gray font-mono text-xs">Mother ID: {motherPlantId}</div>
+                                  <div className="text-cult-text-muted font-mono text-xs">Mother ID: {motherPlantId}</div>
                                 )}
-                                <div className="text-cult-medium-gray">{cs.cut_count} cuts{cs.cut_date ? ` · ${formatDate(cs.cut_date)}` : ''}</div>
+                                <div className="text-cult-border">{cs.cut_count} cuts{cs.cut_date ? ` · ${formatDate(cs.cut_date)}` : ''}</div>
                               </div>
                             </div>
                           );
@@ -187,26 +187,26 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
 
                 {group.source_type === 'seed' && (
                   <div>
-                    <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <h4 className="text-xs text-cult-text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Sprout className="w-3 h-3" />
                       Origin
                     </h4>
-                    <p className="text-cult-medium-gray text-xs">Seed origin — no mother lineage</p>
+                    <p className="text-cult-border text-xs">Seed origin — no mother lineage</p>
                   </div>
                 )}
 
                 <div>
-                  <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Stage History</h4>
+                  <h4 className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Stage History</h4>
                   {stageHistory.length === 0 ? (
-                    <p className="text-cult-medium-gray text-xs">No transitions yet</p>
+                    <p className="text-cult-border text-xs">No transitions yet</p>
                   ) : (
                     <div className="space-y-1.5">
                       {stageHistory.map((h) => (
                         <div key={h.id} className="flex items-center gap-2 text-xs">
-                          <span className="text-cult-medium-gray">{h.from_stage ?? 'start'}</span>
-                          <ArrowRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
-                          <span className="text-cult-white font-semibold">{h.to_stage}</span>
-                          <span className="text-cult-medium-gray ml-auto">{formatDate(h.transitioned_at)}</span>
+                          <span className="text-cult-border">{h.from_stage ?? 'start'}</span>
+                          <ArrowRight className="w-3 h-3 text-cult-border flex-shrink-0" />
+                          <span className="text-cult-text-primary font-semibold">{h.to_stage}</span>
+                          <span className="text-cult-border ml-auto">{formatDate(h.transitioned_at)}</span>
                         </div>
                       ))}
                     </div>
@@ -214,17 +214,17 @@ export function PlantGroupDetailPanel({ group, onClose, initialTab = 'history', 
                 </div>
 
                 <div>
-                  <h4 className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Room History</h4>
+                  <h4 className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Room History</h4>
                   {roomHistory.length === 0 ? (
-                    <p className="text-cult-medium-gray text-xs">No room transfers</p>
+                    <p className="text-cult-border text-xs">No room transfers</p>
                   ) : (
                     <div className="space-y-1.5">
                       {roomHistory.map((h) => (
                         <div key={h.id} className="flex items-center gap-2 text-xs">
-                          <span className="text-cult-medium-gray">{h.from_room?.room_code ?? h.from_room_id.slice(0, 6)}</span>
-                          <ArrowRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
-                          <span className="text-cult-white font-semibold">{h.to_room?.room_code ?? h.to_room_id.slice(0, 6)}</span>
-                          <span className="text-cult-medium-gray ml-auto">{formatDate(h.moved_at)}</span>
+                          <span className="text-cult-border">{h.from_room?.room_code ?? h.from_room_id.slice(0, 6)}</span>
+                          <ArrowRight className="w-3 h-3 text-cult-border flex-shrink-0" />
+                          <span className="text-cult-text-primary font-semibold">{h.to_room?.room_code ?? h.to_room_id.slice(0, 6)}</span>
+                          <span className="text-cult-border ml-auto">{formatDate(h.moved_at)}</span>
                         </div>
                       ))}
                     </div>

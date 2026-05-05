@@ -55,10 +55,10 @@ const WEEKS_BEFORE = 4;
 const WEEKS_AFTER = 20;
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; barBg: string }> = {
-  draft: { bg: 'bg-cult-charcoal/60', text: 'text-cult-medium-gray', border: 'border-cult-dark-gray/40', barBg: 'rgba(107,114,128,0.25)' },
+  draft: { bg: 'bg-cult-surface-raised/60', text: 'text-cult-border', border: 'border-cult-surface/40', barBg: 'rgba(107,114,128,0.25)' },
   scheduled: { bg: 'bg-cult-info-muted', text: 'text-cult-info', border: 'border-cult-info/30', barBg: 'rgba(59,130,246,0.2)' },
   active: { bg: 'bg-cult-success-muted', text: 'text-cult-success', border: 'border-cult-success/30', barBg: 'rgba(16,185,129,0.25)' },
-  completed: { bg: 'bg-cult-charcoal/30', text: 'text-cult-dark-gray', border: 'border-cult-dark-gray/30', barBg: 'rgba(107,114,128,0.15)' },
+  completed: { bg: 'bg-cult-surface-raised/30', text: 'text-cult-surface', border: 'border-cult-surface/30', barBg: 'rgba(107,114,128,0.15)' },
   cancelled: { bg: 'bg-cult-danger-muted', text: 'text-cult-danger/50', border: 'border-cult-danger/20', barBg: 'rgba(239,68,68,0.1)' },
 };
 
@@ -253,8 +253,8 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
     onChange(updates);
   };
 
-  const inputClass = 'w-full bg-cult-charcoal/60 border border-cult-dark-gray/40 rounded px-2.5 py-1.5 text-sm text-cult-white focus:outline-none focus:border-violet-500/50';
-  const labelClass = 'text-[11px] font-semibold text-cult-medium-gray uppercase tracking-wider mb-1';
+  const inputClass = 'w-full bg-cult-surface-raised/60 border border-cult-surface/40 rounded px-2.5 py-1.5 text-sm text-cult-text-primary focus:outline-none focus:border-violet-500/50';
+  const labelClass = 'text-[11px] font-semibold text-cult-border uppercase tracking-wider mb-1';
 
   return (
     <div className="space-y-4">
@@ -329,7 +329,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
             ['dry_days', 'Dry'],
           ] as const).map(([field, label]) => (
             <div key={field}>
-              <div className="text-[10px] text-cult-dark-gray mb-0.5">{label}</div>
+              <div className="text-[10px] text-cult-surface mb-0.5">{label}</div>
               <input
                 type="number"
                 min={1}
@@ -347,7 +347,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
       <div>
         <div className={`${labelClass} flex items-center gap-2`}>
           <Calendar className="w-3 h-3" /> Milestone Dates
-          <span className="text-cult-dark-gray font-normal normal-case">— set one, rest cascade</span>
+          <span className="text-cult-surface font-normal normal-case">— set one, rest cascade</span>
         </div>
         <div className="grid grid-cols-5 gap-2">
           {([
@@ -358,7 +358,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
             ['dry_date', 'Dry End', false],
           ] as const).map(([field, label, isAnchor]) => (
             <div key={field}>
-              <div className={`text-[10px] mb-0.5 ${isAnchor ? 'text-violet-400' : 'text-cult-dark-gray'}`}>
+              <div className={`text-[10px] mb-0.5 ${isAnchor ? 'text-violet-400' : 'text-cult-surface'}`}>
                 {label} {isAnchor && '●'}
               </div>
               <input
@@ -376,7 +376,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
             </div>
           ))}
         </div>
-        <div className="text-[10px] text-cult-dark-gray mt-1">● = anchor point — setting this recalculates all other dates</div>
+        <div className="text-[10px] text-cult-surface mt-1">● = anchor point — setting this recalculates all other dates</div>
       </div>
 
       {/* Plant counts + yield projection */}
@@ -467,7 +467,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-2 border-t border-cult-dark-gray/30">
+      <div className="flex items-center justify-between pt-2 border-t border-cult-surface/30">
         <div>
           {onDelete && (
             <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-cult-danger hover:bg-cult-danger-muted rounded transition-colors">
@@ -476,7 +476,7 @@ function PlanForm({ plan, rooms, strains, feedPrograms, strainMap, onChange, onS
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onCancel} className="px-3 py-1.5 text-xs text-cult-medium-gray hover:text-cult-white rounded transition-colors">
+          <button onClick={onCancel} className="px-3 py-1.5 text-xs text-cult-border hover:text-cult-text-primary rounded transition-colors">
             Cancel
           </button>
           <button
@@ -559,11 +559,11 @@ function TimelineBar({ plan, strain, startDate, onClick, isSelected }: TimelineB
 
       {/* Label */}
       <div className="relative z-10 flex items-center h-full px-2">
-        <span className="text-[10px] font-semibold text-cult-white truncate">
+        <span className="text-[10px] font-semibold text-cult-text-primary truncate">
           {strain?.display_name ?? strain?.name ?? plan.plan_name ?? '—'}
         </span>
         {plan.planned_plant_count && (
-          <span className="ml-1 text-[9px] text-cult-light-gray/60 flex-shrink-0">
+          <span className="ml-1 text-[9px] text-cult-text-muted/60 flex-shrink-0">
             {plan.planned_plant_count}p
           </span>
         )}
@@ -814,7 +814,7 @@ export function PipelinePlanner() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-cult-medium-gray text-sm">Loading pipeline...</div>
+        <div className="animate-pulse text-cult-border text-sm">Loading pipeline...</div>
       </div>
     );
   }
@@ -822,19 +822,19 @@ export function PipelinePlanner() {
   const panelOpen = panelMode !== 'closed';
 
   return (
-    <div className="h-full flex flex-col bg-cult-near-black">
+    <div className="h-full flex flex-col bg-cult-surface">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-cult-dark-gray/40">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-cult-surface/40">
         <div className="flex items-center gap-3">
           <Target className="w-5 h-5 text-violet-400" />
-          <h1 className="text-lg font-bold text-cult-white tracking-wide">Pipeline Planner</h1>
+          <h1 className="text-lg font-bold text-cult-text-primary tracking-wide">Pipeline Planner</h1>
         </div>
         <div className="flex items-center gap-3">
           {/* Quick stats */}
           <div className="flex items-center gap-4 mr-2 text-xs">
             <span className="text-cult-success">{activeCount} active</span>
             <span className="text-cult-info">{scheduledCount} scheduled</span>
-            <span className="text-cult-medium-gray">{draftCount} draft</span>
+            <span className="text-cult-border">{draftCount} draft</span>
             {totalProjectedWet > 0 && (
               <span className="text-cult-warning flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
@@ -846,22 +846,22 @@ export function PipelinePlanner() {
           {/* Heatmap toggle */}
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`p-1.5 rounded transition-colors ${showHeatmap ? 'text-cult-warning bg-cult-warning-muted' : 'text-cult-dark-gray hover:text-cult-medium-gray'}`}
+            className={`p-1.5 rounded transition-colors ${showHeatmap ? 'text-cult-warning bg-cult-warning-muted' : 'text-cult-surface hover:text-cult-border'}`}
             title="Toggle labor heatmap"
           >
             <Zap className="w-3.5 h-3.5" />
           </button>
 
           {/* Filter */}
-          <div className="flex items-center gap-1 bg-cult-charcoal/40 rounded-sm p-0.5">
+          <div className="flex items-center gap-1 bg-cult-surface-raised/40 rounded-sm p-0.5">
             {(['active', 'all', 'flower'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-sm transition-colors ${
                   filter === f
-                    ? 'bg-cult-charcoal text-cult-white'
-                    : 'text-cult-medium-gray hover:text-cult-light-gray'
+                    ? 'bg-cult-surface-raised text-cult-text-primary'
+                    : 'text-cult-border hover:text-cult-text-muted'
                 }`}
               >
                 {f === 'active' ? 'Active' : f === 'all' ? 'All' : 'Flower'}
@@ -900,20 +900,20 @@ export function PipelinePlanner() {
         <div className="flex-1 overflow-auto" ref={timelineRef}>
           <div style={{ minWidth: LABEL_WIDTH + totalDays * DAY_WIDTH }}>
             {/* Timeline header */}
-            <div className="sticky top-0 z-20 flex bg-cult-near-black border-b border-cult-dark-gray/40">
-              <div className="flex-shrink-0 bg-cult-near-black border-r border-cult-dark-gray/20" style={{ width: LABEL_WIDTH }}>
+            <div className="sticky top-0 z-20 flex bg-cult-surface border-b border-cult-surface/40">
+              <div className="flex-shrink-0 bg-cult-surface border-r border-cult-surface/20" style={{ width: LABEL_WIDTH }}>
                 <div className="h-9 flex items-center px-3">
-                  <span className="text-[10px] font-semibold text-cult-dark-gray uppercase tracking-wider">Rooms</span>
+                  <span className="text-[10px] font-semibold text-cult-surface uppercase tracking-wider">Rooms</span>
                 </div>
               </div>
               <div className="relative flex-1" style={{ height: 36 }}>
                 {weeks.map((w, i) => (
                   <div
                     key={i}
-                    className="absolute top-0 h-full border-l border-cult-dark-gray/20"
+                    className="absolute top-0 h-full border-l border-cult-surface/20"
                     style={{ left: w.x }}
                   >
-                    <span className={`pl-1 text-[10px] ${w.isMonthStart ? 'text-cult-light-gray font-semibold' : 'text-cult-dark-gray'}`}>
+                    <span className={`pl-1 text-[10px] ${w.isMonthStart ? 'text-cult-text-muted font-semibold' : 'text-cult-surface'}`}>
                       {w.label}
                     </span>
                   </div>
@@ -926,9 +926,9 @@ export function PipelinePlanner() {
 
             {/* Labor heatmap row */}
             {showHeatmap && (
-              <div className="flex border-b border-cult-warning/20 bg-cult-near-black">
+              <div className="flex border-b border-cult-warning/20 bg-cult-surface">
                 <div
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 border-r border-cult-dark-gray/20"
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 border-r border-cult-surface/20"
                   style={{ width: LABEL_WIDTH, height: HEATMAP_HEIGHT }}
                 >
                   <Zap className="w-3 h-3 text-cult-warning" />
@@ -963,10 +963,10 @@ export function PipelinePlanner() {
               const gaps = roomGaps.get(room.id) ?? [];
 
               return (
-                <div key={room.id} className="flex border-b border-cult-dark-gray/20 hover:bg-cult-charcoal/10">
+                <div key={room.id} className="flex border-b border-cult-surface/20 hover:bg-cult-surface-raised/10">
                   {/* Room label */}
                   <div
-                    className="flex-shrink-0 flex items-center gap-2 px-3 border-r border-cult-dark-gray/20 cursor-pointer hover:bg-cult-charcoal/20"
+                    className="flex-shrink-0 flex items-center gap-2 px-3 border-r border-cult-surface/20 cursor-pointer hover:bg-cult-surface-raised/20"
                     style={{ width: LABEL_WIDTH, height: ROW_HEIGHT }}
                     onClick={handleCreate}
                     title={`Click to add plan to ${room.room_code || room.name}`}
@@ -976,14 +976,14 @@ export function PipelinePlanner() {
                       style={{ backgroundColor: STAGE_HEX[room.room_type] ?? '#6B7280' }}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-cult-white truncate">{room.room_code || room.name}</div>
-                      <div className="text-[10px] text-cult-dark-gray capitalize flex items-center gap-1">
+                      <div className="text-xs font-semibold text-cult-text-primary truncate">{room.room_code || room.name}</div>
+                      <div className="text-[10px] text-cult-surface capitalize flex items-center gap-1">
                         {room.room_type}
                         {room.capacity_plants && <span>· {room.capacity_plants} cap</span>}
                       </div>
                     </div>
                     {roomPlans.length > 0 && (
-                      <span className="text-[9px] text-cult-dark-gray bg-cult-charcoal/60 px-1 py-0.5 rounded">
+                      <span className="text-[9px] text-cult-surface bg-cult-surface-raised/60 px-1 py-0.5 rounded">
                         {roomPlans.length}
                       </span>
                     )}
@@ -993,7 +993,7 @@ export function PipelinePlanner() {
                   <div className="relative flex-1" style={{ height: ROW_HEIGHT }}>
                     {/* Background grid */}
                     {weeks.map((w, i) => (
-                      <div key={i} className="absolute top-0 h-full border-l border-cult-dark-gray/10" style={{ left: w.x }} />
+                      <div key={i} className="absolute top-0 h-full border-l border-cult-surface/10" style={{ left: w.x }} />
                     ))}
                     <div className="absolute top-0 h-full w-px bg-violet-500/20" style={{ left: todayX }} />
 
@@ -1024,7 +1024,7 @@ export function PipelinePlanner() {
                     {/* Empty state */}
                     {roomPlans.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] text-cult-dark-gray/40 italic">No plans — click to add</span>
+                        <span className="text-[10px] text-cult-surface/40 italic">No plans — click to add</span>
                       </div>
                     )}
                   </div>
@@ -1035,7 +1035,7 @@ export function PipelinePlanner() {
             {/* Empty rooms message */}
             {plannerRooms.length === 0 && (
               <div className="flex items-center justify-center py-16">
-                <div className="text-center text-cult-medium-gray">
+                <div className="text-center text-cult-border">
                   <Warehouse className="w-8 h-8 mx-auto mb-2 opacity-40" />
                   <p className="text-sm">No rooms found. Add rooms in Cultivation settings first.</p>
                 </div>
@@ -1046,9 +1046,9 @@ export function PipelinePlanner() {
 
         {/* Side panel */}
         {panelOpen && (
-          <div className="w-[420px] flex-shrink-0 border-l border-cult-dark-gray/40 bg-cult-near-black overflow-y-auto">
-            <div className="px-4 py-3 border-b border-cult-dark-gray/30 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-cult-white">
+          <div className="w-[420px] flex-shrink-0 border-l border-cult-surface/40 bg-cult-surface overflow-y-auto">
+            <div className="px-4 py-3 border-b border-cult-surface/30 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-cult-text-primary">
                 {panelMode === 'create' ? 'New Cultivation Plan' : 'Edit Plan'}
               </h2>
               <div className="flex items-center gap-1">
@@ -1058,13 +1058,13 @@ export function PipelinePlanner() {
                       const plan = plans.find((p) => p.id === selectedPlanId);
                       if (plan) handleDuplicate(plan);
                     }}
-                    className="p-1.5 text-cult-medium-gray hover:text-cult-white rounded transition-colors"
+                    className="p-1.5 text-cult-border hover:text-cult-text-primary rounded transition-colors"
                     title="Duplicate as next cycle"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
                 )}
-                <button onClick={handleClosePanel} className="p-1.5 text-cult-medium-gray hover:text-cult-white rounded transition-colors">
+                <button onClick={handleClosePanel} className="p-1.5 text-cult-border hover:text-cult-text-primary rounded transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>

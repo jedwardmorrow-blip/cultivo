@@ -218,7 +218,7 @@ function StatusActions({
               <button
                 onClick={handleDateSubmitAndAdvance}
                 disabled={!pendingDate || !!updating}
-                className="px-3 py-1.5 bg-cult-success text-cult-black text-xs font-bold rounded-cult hover:bg-cult-success-bright transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 border border-cult-accent text-cult-accent font-mono uppercase tracking-[0.16em] text-[11px] rounded hover:bg-cult-accent hover:text-cult-opaque-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {updating ? 'Updating...' : 'Set & Advance'}
               </button>
@@ -236,9 +236,9 @@ function StatusActions({
           <button
             onClick={() => setConfirmReopen(true)}
             disabled={!!updating}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-cult-stage-wash hover:bg-cult-stage-wash/80 text-white text-sm font-bold rounded-cult transition-all disabled:opacity-40"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-cult-border text-cult-text-primary hover:bg-cult-surface-raised hover:border-cult-border-strong rounded font-mono uppercase tracking-[0.16em] text-[11px] transition-colors disabled:opacity-40"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
             {updating === 'submitted' ? 'Reopening...' : 'Reopen Order'}
           </button>
         ) : (
@@ -248,9 +248,9 @@ function StatusActions({
                 <button
                   onClick={() => handleTransition(nextStatus)}
                   disabled={!!updating}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-cult-success hover:bg-cult-success-bright text-cult-black text-sm font-bold rounded-cult transition-all disabled:opacity-40"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-cult-accent text-cult-accent hover:bg-cult-accent hover:text-cult-opaque-black rounded font-mono uppercase tracking-[0.16em] text-[11px] transition-colors disabled:opacity-40"
                 >
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                   {updating === nextStatus ? 'Updating...' : getTransitionLabel(currentStatus, nextStatus)}
                 </button>
                 {hint && (
@@ -503,7 +503,7 @@ export function OrderDetailPanel({
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed top-0 right-0 h-full w-full max-w-4xl bg-cult-surface border-l border-cult-border z-50 flex flex-col animate-slide-in-right shadow-2xl">
+      <div className="fixed top-0 right-0 h-full w-full max-w-4xl bg-cult-surface border-l border-cult-border z-50 flex flex-col animate-slide-in-right">
 
         {/* ─── Header ────────────────────────────────────────────────── */}
         <div className="flex-shrink-0 px-4 lg:px-6 py-4 border-b border-cult-border bg-cult-surface-raised">

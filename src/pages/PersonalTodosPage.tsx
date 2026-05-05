@@ -27,7 +27,7 @@ export default function PersonalTodosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl text-cult-white tracking-wide">
+          <h1 className="font-display text-2xl text-cult-text-primary tracking-wide">
             My Checklist
           </h1>
           <p className="text-xs font-mono text-cult-text mt-1">
@@ -38,7 +38,7 @@ export default function PersonalTodosPage() {
           <button
             onClick={() => setShowAdmin(!showAdmin)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono
-              bg-cult-muted border border-cult-border text-cult-text hover:text-cult-white transition-colors"
+              bg-cult-muted border border-cult-border text-cult-text hover:text-cult-text-primary transition-colors"
           >
             <Users size={13} />
             {showAdmin ? 'My View' : 'Team View'}
@@ -118,7 +118,7 @@ function MyTodoView() {
             onChange={e => setNewTitle(e.target.value)}
             placeholder="What needs to be done?"
             className="w-full bg-cult-muted border border-cult-border rounded-md px-3 py-2
-              text-sm text-cult-white placeholder:text-cult-text/50 focus:outline-none
+              text-sm text-cult-text-primary placeholder:text-cult-text/50 focus:outline-none
               focus:border-cult-gold/50"
             autoFocus
           />
@@ -141,7 +141,7 @@ function MyTodoView() {
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
                   className="bg-cult-muted border border-cult-border rounded px-2 py-1 text-xs
-                    text-cult-white focus:outline-none focus:border-cult-gold/50"
+                    text-cult-text-primary focus:outline-none focus:border-cult-gold/50"
                 />
               </label>
             )}
@@ -157,7 +157,7 @@ function MyTodoView() {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-3 py-1.5 text-cult-text text-xs font-mono hover:text-cult-white transition-colors"
+              className="px-3 py-1.5 text-cult-text text-xs font-mono hover:text-cult-text-primary transition-colors"
             >
               Cancel
             </button>
@@ -292,7 +292,7 @@ function AdminTodoView() {
                       .slice(0, 2)}
                   </span>
                 </div>
-                <span className="text-sm text-cult-white font-medium">
+                <span className="text-sm text-cult-text-primary font-medium">
                   {name}
                 </span>
               </div>
@@ -333,7 +333,7 @@ function AdminTodoView() {
                         className={`text-xs ${
                           done
                             ? 'text-cult-text line-through'
-                            : 'text-cult-white'
+                            : 'text-cult-text-primary'
                         }`}
                       >
                         {todo.title}
@@ -450,7 +450,7 @@ function TodoItem({
       <div className="flex-1 min-w-0">
         <span
           className={`text-sm ${
-            done ? 'text-cult-text line-through' : 'text-cult-white'
+            done ? 'text-cult-text line-through' : 'text-cult-text-primary'
           }`}
         >
           {todo.title}

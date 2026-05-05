@@ -54,21 +54,21 @@ export function VisitScheduleModal({ onClose, onCreated, prefilledCustomerId }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg w-full max-w-md mx-4">
-        <div className="px-5 py-4 border-b border-cult-charcoal flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-cult-white">Schedule Visit</h3>
-          <button onClick={onClose} className="text-cult-silver hover:text-cult-white transition-colors">
+      <div className="bg-cult-surface border border-cult-border rounded-lg w-full max-w-md mx-4">
+        <div className="px-5 py-4 border-b border-cult-surface-raised flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-cult-text-primary">Schedule Visit</h3>
+          <button onClick={onClose} className="text-cult-text-secondary hover:text-cult-text-primary transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="px-5 py-4 space-y-3">
           <div>
-            <label className="block text-xs font-medium text-cult-silver mb-1">Account *</label>
+            <label className="block text-xs font-medium text-cult-text-secondary mb-1">Account *</label>
             <select
               value={form.customer_id}
               onChange={(e) => setForm({ ...form, customer_id: e.target.value })}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-muted"
             >
               <option value="">Select account...</option>
               {customers.map((c) => (
@@ -81,20 +81,20 @@ export function VisitScheduleModal({ onClose, onCreated, prefilledCustomerId }: 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-cult-silver mb-1">Date *</label>
+              <label className="block text-xs font-medium text-cult-text-secondary mb-1">Date *</label>
               <input
                 type="date"
                 value={form.visit_date}
                 onChange={(e) => setForm({ ...form, visit_date: e.target.value })}
-                className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+                className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-muted"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-cult-silver mb-1">Type</label>
+              <label className="block text-xs font-medium text-cult-text-secondary mb-1">Type</label>
               <select
                 value={form.visit_type}
                 onChange={(e) => setForm({ ...form, visit_type: e.target.value as VisitType })}
-                className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white focus:outline-none focus:border-cult-lighter-gray"
+                className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary focus:outline-none focus:border-cult-text-muted"
               >
                 <option value="check_in">Check-in</option>
                 <option value="sample_drop">Sample Drop</option>
@@ -105,39 +105,39 @@ export function VisitScheduleModal({ onClose, onCreated, prefilledCustomerId }: 
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-cult-silver mb-1">Time Window</label>
+            <label className="block text-xs font-medium text-cult-text-secondary mb-1">Time Window</label>
             <input
               type="text"
               value={form.visit_time_window}
               onChange={(e) => setForm({ ...form, visit_time_window: e.target.value })}
               placeholder="e.g. Morning, 10am-12pm"
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-cult-silver mb-1">Location Notes</label>
+            <label className="block text-xs font-medium text-cult-text-secondary mb-1">Location Notes</label>
             <textarea
               value={form.location_notes}
               onChange={(e) => setForm({ ...form, location_notes: e.target.value })}
               placeholder="Where to meet, parking info, etc."
               rows={2}
-              className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray resize-none"
+              className="w-full px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted resize-none"
             />
           </div>
         </div>
 
-        <div className="px-5 py-4 border-t border-cult-charcoal flex items-center gap-2">
+        <div className="px-5 py-4 border-t border-cult-surface-raised flex items-center gap-2">
           <button
             onClick={handleSubmit}
             disabled={!form.customer_id || !form.visit_date || saving}
-            className="px-4 py-2 text-sm font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-cult-opaque-black bg-cult-accent rounded hover:bg-cult-accent-hover transition-colors disabled:opacity-50"
           >
             {saving ? 'Scheduling...' : 'Schedule Visit'}
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-cult-silver hover:text-cult-white transition-colors"
+            className="px-4 py-2 text-sm text-cult-text-secondary hover:text-cult-text-primary transition-colors"
           >
             Cancel
           </button>

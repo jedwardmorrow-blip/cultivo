@@ -250,17 +250,17 @@ export function PlantGroupLabelPrintModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-md flex flex-col" style={{ maxHeight: '90vh' }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-medium-gray flex-shrink-0">
+      <div className="bg-cult-surface border border-cult-border w-full max-w-md flex flex-col" style={{ maxHeight: '90vh' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-border flex-shrink-0">
           <div>
-            <h3 className="text-sm font-bold text-cult-white uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
               {isGroup ? 'Group Label' : `Plant Labels (${individualCount})`}
             </h3>
             {isIndividual && (
-              <p className="text-xs text-cult-medium-gray mt-0.5">One label per active plant ID</p>
+              <p className="text-xs text-cult-border mt-0.5">One label per active plant ID</p>
             )}
           </div>
-          <button onClick={onClose} className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors">
+          <button onClick={onClose} className="p-1.5 text-cult-border hover:text-cult-text-primary transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -268,8 +268,8 @@ export function PlantGroupLabelPrintModal({
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-8 gap-3">
-              <Loader2 className="w-6 h-6 text-cult-light-gray animate-spin" />
-              <span className="text-xs text-cult-medium-gray">Generating preview...</span>
+              <Loader2 className="w-6 h-6 text-cult-text-muted animate-spin" />
+              <span className="text-xs text-cult-border">Generating preview...</span>
             </div>
           )}
 
@@ -282,7 +282,7 @@ export function PlantGroupLabelPrintModal({
           {!isLoading && !error && labelData && (
             <div className="flex flex-col items-center gap-4">
               {isGroup && labelData.mode === 'group' && (
-                <div className="ring-1 ring-cult-medium-gray">
+                <div className="ring-1 ring-cult-border">
                   <GroupLabelCard
                     logoDataUrl={logoDataUrl}
                     batchNumber={labelData.batchNumber}
@@ -302,10 +302,10 @@ export function PlantGroupLabelPrintModal({
 
               {isIndividual && labelData.mode === 'individual' && (
                 <div className="w-full space-y-3">
-                  <p className="text-xs text-cult-medium-gray text-center">
+                  <p className="text-xs text-cult-border text-center">
                     Preview showing first label · {individualCount} total will print
                   </p>
-                  <div className="flex justify-center ring-1 ring-cult-medium-gray">
+                  <div className="flex justify-center ring-1 ring-cult-border">
                     <IndividualLabelCard
                       logoDataUrl={logoDataUrl}
                       statePlantId={labelData.plants[0].state_plant_id}
@@ -324,7 +324,7 @@ export function PlantGroupLabelPrintModal({
           )}
         </div>
 
-        <div className="px-5 py-4 border-t border-cult-medium-gray flex-shrink-0 flex gap-3">
+        <div className="px-5 py-4 border-t border-cult-border flex-shrink-0 flex gap-3">
           <Button
             onClick={() => onPrint(printRef.current)}
             disabled={isLoading || isPrinting || !!error || !labelData}
@@ -335,7 +335,7 @@ export function PlantGroupLabelPrintModal({
           </Button>
           <button
             onClick={onClose}
-            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
           >
             Close
           </button>

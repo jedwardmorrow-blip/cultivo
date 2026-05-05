@@ -163,11 +163,11 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-cult-surface border border-cult-border w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-5">
-            <Sprout className="w-5 h-5 text-cult-light-gray" />
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">New Plant Group</h3>
+            <Sprout className="w-5 h-5 text-cult-text-muted" />
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">New Plant Group</h3>
           </div>
 
           {error && (
@@ -178,12 +178,12 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
           )}
 
           {loadingData ? (
-            <p className="text-cult-medium-gray text-sm">Loading data...</p>
+            <p className="text-cult-border text-sm">Loading data...</p>
           ) : (
             <div className="space-y-4">
 
               <div>
-                <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-2">Source Type *</label>
+                <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-2">Source Type *</label>
                 <div className="flex">
                   <button
                     type="button"
@@ -191,7 +191,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                     className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-wider border transition-all ${
                       sourceType === 'clone'
                         ? 'bg-white text-cult-black border-white'
-                        : 'bg-transparent text-cult-medium-gray border-cult-medium-gray hover:border-cult-lighter-gray hover:text-cult-light-gray'
+                        : 'bg-transparent text-cult-border border-cult-border hover:border-cult-text-muted hover:text-cult-text-muted'
                     }`}
                   >
                     <Scissors className="w-3.5 h-3.5" />
@@ -203,7 +203,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                     className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-wider border-t border-b border-r transition-all ${
                       sourceType === 'seed'
                         ? 'bg-white text-cult-black border-white'
-                        : 'bg-transparent text-cult-medium-gray border-cult-medium-gray hover:border-cult-lighter-gray hover:text-cult-light-gray'
+                        : 'bg-transparent text-cult-border border-cult-border hover:border-cult-text-muted hover:text-cult-text-muted'
                     }`}
                   >
                     <Sprout className="w-3.5 h-3.5" />
@@ -213,11 +213,11 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
               </div>
 
               <div>
-                <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Strain *</label>
+                <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Strain *</label>
                 <select
                   value={strainId}
                   onChange={(e) => handleStrainChange(e.target.value)}
-                  className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
                 >
                   <option value="">— Select strain —</option>
                   {strains.map((s) => {
@@ -238,11 +238,11 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
               </div>
 
               <div>
-                <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Grow Room *</label>
+                <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Grow Room *</label>
                 <select
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
-                  className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
                 >
                   <option value="">— Select room —</option>
                   {activeRooms.map((r) => (
@@ -255,16 +255,16 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">
+                  <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">
                     Plant Count {sourceType === 'clone' ? '(from cuts)' : '*'}
                   </label>
                   {sourceType === 'clone' ? (
-                    <div className="w-full bg-cult-black border border-cult-dark-gray text-cult-white px-3 py-2 text-sm flex items-center justify-between">
-                      <span className={derivedCloneCount > 0 ? 'text-cult-white font-semibold' : 'text-cult-dark-gray'}>
+                    <div className="w-full bg-cult-black border border-cult-surface text-cult-text-primary px-3 py-2 text-sm flex items-center justify-between">
+                      <span className={derivedCloneCount > 0 ? 'text-cult-text-primary font-semibold' : 'text-cult-surface'}>
                         {derivedCloneCount > 0 ? derivedCloneCount : '—'}
                       </span>
                       {derivedCloneCount > 0 && (
-                        <span className="text-xs text-cult-medium-gray">auto</span>
+                        <span className="text-xs text-cult-border">auto</span>
                       )}
                     </div>
                   ) : (
@@ -274,17 +274,17 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                       value={seedPlantCount}
                       onChange={(e) => setSeedPlantCount(e.target.value)}
                       placeholder="e.g. 24"
-                      className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                      className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
                     />
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Planted Date</label>
+                  <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Planted Date</label>
                   <input
                     type="date"
                     value={plantedDate}
                     onChange={(e) => setPlantedDate(e.target.value)}
-                    className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                    className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
                   />
                 </div>
               </div>
@@ -292,7 +292,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
               {sourceType === 'clone' && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs text-cult-light-gray uppercase tracking-wider">
+                    <label className="text-xs text-cult-text-muted uppercase tracking-wider">
                       Cut Sessions *
                     </label>
                     {strainId && strainFilteredMothers.length === 0 && (
@@ -304,16 +304,16 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                   </div>
 
                   {cutSessions.map((row, idx) => (
-                    <div key={row.id} className="border border-cult-dark-gray p-3 space-y-2">
+                    <div key={row.id} className="border border-cult-surface p-3 space-y-2">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-cult-medium-gray uppercase tracking-wider">
+                        <span className="text-xs text-cult-border uppercase tracking-wider">
                           Cut {idx + 1}
                         </span>
                         {cutSessions.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeCutSession(row.id)}
-                            className="text-cult-medium-gray hover:text-cult-danger transition-colors"
+                            className="text-cult-border hover:text-cult-danger transition-colors"
                             title="Remove cut session"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -322,12 +322,12 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                       </div>
 
                       <div>
-                        <label className="block text-xs text-cult-light-gray mb-1">Mother *</label>
+                        <label className="block text-xs text-cult-text-muted mb-1">Mother *</label>
                         <select
                           value={row.motherGroupId}
                           onChange={(e) => updateCutSession(row.id, 'motherGroupId', e.target.value)}
                           disabled={!strainId}
-                          className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-1.5 text-sm focus:outline-none focus:border-cult-text-muted disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <option value="">— Select mother —</option>
                           {strainFilteredMothers.map((m) => (
@@ -343,19 +343,19 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                           ))}
                         </select>
                         {!strainId && (
-                          <p className="text-xs text-cult-dark-gray mt-0.5">Select a strain first</p>
+                          <p className="text-xs text-cult-surface mt-0.5">Select a strain first</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-xs text-cult-light-gray mb-1">Cut Count *</label>
+                        <label className="block text-xs text-cult-text-muted mb-1">Cut Count *</label>
                         <input
                           type="number"
                           min="1"
                           value={row.cutCount}
                           onChange={(e) => updateCutSession(row.id, 'cutCount', e.target.value)}
                           placeholder="e.g. 25"
-                          className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                          className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-1.5 text-sm focus:outline-none focus:border-cult-text-muted"
                         />
                       </div>
                     </div>
@@ -372,7 +372,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                     type="button"
                     onClick={addCutSession}
                     disabled={!strainId || strainFilteredMothers.length <= cutSessions.length}
-                    className="flex items-center gap-1.5 text-xs text-cult-light-gray hover:text-cult-white border border-dashed border-cult-dark-gray hover:border-cult-medium-gray px-3 py-2 w-full justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 text-xs text-cult-text-muted hover:text-cult-text-primary border border-dashed border-cult-surface hover:border-cult-border px-3 py-2 w-full justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add cuts from new mother
@@ -381,24 +381,24 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
               )}
 
               <div>
-                <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Group Name (optional)</label>
+                <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Group Name (optional)</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Custom label"
-                  className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+                <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Notes</label>
                 <input
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Optional"
-                  className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+                  className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
                 />
               </div>
 
@@ -410,9 +410,9 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
                     disabled
                     className="w-4 h-4 accent-white"
                   />
-                  <span className="text-sm text-cult-medium-gray">Mark as mother plant group</span>
+                  <span className="text-sm text-cult-border">Mark as mother plant group</span>
                 </label>
-                <p className="text-xs text-cult-dark-gray">New groups start at clone stage. Designate as mother after advancing to Veg.</p>
+                <p className="text-xs text-cult-surface">New groups start at clone stage. Designate as mother after advancing to Veg.</p>
               </div>
             </div>
           )}
@@ -429,7 +429,7 @@ export function NewPlantGroupModal({ rooms, onCreate, onCancel }: NewPlantGroupM
           </Button>
           <button
             onClick={onCancel}
-            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
           >
             Cancel
           </button>

@@ -147,11 +147,11 @@ export function DailyTaskBoard() {
       <div className="flex items-start justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-lg sm:text-2xl font-bold text-cult-white">
+            <h1 className="text-lg sm:text-2xl font-bold text-cult-text-primary">
               Today's Tasks
             </h1>
           </div>
-          <p className="text-cult-medium-gray text-sm mt-0.5">Daily assignments by room</p>
+          <p className="text-cult-border text-sm mt-0.5">Daily assignments by room</p>
           <div className="flex items-center gap-3 mt-1.5">
             <button
               type="button"
@@ -160,16 +160,16 @@ export function DailyTaskBoard() {
                 d.setDate(d.getDate() - 1);
                 setSelectedDate(d.toISOString().slice(0, 10));
               }}
-              className="p-3 -m-1 text-cult-medium-gray hover:text-cult-white active:bg-cult-charcoal/40 transition-colors rounded-lg"
+              className="p-3 -m-1 text-cult-border hover:text-cult-text-primary active:bg-cult-surface-raised/40 transition-colors rounded-lg"
               aria-label="Previous day"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            <span className={`text-sm font-medium ${isToday ? 'text-cult-white' : 'text-cult-light-gray'}`}>
+            <span className={`text-sm font-medium ${isToday ? 'text-cult-text-primary' : 'text-cult-text-muted'}`}>
               {isToday ? 'Today' : dateLabel}
               {isToday && (
-                <span className="text-cult-medium-gray ml-1.5 font-normal">
+                <span className="text-cult-border ml-1.5 font-normal">
                   {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
               )}
@@ -182,7 +182,7 @@ export function DailyTaskBoard() {
                 d.setDate(d.getDate() + 1);
                 setSelectedDate(d.toISOString().slice(0, 10));
               }}
-              className="p-3 -m-1 text-cult-medium-gray hover:text-cult-white active:bg-cult-charcoal/40 transition-colors rounded-lg"
+              className="p-3 -m-1 text-cult-border hover:text-cult-text-primary active:bg-cult-surface-raised/40 transition-colors rounded-lg"
               aria-label="Next day"
             >
               <ChevronRight className="w-5 h-5" />
@@ -201,14 +201,14 @@ export function DailyTaskBoard() {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Day / Week toggle */}
-          <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
+          <div className="flex border border-cult-surface rounded-sm overflow-hidden">
             <button
               type="button"
               onClick={() => setViewMode('day')}
               className={`px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
                 viewMode === 'day'
-                  ? 'bg-cult-charcoal text-cult-white'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+                  ? 'bg-cult-surface-raised text-cult-text-primary'
+                  : 'text-cult-border hover:text-cult-text-muted hover:bg-cult-surface-raised/30'
               }`}
             >
               <ClipboardList className="w-3.5 h-3.5" />
@@ -219,8 +219,8 @@ export function DailyTaskBoard() {
               onClick={() => setViewMode('week')}
               className={`px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
                 viewMode === 'week'
-                  ? 'bg-cult-charcoal text-cult-white'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+                  ? 'bg-cult-surface-raised text-cult-text-primary'
+                  : 'text-cult-border hover:text-cult-text-muted hover:bg-cult-surface-raised/30'
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
@@ -246,7 +246,7 @@ export function DailyTaskBoard() {
               className={`flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors ${
                 showCapacity
                   ? 'text-cult-accent bg-cult-accent/10 border border-cult-accent/40'
-                  : 'text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray'
+                  : 'text-cult-border hover:text-cult-text-muted bg-cult-surface-raised/40 border border-cult-surface/60 hover:border-cult-border'
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -256,7 +256,7 @@ export function DailyTaskBoard() {
           <button
             type="button"
             onClick={() => navigate('/cultivation-schedules')}
-            className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-medium-gray hover:text-cult-light-gray bg-cult-charcoal/40 border border-cult-dark-gray/60 hover:border-cult-medium-gray rounded-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-border hover:text-cult-text-muted bg-cult-surface-raised/40 border border-cult-surface/60 hover:border-cult-border rounded-sm transition-colors"
           >
             <CalendarDays className="w-3.5 h-3.5" />
             Manage Schedules
@@ -266,7 +266,7 @@ export function DailyTaskBoard() {
 
       {/* ── Staff Capacity Panel (collapsible, day view only) ── */}
       {viewMode === 'day' && showCapacity && (
-        <div className="mb-5 p-4 bg-cult-graphite border border-cult-dark-gray rounded-sm">
+        <div className="mb-5 p-4 bg-cult-surface border border-cult-surface rounded-sm">
           <StaffCapacityPanel
             tasks={taskCards}
             allStaff={allStaff}
@@ -499,9 +499,9 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 items-center">
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-sm font-semibold text-cult-white">
+            <span className="text-sm font-semibold text-cult-text-primary">
               {stats.pct}% complete
-              <span className="text-cult-medium-gray font-normal ml-2 text-xs">
+              <span className="text-cult-border font-normal ml-2 text-xs">
                 {stats.completed}/{stats.total} tasks
               </span>
             </span>
@@ -509,10 +509,10 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
               {stats.inProgress > 0 && (
                 <span className="text-cult-info">{stats.inProgress} active</span>
               )}
-              <span className="text-cult-medium-gray font-mono">{staffPresent}/{staff.length} crew</span>
+              <span className="text-cult-border font-mono">{staffPresent}/{staff.length} crew</span>
             </div>
           </div>
-          <div className="w-full h-2 bg-cult-charcoal rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-cult-surface-raised rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 stats.pct === 100 ? 'bg-cult-success' : 'bg-cult-accent'
@@ -538,7 +538,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
           <button
             type="button"
             onClick={() => openDeadPlantForm()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-cult-charcoal hover:bg-cult-medium-gray text-cult-light-gray text-xs font-semibold uppercase tracking-wider transition-colors border border-cult-dark-gray"
+            className="flex items-center gap-2 px-4 py-2.5 bg-cult-surface-raised hover:bg-cult-border text-cult-text-muted text-xs font-semibold uppercase tracking-wider transition-colors border border-cult-surface"
           >
             <Skull className="w-3.5 h-3.5 text-cult-danger" />
             Dead Plant
@@ -574,13 +574,13 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
 
       {/* ── Empty State ───────────────────────────────────── */}
       {hasNoTasks && (
-        <div className="border border-dashed border-cult-dark-gray py-12 px-6 flex flex-col items-center gap-5">
-          <div className="w-14 h-14 rounded-full bg-cult-charcoal flex items-center justify-center">
-            <ClipboardList className="w-6 h-6 text-cult-medium-gray" />
+        <div className="border border-dashed border-cult-surface py-12 px-6 flex flex-col items-center gap-5">
+          <div className="w-14 h-14 rounded-full bg-cult-surface-raised flex items-center justify-center">
+            <ClipboardList className="w-6 h-6 text-cult-border" />
           </div>
           <div className="text-center max-w-md">
-            <p className="text-sm text-cult-light-gray font-medium">No tasks scheduled for this day</p>
-            <p className="text-xs text-cult-medium-gray mt-2 leading-relaxed">
+            <p className="text-sm text-cult-text-muted font-medium">No tasks scheduled for this day</p>
+            <p className="text-xs text-cult-border mt-2 leading-relaxed">
               Generate tasks from your room schedules, or add a one-off task manually.
             </p>
           </div>
@@ -605,7 +605,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
               Add Task Now
             </button>
           </div>
-          <p className="text-[10px] text-cult-dark-gray mt-1">
+          <p className="text-[10px] text-cult-surface mt-1">
             Tip: Use templates in the Schedule tab to quickly apply standard schedules to new rooms
           </p>
         </div>
@@ -640,28 +640,28 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
         return (
           <div
             key={room.id}
-            className={`bg-cult-near-black border border-cult-dark-gray border-l-2 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''} animate-fade-in`}
+            className={`bg-cult-surface border border-cult-surface border-l-2 ${ROOM_TYPE_LEFT_BORDER[room.room_type] ?? ''} animate-fade-in`}
             style={{ animationDelay: `${cardIndex * 50}ms`, animationFillMode: 'both' }}
           >
             {/* Room Header — clickable to collapse/expand */}
             <button
               type="button"
               onClick={() => toggleRoom(room.id)}
-              className="w-full flex items-center justify-between px-4 py-3 border-b border-cult-dark-gray/50 hover:bg-cult-charcoal/20 transition-colors text-left"
+              className="w-full flex items-center justify-between px-4 py-3 border-b border-cult-surface/50 hover:bg-cult-surface-raised/20 transition-colors text-left"
             >
               <div className="flex items-center gap-3 flex-wrap min-w-0">
-                <span className="font-mono text-sm font-bold text-cult-white flex-shrink-0">{room.room_code}</span>
+                <span className="font-mono text-sm font-bold text-cult-text-primary flex-shrink-0">{room.room_code}</span>
                 {ops ? (
                   <>
                     {ops.total_plants > 0 && (
-                      <span className="text-[11px] text-cult-medium-gray font-mono">{ops.total_plants}p</span>
+                      <span className="text-[11px] text-cult-border font-mono">{ops.total_plants}p</span>
                     )}
                     {ops.dominant_stage && ops.days_in_stage != null && (
-                      <span className="text-[11px] text-cult-medium-gray font-mono">Day {ops.days_in_stage}</span>
+                      <span className="text-[11px] text-cult-border font-mono">Day {ops.days_in_stage}</span>
                     )}
                     {ops.days_to_harvest != null && ops.days_to_harvest > 0 && (
                       <span className={`text-[11px] font-mono font-semibold flex-shrink-0 ${
-                        ops.days_to_harvest <= 7 ? 'text-cult-warning' : 'text-cult-medium-gray'
+                        ops.days_to_harvest <= 7 ? 'text-cult-warning' : 'text-cult-border'
                       }`}>
                         Harvest {ops.days_to_harvest}d
                       </span>
@@ -673,7 +673,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     )}
                   </>
                 ) : (
-                  <span className="text-xs text-cult-medium-gray uppercase">{room.room_type}</span>
+                  <span className="text-xs text-cult-border uppercase">{room.room_type}</span>
                 )}
                 {/* Crew avatars inline */}
                 {roomCrew.length > 0 && (
@@ -681,14 +681,14 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     {roomCrew.slice(0, 3).map((s) => (
                       <span
                         key={s.id}
-                        className="w-5 h-5 rounded-full bg-cult-success-muted text-cult-success ring-1 ring-cult-near-black flex items-center justify-center text-[9px] font-bold"
+                        className="w-5 h-5 rounded-full bg-cult-success-muted text-cult-success ring-1 ring-cult-surface flex items-center justify-center text-[9px] font-bold"
                         title={s.first_name}
                       >
                         {crewInitials(s.first_name)}
                       </span>
                     ))}
                     {roomCrew.length > 3 && (
-                      <span className="w-5 h-5 rounded-full bg-cult-charcoal text-cult-medium-gray ring-1 ring-cult-near-black flex items-center justify-center text-[9px] font-bold">
+                      <span className="w-5 h-5 rounded-full bg-cult-surface-raised text-cult-border ring-1 ring-cult-surface flex items-center justify-center text-[9px] font-bold">
                         +{roomCrew.length - 3}
                       </span>
                     )}
@@ -702,9 +702,9 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     Done
                   </span>
                 ) : (
-                  <span className="text-xs font-mono text-cult-medium-gray">{completedCount}/{totalCount}</span>
+                  <span className="text-xs font-mono text-cult-border">{completedCount}/{totalCount}</span>
                 )}
-                <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-cult-border transition-transform ${collapsed ? '' : 'rotate-180'}`} />
               </div>
             </button>
 
@@ -712,7 +712,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
             {!collapsed && (
               <>
                 {/* Per-room action bar: filter chips + room actions */}
-                <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-cult-dark-gray/30 bg-cult-near-black/50">
+                <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-cult-surface/30 bg-cult-surface/50">
                   <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
                     {([
                       { key: 'all' as const, label: 'All', count: totalCount },
@@ -729,8 +729,8 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                           onClick={() => updateRoomFilter(room.id, key)}
                           className={`px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-sm transition-colors flex-shrink-0 ${
                             isActive
-                              ? 'bg-cult-charcoal text-cult-white'
-                              : 'text-cult-medium-gray hover:text-cult-light-gray hover:bg-cult-charcoal/30'
+                              ? 'bg-cult-surface-raised text-cult-text-primary'
+                              : 'text-cult-border hover:text-cult-text-muted hover:bg-cult-surface-raised/30'
                           }`}
                         >
                           {label}
@@ -750,7 +750,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     <button
                       type="button"
                       onClick={() => openDeadPlantForm(room.id)}
-                      className="p-2 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-cult-danger min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      className="p-2 hover:bg-cult-surface-raised rounded-lg transition-colors text-cult-border hover:text-cult-danger min-w-[36px] min-h-[36px] flex items-center justify-center"
                       title="Log dead plant"
                     >
                       <Skull className="w-3.5 h-3.5" />
@@ -758,7 +758,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                     <button
                       type="button"
                       onClick={() => openAddTask(room.id)}
-                      className="p-2 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-medium-gray hover:text-cult-accent min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      className="p-2 hover:bg-cult-surface-raised rounded-lg transition-colors text-cult-border hover:text-cult-accent min-w-[36px] min-h-[36px] flex items-center justify-center"
                       title="Add task to this room"
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -768,7 +768,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
 
                 {/* Active tasks */}
                 {activeTasks.length > 0 && (
-                  <div className="divide-y divide-cult-dark-gray/30">
+                  <div className="divide-y divide-cult-surface/30">
                     {activeTasks.map((t) => (
                       <TaskCard
                         key={t.id}
@@ -789,7 +789,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
                   <CompletedTasksCollapse tasks={completedTasks} onTaskClick={openCompletionForm} />
                 )}
                 {completedTasks.length > 0 && roomFilter === 'completed' && (
-                  <div className="divide-y divide-cult-dark-gray/30">
+                  <div className="divide-y divide-cult-surface/30">
                     {completedTasks.map((t) => (
                       <TaskCard key={t.id} task={t} onClick={() => openCompletionForm(t)} />
                     ))}
@@ -798,7 +798,7 @@ function DailyBoardTab({ rooms, opsRooms, staff, allStaff, tasks, attendance, da
 
                 {/* Filtered empty state */}
                 {visibleTasks.length === 0 && roomFilter !== 'all' && (
-                  <div className="px-4 py-3 text-xs text-cult-medium-gray italic">
+                  <div className="px-4 py-3 text-xs text-cult-border italic">
                     No {roomFilter === 'in_progress' ? 'active' : roomFilter.replace('_', ' ')} tasks in this room
                   </div>
                 )}
@@ -902,21 +902,21 @@ function BatchAssignButton({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="p-2.5 hover:bg-cult-charcoal rounded-lg transition-colors text-cult-warning/70 hover:text-cult-warning active:bg-cult-charcoal/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="p-2.5 hover:bg-cult-surface-raised rounded-lg transition-colors text-cult-warning/70 hover:text-cult-warning active:bg-cult-surface-raised/60 min-w-[44px] min-h-[44px] flex items-center justify-center"
         title={`Batch assign ${unassignedTasks.length} unassigned task${unassignedTasks.length !== 1 ? 's' : ''}`}
       >
         <Users className="w-4 h-4" />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-30 bg-cult-near-black border border-cult-dark-gray shadow-xl min-w-[180px] py-1 animate-fade-in">
-          <div className="px-3 py-1.5 border-b border-cult-dark-gray/50">
-            <span className="text-[10px] text-cult-medium-gray uppercase tracking-wider">
+        <div className="absolute right-0 top-full mt-1 z-30 bg-cult-surface border border-cult-surface min-w-[180px] py-1 animate-fade-in">
+          <div className="px-3 py-1.5 border-b border-cult-surface/50">
+            <span className="text-[10px] text-cult-border uppercase tracking-wider">
               Assign {unassignedTasks.length} task{unassignedTasks.length !== 1 ? 's' : ''} to:
             </span>
           </div>
           {staffOptions.filter((s) => s.is_present).length === 0 ? (
-            <p className="px-3 py-2 text-xs text-cult-medium-gray italic">No crew present</p>
+            <p className="px-3 py-2 text-xs text-cult-border italic">No crew present</p>
           ) : (
             staffOptions.filter((s) => s.is_present).map((s) => (
               <button
@@ -924,7 +924,7 @@ function BatchAssignButton({
                 type="button"
                 disabled={assigning}
                 onClick={() => handleAssignAll(s.id)}
-                className="w-full text-left px-3 py-2 text-xs text-cult-light-gray hover:bg-cult-charcoal/50 hover:text-cult-white transition-colors disabled:opacity-40 flex items-center gap-2"
+                className="w-full text-left px-3 py-2 text-xs text-cult-text-muted hover:bg-cult-surface-raised/50 hover:text-cult-text-primary transition-colors disabled:opacity-40 flex items-center gap-2"
               >
                 <span className="w-6 h-6 rounded-full bg-cult-success-muted text-cult-success ring-1 ring-cult-success/50 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                   {s.first_name.slice(0, 2).toUpperCase()}
@@ -970,8 +970,8 @@ function InlineCrewStrip({
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray px-4 py-2.5 flex items-center gap-3 overflow-x-auto scrollbar-hide">
-      <span className="text-[10px] text-cult-medium-gray uppercase tracking-widest font-semibold flex-shrink-0">
+    <div className="bg-cult-surface border border-cult-surface px-4 py-2.5 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+      <span className="text-[10px] text-cult-border uppercase tracking-widest font-semibold flex-shrink-0">
         Crew
       </span>
       <div className="flex items-center gap-1.5">
@@ -986,7 +986,7 @@ function InlineCrewStrip({
               className={`relative w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-200 flex-shrink-0 ${
                 isPresent
                   ? 'bg-cult-success-muted text-cult-success ring-2 ring-cult-success/70'
-                  : 'bg-cult-charcoal text-cult-medium-gray opacity-40 hover:opacity-70'
+                  : 'bg-cult-surface-raised text-cult-border opacity-40 hover:opacity-70'
               }`}
             >
               {initials(s.first_name)}
@@ -994,7 +994,7 @@ function InlineCrewStrip({
           );
         })}
       </div>
-      <span className="text-xs text-cult-medium-gray flex-shrink-0 ml-auto font-mono">
+      <span className="text-xs text-cult-border flex-shrink-0 ml-auto font-mono">
         {presentCount}/{staff.length}
       </span>
     </div>
@@ -1017,10 +1017,10 @@ function StatCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray p-3">
-      <div className="text-xs text-cult-medium-gray uppercase tracking-wider mb-1">{label}</div>
-      <div className={`text-xl font-bold ${accent ?? 'text-cult-white'}`}>{value}</div>
-      <div className="text-xs text-cult-medium-gray mt-0.5">{detail}</div>
+    <div className="bg-cult-surface border border-cult-surface p-3">
+      <div className="text-xs text-cult-border uppercase tracking-wider mb-1">{label}</div>
+      <div className={`text-xl font-bold ${accent ?? 'text-cult-text-primary'}`}>{value}</div>
+      <div className="text-xs text-cult-border mt-0.5">{detail}</div>
       {children}
     </div>
   );
@@ -1032,23 +1032,23 @@ function CompletedTasksCollapse({ tasks, onTaskClick }: { tasks: TaskCardData[];
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="border-t border-cult-dark-gray/50">
+    <div className="border-t border-cult-surface/50">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-2 hover:bg-cult-charcoal/20 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2 hover:bg-cult-surface-raised/20 transition-colors"
       >
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-cult-success/60" />
-          <span className="text-xs text-cult-medium-gray font-medium">
+          <span className="text-xs text-cult-border font-medium">
             {tasks.length} completed
           </span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-cult-border transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
 
       {expanded && (
-        <div className="divide-y divide-cult-dark-gray/30">
+        <div className="divide-y divide-cult-surface/30">
           {tasks.map((t) => (
             <TaskCard key={t.id} task={t} onClick={() => onTaskClick(t)} />
           ))}
@@ -1114,9 +1114,9 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSa
   const content = (
     <>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Add Task</h3>
-        <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
-          <X className="w-4 h-4 text-cult-medium-gray" />
+        <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">Add Task</h3>
+        <button type="button" onClick={onClose} className="p-2.5 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-surface-raised active:bg-cult-surface-raised/60 rounded-lg transition-colors">
+          <X className="w-4 h-4 text-cult-border" />
         </button>
       </div>
       <AddTaskFormFields
@@ -1140,7 +1140,7 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSa
         className="fixed inset-0 z-50 flex items-end bg-black/60"
         onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
       >
-        <div className="w-full bg-cult-near-black border-t border-cult-medium-gray rounded-t-xl animate-slide-in p-5 space-y-3 max-h-[80vh] overflow-y-auto">
+        <div className="w-full bg-cult-surface border-t border-cult-border rounded-t-xl animate-slide-in p-5 space-y-3 max-h-[80vh] overflow-y-auto">
           {content}
         </div>
       </div>
@@ -1153,7 +1153,7 @@ function AddTaskModal({ rooms, staff, preSelectedRoomId, taskDate, onClose, onSa
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
     >
-      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-5 space-y-3 animate-fade-in">
+      <div className="bg-cult-surface border border-cult-border w-full max-w-sm p-5 space-y-3 animate-fade-in">
         {content}
       </div>
     </div>
@@ -1180,36 +1180,36 @@ function AddTaskFormFields({
   taskType, setTaskType, roomId, setRoomId, assignedTo, setAssignedTo,
   notes, setNotes, rooms, staff, taskTypes,
 }: AddTaskFormFieldsProps) {
-  const selectClass = 'w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-2 px-2 rounded-sm focus:outline-none focus:border-cult-accent';
+  const selectClass = 'w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary text-xs py-2 px-2 rounded-sm focus:outline-none focus:border-cult-accent';
   return (
     <>
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Task Type</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Task Type</label>
         <select value={taskType} onChange={(e) => setTaskType(e.target.value as TaskType)} className={selectClass}>
           {taskTypes.map((t) => <option key={t} value={t}>{getTaskTypeConfig(t).label}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Room</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Room</label>
         <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className={selectClass}>
           <option value="">Select room...</option>
           {rooms.map((r) => <option key={r.id} value={r.id}>{r.room_code}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Assign To</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Assign To</label>
         <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={selectClass}>
           <option value="">Unassigned</option>
           {staff.map((s) => <option key={s.id} value={s.id}>{s.first_name}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes</label>
+        <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs py-2 px-2 rounded-sm resize-none focus:outline-none focus:border-cult-accent"
+          className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary text-xs py-2 px-2 rounded-sm resize-none focus:outline-none focus:border-cult-accent"
           placeholder="Optional notes..."
         />
       </div>

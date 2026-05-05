@@ -63,7 +63,7 @@ export function EmptyState({
         </div>
       )}
       <h3
-        className={`font-semibold text-cult-white ${compact ? 'text-[13px]' : 'text-[14px]'}`}
+        className={`font-semibold text-cult-text-primary ${compact ? 'text-[13px]' : 'text-[14px]'}`}
       >
         {title}
       </h3>

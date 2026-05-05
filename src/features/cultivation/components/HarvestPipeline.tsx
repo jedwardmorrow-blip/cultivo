@@ -24,8 +24,8 @@ import type { HarvestSession } from '../types';
 
 // ─── Design tokens ──────────────────────────────────────────────────
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-const GLASS_NESTED = 'rounded-xl bg-white/[0.04] border border-white/[0.06]';
+const GLASS = 'rounded-cult border border-cult-border bg-cult-surface';
+const GLASS_NESTED = 'rounded border border-cult-border-subtle bg-cult-surface-inset';
 
 const AMBER_GLOW = {
   borderColor: 'rgba(245,158,11,0.25)',
@@ -262,7 +262,7 @@ export function HarvestPipeline() {
         </div>
         <button
           onClick={() => setShowHarvestWorkflow(true)}
-          className="rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 px-4 py-2.5 text-xs font-medium active:scale-95 transition-transform"
+          className="rounded-cult bg-amber-500/15 text-amber-300 border border-amber-500/20 px-4 py-2.5 text-xs font-medium active:scale-95 transition-transform"
         >
           + Start Harvest
         </button>
@@ -296,7 +296,7 @@ export function HarvestPipeline() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="glass-skeleton h-20 rounded-2xl" />
+                <div key={i} className="glass-skeleton h-20 rounded-cult" />
               ))}
             </div>
           ) : roomGroups.length === 0 ? (
@@ -348,7 +348,7 @@ export function HarvestPipeline() {
                         {/* Progress bar (how many routed) */}
                         {progressPct > 0 && progressPct < 100 && (
                           <div className="w-16 flex-shrink-0">
-                            <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                            <div className="h-1.5 rounded-full bg-cult-surface-inset border border-cult-border-faint overflow-hidden">
                               <div
                                 className="h-full rounded-full bg-emerald-500/60 transition-all duration-500"
                                 style={{ width: `${progressPct}%` }}
@@ -386,7 +386,7 @@ export function HarvestPipeline() {
                                   className={`w-full flex items-center gap-3 px-4 py-3 ${GLASS_NESTED} transition-all duration-200 text-left ${
                                     isActive ? 'opacity-40' :
                                     isSelected ? 'bg-amber-500/10 border-amber-500/20' :
-                                    'hover:bg-white/[0.06]'
+                                    'hover:bg-cult-surface-raised'
                                   }`}
                                 >
                                   {/* Checkbox */}
@@ -415,7 +415,7 @@ export function HarvestPipeline() {
                                   initial={{ opacity: 0, y: 8 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: 8 }}
-                                  className="flex items-center justify-between p-3 mt-1 rounded-xl bg-violet-500/10 border border-violet-500/20"
+                                  className="flex items-center justify-between p-3 mt-1 rounded-cult bg-violet-500/10 border border-violet-500/20"
                                 >
                                   <span className="text-xs text-violet-300/80">
                                     {selectedHarvestIds.size} selected &middot; Tap a dry room to route &rarr;
@@ -465,7 +465,7 @@ export function HarvestPipeline() {
                       {completedHarvests.map((h) => (
                         <div
                           key={h.id}
-                          className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2 flex items-center gap-3 text-[10px]"
+                          className="rounded bg-cult-surface-inset border border-cult-border-faint px-3 py-2 flex items-center gap-3 text-[10px]"
                         >
                           <span className="text-white/50 font-medium">{getStrainName(h)}</span>
                           <span className="text-white/25">{h.batch_registry?.batch_number ?? '—'}</span>
@@ -535,7 +535,7 @@ export function HarvestPipeline() {
                       {/* Capacity bar */}
                       {capacityLbs > 0 && (
                         <div className="mb-3">
-                          <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                          <div className="h-1.5 rounded-full bg-cult-surface-inset border border-cult-border-faint overflow-hidden">
                             <div
                               className="h-full rounded-full bg-violet-500/60 transition-all duration-500"
                               style={{ width: `${capacityPct}%` }}
@@ -609,7 +609,7 @@ export function HarvestPipeline() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => hasSelections && handleRouteSelected(room.id)}
-                  className={`w-full rounded-2xl border-dashed border border-white/[0.08] bg-white/[0.02] p-5 flex flex-col items-center justify-center min-h-[100px] transition-all duration-300 ${
+                  className={`w-full rounded-cult border-dashed border border-cult-border bg-cult-surface-inset p-5 flex flex-col items-center justify-center min-h-[100px] transition-all duration-300 ${
                     hasSelections
                       ? 'border-violet-400/30 bg-violet-500/[0.03] ring-1 ring-violet-400/15 animate-pulse cursor-pointer active:scale-[0.98]'
                       : ''
@@ -789,7 +789,7 @@ function DryRoomHarvestCard({
           type="button"
           onClick={handleStartBinningClick}
           disabled={startingBinning}
-          className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30"
+          className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-cult bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-30"
         >
           <Package className="w-3 h-3" />
           {startingBinning ? 'Starting...' : binningSessionId ? 'Continue Binning' : 'Start Binning'}

@@ -68,17 +68,17 @@ export function ReadyToShipLens({ onSkuClick }: ReadyToShipLensProps) {
     <div className="space-y-4">
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Units Ready</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">{totalUnits.toLocaleString()}</p>
           <p className="text-[10px] text-white/30">{filtered.length} SKUs</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Total Weight</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">{gramsToLbs(totalGrams)} lbs</p>
           <p className="text-[10px] text-white/30">packaged</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Est. Value</span>
           <p className="text-xl font-bold text-emerald-400 tabular-nums mt-1">{formatUsd(totalValue)}</p>
           <p className="text-[10px] text-white/30">at list price</p>
@@ -93,7 +93,7 @@ export function ReadyToShipLens({ onSkuClick }: ReadyToShipLensProps) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search SKUs…"
-          className="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none"
+          className="glass-input w-full pl-8 pr-3 py-1.5 rounded-cult text-sm text-white placeholder:text-white/30 focus:outline-none"
         />
       </div>
 

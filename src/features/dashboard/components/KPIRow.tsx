@@ -91,8 +91,8 @@ export function KPIRow({ data }: Props) {
         <div
           key={card.label}
           className={`glass-card p-6
-            hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300
-            ${card.alert ? 'border-cult-danger/30 shadow-glow-danger' : ''}`}
+            hover:bg-cult-surface-overlay hover:border-cult-border-strong transition-all duration-300
+            ${card.alert ? 'border-cult-danger/40' : ''}`}
         >
           <div className="flex justify-between items-start mb-4">
             <div className="text-xs uppercase tracking-[1.5px] text-cult-text-muted font-semibold">

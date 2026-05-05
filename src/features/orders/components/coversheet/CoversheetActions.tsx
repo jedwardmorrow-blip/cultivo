@@ -163,7 +163,7 @@ export function CoversheetActions({
           <button
             onClick={() => handleGenerate(false)}
             disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold uppercase tracking-wider"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold uppercase tracking-wider"
           >
             {isGenerating ? (
               <>
@@ -200,7 +200,7 @@ export function CoversheetActions({
             {/* View Button */}
             <button
               onClick={handleViewCoversheet}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-bold uppercase tracking-wider"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-bold uppercase tracking-wider"
             >
               <Eye className="w-5 h-5" />
               View Coversheet
@@ -209,7 +209,7 @@ export function CoversheetActions({
             {/* Copy URL Button */}
             <button
               onClick={handleCopyUrl}
-              className="inline-flex items-center gap-2 px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white hover:bg-cult-black transition-all"
+              className="inline-flex items-center gap-2 px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary hover:bg-cult-black transition-all"
             >
               {copiedToClipboard ? (
                 <>
@@ -229,7 +229,7 @@ export function CoversheetActions({
 
       {/* Coversheet Info */}
       {existingCoversheet && !existingCoversheet.is_outdated && (
-        <div className="flex items-center gap-4 text-sm text-cult-lighter-gray">
+        <div className="flex items-center gap-4 text-sm text-cult-text-muted">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-cult-success" />
             <span>Coversheet Active</span>

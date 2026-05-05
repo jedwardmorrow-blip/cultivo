@@ -30,8 +30,8 @@ function formatHours(h: number): string {
 const STATUS_DOT: Record<string, string> = {
   completed: 'bg-cult-success',
   in_progress: 'bg-cult-warning',
-  pending: 'bg-cult-dark-gray',
-  skipped: 'bg-cult-medium-gray',
+  pending: 'bg-cult-surface',
+  skipped: 'bg-cult-border',
   carry_forward: 'bg-violet-500',
 };
 
@@ -75,7 +75,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
   }
 
   return (
-    <div className={`border rounded-sm ${isOverAllocated ? 'border-cult-danger/50 bg-cult-danger-muted' : 'border-cult-dark-gray bg-cult-graphite'}`}>
+    <div className={`border rounded-sm ${isOverAllocated ? 'border-cult-danger/50 bg-cult-danger-muted' : 'border-cult-surface bg-cult-surface'}`}>
       {/* Row header */}
       <button
         type="button"
@@ -83,14 +83,14 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
         className="w-full flex items-center gap-3 px-3 py-2.5 text-left"
       >
         {/* Avatar */}
-        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${staffId ? 'bg-cult-accent/20 text-cult-accent' : 'bg-cult-charcoal text-cult-medium-gray'}`}>
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${staffId ? 'bg-cult-accent/20 text-cult-accent' : 'bg-cult-surface-raised text-cult-border'}`}>
           {staffId ? displayName.charAt(0).toUpperCase() : '?'}
         </div>
 
         {/* Name + counts */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-cult-off-white truncate">{displayName}</span>
+            <span className="text-sm font-semibold text-cult-text-primary truncate">{displayName}</span>
             {isOverAllocated && (
               <span className="flex items-center gap-1 text-[10px] font-semibold text-cult-danger bg-cult-danger-muted border border-cult-danger/40 px-1.5 py-0.5 rounded">
                 <AlertTriangle className="w-3 h-3" />
@@ -100,7 +100,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
           </div>
           {/* Utilization bar */}
           {capacityHours > 0 && totalHours > 0 && (
-            <div className="mt-1 h-1 rounded-full bg-cult-charcoal overflow-hidden w-full max-w-[160px]">
+            <div className="mt-1 h-1 rounded-full bg-cult-surface-raised overflow-hidden w-full max-w-[160px]">
               <div
                 className={`h-full rounded-full transition-all ${barColor}`}
                 style={{ width: `${utilizationPct}%` }}
@@ -110,7 +110,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-3 flex-shrink-0 text-xs text-cult-medium-gray">
+        <div className="flex items-center gap-3 flex-shrink-0 text-xs text-cult-border">
           <span className="flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-cult-success/70" />
             {completedCount}/{tasks.length}
@@ -119,7 +119,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
             <span className={`flex items-center gap-1 ${isOverAllocated ? 'text-cult-danger' : ''}`}>
               <Clock className="w-3 h-3" />
               {formatHours(totalHours)}
-              {capacityHours > 0 && <span className="text-cult-dark-gray">/{formatHours(capacityHours)}</span>}
+              {capacityHours > 0 && <span className="text-cult-surface">/{formatHours(capacityHours)}</span>}
             </span>
           )}
           <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
@@ -128,14 +128,14 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
 
       {/* Expanded task list */}
       {expanded && (
-        <div className="border-t border-cult-dark-gray/60 divide-y divide-cult-dark-gray/40">
+        <div className="border-t border-cult-surface/60 divide-y divide-cult-surface/40">
           {tasks.map((task) => {
             const cfg = getTaskTypeConfig(task.task_type);
             return (
               <div key={task.id} className="flex items-center gap-2.5 px-3 py-2">
                 {/* Status dot */}
                 <span
-                  className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[task.status] ?? 'bg-cult-dark-gray'}`}
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${STATUS_DOT[task.status] ?? 'bg-cult-surface'}`}
                 />
 
                 {/* Task type badge */}
@@ -147,11 +147,11 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
                 </span>
 
                 {/* Room */}
-                <span className="text-xs text-cult-medium-gray truncate flex-1">{task.room_name}</span>
+                <span className="text-xs text-cult-border truncate flex-1">{task.room_name}</span>
 
                 {/* Duration */}
                 {task.estimated_duration && (
-                  <span className="text-xs text-cult-medium-gray flex-shrink-0">
+                  <span className="text-xs text-cult-border flex-shrink-0">
                     {formatHours(parseDurationHours(task.estimated_duration))}
                   </span>
                 )}
@@ -161,7 +161,7 @@ function StaffRow({ staffId, displayName, tasks, allStaff, capacityHours, onAssi
                   disabled={assigning === task.id}
                   value={task.assigned_to ?? ''}
                   onChange={(e) => { if (e.target.value) void handleReassign(task.id, e.target.value); }}
-                  className="text-xs bg-cult-charcoal border border-cult-dark-gray text-cult-light-gray rounded-sm px-1.5 py-1 flex-shrink-0 max-w-[120px] disabled:opacity-50"
+                  className="text-xs bg-cult-surface-raised border border-cult-surface text-cult-text-muted rounded-sm px-1.5 py-1 flex-shrink-0 max-w-[120px] disabled:opacity-50"
                   title="Reassign task"
                 >
                   <option value="">Unassigned</option>
@@ -231,7 +231,7 @@ export function StaffCapacityPanel({ tasks, allStaff, onAssignWorker, defaultCap
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-cult-accent" />
-          <span className="text-sm font-semibold text-cult-off-white">Staff Capacity</span>
+          <span className="text-sm font-semibold text-cult-text-primary">Staff Capacity</span>
           {overAllocatedCount > 0 && (
             <span className="flex items-center gap-1 text-[10px] font-semibold text-cult-danger bg-cult-danger-muted border border-cult-danger/40 px-1.5 py-0.5 rounded">
               <AlertTriangle className="w-3 h-3" />
@@ -239,9 +239,9 @@ export function StaffCapacityPanel({ tasks, allStaff, onAssignWorker, defaultCap
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-cult-medium-gray">
+        <div className="flex items-center gap-3 text-xs text-cult-border">
           <span className="flex items-center gap-1">
-            <Circle className="w-3 h-3 text-cult-medium-gray" />
+            <Circle className="w-3 h-3 text-cult-border" />
             {totalUnassigned} unassigned
           </span>
           <span className="flex items-center gap-1">
@@ -259,7 +259,7 @@ export function StaffCapacityPanel({ tasks, allStaff, onAssignWorker, defaultCap
               step={0.5}
               value={capacityHours}
               onChange={(e) => setCapacityHours(parseFloat(e.target.value) || 0)}
-              className="w-14 bg-cult-charcoal border border-cult-dark-gray text-cult-light-gray rounded-sm px-1.5 py-0.5 text-xs text-center"
+              className="w-14 bg-cult-surface-raised border border-cult-surface text-cult-text-muted rounded-sm px-1.5 py-0.5 text-xs text-center"
               title="Daily capacity threshold (hours)"
             />
             h
@@ -289,7 +289,7 @@ export function StaffCapacityPanel({ tasks, allStaff, onAssignWorker, defaultCap
           );
         })}
         {tasks.length === 0 && (
-          <div className="text-center py-8 text-cult-medium-gray text-sm">
+          <div className="text-center py-8 text-cult-border text-sm">
             No tasks for this date.
           </div>
         )}

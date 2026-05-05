@@ -50,28 +50,28 @@ export function OrderWorkflowStatus({}: { onSelectOrder: (orderId: string) => vo
   }
 
   if (loading) {
-    return <div className="text-cult-light-gray">Loading workflow status...</div>;
+    return <div className="text-cult-text-muted">Loading workflow status...</div>;
   }
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">Order Workflow Status</h2>
+      <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide mb-4">Order Workflow Status</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-cult-surface-raised p-4 border border-cult-border rounded-cult">
           <p className="text-cult-text-secondary text-sm uppercase tracking-wider">Submitted</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.submitted}</p>
+          <p className="text-3xl font-bold text-cult-text-primary mt-2">{stats.submitted}</p>
         </div>
         <div className="bg-cult-surface-raised p-4 border border-cult-success/30 rounded-cult">
           <p className="text-cult-success text-sm uppercase tracking-wider">Accepted</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.accepted}</p>
+          <p className="text-3xl font-bold text-cult-text-primary mt-2">{stats.accepted}</p>
         </div>
         <div className="bg-cult-surface-raised p-4 border border-cult-warning/30 rounded-cult">
           <p className="text-cult-warning text-sm uppercase tracking-wider">Processing</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.processing}</p>
+          <p className="text-3xl font-bold text-cult-text-primary mt-2">{stats.processing}</p>
         </div>
         <div className="bg-cult-surface-raised p-4 border border-cult-success/30 rounded-cult">
           <p className="text-cult-success-bright text-sm uppercase tracking-wider">Ready</p>
-          <p className="text-3xl font-bold text-cult-white mt-2">{stats.ready_for_delivery}</p>
+          <p className="text-3xl font-bold text-cult-text-primary mt-2">{stats.ready_for_delivery}</p>
         </div>
       </div>
     </div>

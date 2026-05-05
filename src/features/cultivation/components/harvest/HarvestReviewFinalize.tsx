@@ -10,8 +10,8 @@ import { formatWeight } from '../../utils';
 import type { DryRoom, HarvestSession, PlantGroup } from '../../types';
 import type { BatchGroup } from './HarvestWorkflow';
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-const GLASS_NESTED = 'rounded-xl bg-white/[0.04] border border-white/[0.06]';
+const GLASS = 'rounded-cult border border-cult-border bg-cult-surface';
+const GLASS_NESTED = 'rounded border border-cult-border-subtle bg-cult-surface-inset';
 
 export interface BatchSummary {
   batch: BatchGroup;
@@ -131,14 +131,14 @@ export function HarvestReviewFinalize({
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm p-3">
+        <div className="flex items-start gap-2 rounded-cult bg-red-500/10 border border-red-500/20 text-red-300 text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           {error}
         </div>
       )}
 
       {hasPartialBatches && (
-        <div className="flex items-start gap-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm p-3">
+        <div className="flex items-start gap-2 rounded-cult bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           Some selected batches are partially weighed. Finalizing will record the current weights — you can harvest more from these batches in a future session.
         </div>
@@ -147,7 +147,7 @@ export function HarvestReviewFinalize({
       {/* Batch selection */}
       <div className={`${GLASS} overflow-hidden`}>
         {/* Table header */}
-        <div className="px-5 py-3 border-b border-white/[0.06]">
+        <div className="px-5 py-3 border-b border-cult-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={toggleAll} className="text-white/30 hover:text-white/60 transition-colors">
@@ -189,7 +189,7 @@ export function HarvestReviewFinalize({
         </div>
 
         {/* Finalizable batches */}
-        <div className="divide-y divide-white/[0.04]">
+        <div className="divide-y divide-cult-border-faint">
           {finalizableBatches.map((summary) => {
             const { batch, totalWeight, totalPlants, wasteGrams, flowerWeight, frozenWeight, priorHarvestedPlants } = summary;
             const status = getBatchStatus(summary);
@@ -203,7 +203,7 @@ export function HarvestReviewFinalize({
                 className={`w-full text-left px-5 py-3 flex items-center justify-between gap-4 transition-colors ${
                   isSelected
                     ? 'bg-amber-500/[0.04] hover:bg-amber-500/[0.06]'
-                    : 'hover:bg-white/[0.02] opacity-40'
+                    : 'hover:bg-cult-surface-inset opacity-40'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -253,12 +253,12 @@ export function HarvestReviewFinalize({
         {/* Not-started batches */}
         {notStartedBatches.length > 0 && (
           <>
-            <div className="px-5 py-2 border-t border-white/[0.04]">
-              <span className="text-white/15 text-[10px] uppercase tracking-wider">
+            <div className="px-5 py-2 border-t border-cult-border-faint">
+              <span className="text-cult-text-faint text-[10px] uppercase tracking-wider">
                 Not Weighed ({notStartedBatches.length})
               </span>
             </div>
-            <div className="divide-y divide-white/[0.02]">
+            <div className="divide-y divide-cult-border-faint">
               {notStartedBatches.map(({ batch }) => (
                 <div key={batch.batchRegistryId} className="px-5 py-2.5 flex items-center gap-3 opacity-30">
                   <div className="w-4 h-4 flex-shrink-0" />
@@ -278,7 +278,7 @@ export function HarvestReviewFinalize({
 
         {/* Waste footer */}
         {combinedWaste > 0 && (
-          <div className="px-5 py-2 border-t border-white/[0.04]">
+          <div className="px-5 py-2 border-t border-cult-border-faint">
             <span className="text-white/20 text-[10px]">Total waste: {formatWeight(combinedWaste)}</span>
           </div>
         )}
@@ -302,7 +302,7 @@ export function HarvestReviewFinalize({
             <select
               value={selectedDryRoomId}
               onChange={(e) => setSelectedDryRoomId(e.target.value)}
-              className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white"
+              className="w-full glass-input rounded-cult px-4 py-2.5 text-sm text-white"
             >
               <option value="">-- Select dry room --</option>
               {activeDryRooms.map((room) => (
@@ -344,7 +344,7 @@ export function HarvestReviewFinalize({
         <button
           onClick={handleFinalize}
           disabled={!canFinalize}
-          className="flex items-center gap-2 rounded-xl bg-emerald-500/80 text-black px-6 py-3 text-xs font-semibold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-20 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+          className="flex items-center gap-2 rounded-cult bg-emerald-500/80 text-black px-6 py-3 text-xs font-semibold uppercase tracking-wider active:scale-95 transition-all disabled:opacity-20 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
         >
           <CheckCircle className="w-4 h-4" />
           {saving
@@ -355,7 +355,7 @@ export function HarvestReviewFinalize({
         <button
           onClick={onBack}
           disabled={saving}
-          className="rounded-xl bg-white/[0.05] border border-white/[0.1] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 hover:bg-white/[0.08] hover:text-white/60 active:scale-95 transition-all"
+          className="rounded border border-cult-border bg-cult-surface-inset px-6 py-3 font-mono uppercase tracking-[0.16em] text-[11px] text-cult-text-muted hover:bg-cult-surface-subtle hover:text-cult-text-secondary transition-colors"
         >
           Back to Weights
         </button>

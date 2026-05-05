@@ -172,8 +172,8 @@ export const OrderItemRow = memo(function OrderItemRow({
 
   return (
     <>
-      <tr className="hover:bg-cult-dark-gray transition-colors">
-        <td className="px-3 py-3 text-sm font-medium text-cult-white">
+      <tr className="hover:bg-cult-surface transition-colors">
+        <td className="px-3 py-3 text-sm font-medium text-cult-text-primary">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 max-w-[200px]">
               {item.product_category === 'bulk' && <span className="text-xs">🔲</span>}
@@ -203,7 +203,7 @@ export const OrderItemRow = memo(function OrderItemRow({
                   {totalAssigned} of {item.quantity} {item.pricing_unit || 'units'} assigned ({fulfillmentPercentage.toFixed(0)}%)
                   {showAssignedPackages ? ' ▼' : ' ▶'}
                 </button>
-                <div className="w-24 h-1.5 bg-cult-medium-gray rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-cult-border rounded-full overflow-hidden">
                   <div
                     className={`h-full ${statusBadgeColor} transition-all`}
                     style={{ width: `${Math.min(fulfillmentPercentage, 100)}%` }}
@@ -216,16 +216,16 @@ export const OrderItemRow = memo(function OrderItemRow({
                 <span className={`text-xs flex items-center gap-1 ${
                   stats.pending === 0 ? 'text-cult-success' :
                   stats.printed > 0 ? 'text-cult-warning' :
-                  'text-cult-lighter-gray'
+                  'text-cult-text-muted'
                 }`}>
                   {stats.printed} of {stats.total} labels printed
                 </span>
-                <div className="w-24 h-1.5 bg-cult-medium-gray rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-cult-border rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all ${
                       stats.pending === 0 ? 'bg-cult-success' :
                       stats.printed > 0 ? 'bg-cult-warning' :
-                      'bg-cult-lighter-gray'
+                      'bg-cult-text-muted'
                     }`}
                     style={{ width: `${stats.total > 0 ? (stats.printed / stats.total) * 100 : 0}%` }}
                   />
@@ -234,7 +234,7 @@ export const OrderItemRow = memo(function OrderItemRow({
             )}
           </div>
         </td>
-      <td className="px-3 py-3 text-sm text-cult-light-gray whitespace-nowrap">
+      <td className="px-3 py-3 text-sm text-cult-text-muted whitespace-nowrap">
         {item.strain || '-'}
       </td>
       <td className="px-3 py-3 text-sm">
@@ -242,8 +242,8 @@ export const OrderItemRow = memo(function OrderItemRow({
           value={item.batch_id || ''}
           onChange={(e) => onBatchUpdate(item.id, orderId, e.target.value || null, item.strain)}
           disabled={!item.strain || batchesLoading}
-          className={`px-2 py-1 text-xs border-2 bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-white font-medium w-28 ${
-            !item.batch_id ? 'border-cult-warning text-cult-warning' : 'border-cult-medium-gray'
+          className={`px-2 py-1 text-xs border-2 bg-cult-surface text-cult-text-primary focus:outline-none focus:border-cult-accent font-medium w-28 ${
+            !item.batch_id ? 'border-cult-warning text-cult-warning' : 'border-cult-border'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <option value="">
@@ -270,7 +270,7 @@ export const OrderItemRow = memo(function OrderItemRow({
           <p className="text-xs text-cult-warning mt-1">No batches available for {item.strain}</p>
         )}
       </td>
-      <td className="px-3 py-3 text-sm font-bold text-cult-white text-right whitespace-nowrap">
+      <td className="px-3 py-3 text-sm font-bold text-cult-text-primary text-right whitespace-nowrap">
         {editingQuantity ? (
           <div className="flex items-center justify-end gap-2">
             <input
@@ -284,7 +284,7 @@ export const OrderItemRow = memo(function OrderItemRow({
                 if (e.key === 'Enter') saveQuantity();
                 if (e.key === 'Escape') setEditingQuantity(false);
               }}
-              className="w-20 px-2 py-1 text-sm border-2 border-cult-medium-gray bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-success"
+              className="w-20 px-2 py-1 text-sm border-2 border-cult-border bg-cult-surface text-cult-text-primary focus:outline-none focus:border-cult-success"
               autoFocus
             />
           </div>
@@ -293,7 +293,7 @@ export const OrderItemRow = memo(function OrderItemRow({
             {item.quantity}
             <button
               onClick={startEditingQuantity}
-              className="text-cult-lighter-gray hover:text-cult-white"
+              className="text-cult-text-muted hover:text-cult-text-primary"
               title="Edit quantity"
             >
               <Edit2 className="w-3 h-3" />
@@ -301,7 +301,7 @@ export const OrderItemRow = memo(function OrderItemRow({
           </div>
         )}
       </td>
-      <td className="px-3 py-3 text-sm text-cult-white text-right whitespace-nowrap">
+      <td className="px-3 py-3 text-sm text-cult-text-primary text-right whitespace-nowrap">
         {editingPrice ? (
           <div className="flex items-center justify-end gap-2">
             <input
@@ -314,19 +314,19 @@ export const OrderItemRow = memo(function OrderItemRow({
                 if (e.key === 'Enter') savePrice();
                 if (e.key === 'Escape') setEditingPrice(false);
               }}
-              className="w-24 px-2 py-1 text-sm border-2 border-cult-medium-gray bg-cult-dark-gray text-cult-white focus:outline-none focus:border-cult-success"
+              className="w-24 px-2 py-1 text-sm border-2 border-cult-border bg-cult-surface text-cult-text-primary focus:outline-none focus:border-cult-success"
               autoFocus
             />
           </div>
         ) : (
           <div className="flex items-center justify-end gap-2">
             {formatCurrency(Number(item.unit_price))}
-            <span className="text-xs text-cult-lighter-gray">
+            <span className="text-xs text-cult-text-muted">
               /{item.pricing_unit || 'unit'}
             </span>
             <button
               onClick={startEditingPrice}
-              className="text-cult-lighter-gray hover:text-cult-white"
+              className="text-cult-text-muted hover:text-cult-text-primary"
               title="Edit price"
             >
               <Edit2 className="w-3 h-3" />
@@ -337,7 +337,7 @@ export const OrderItemRow = memo(function OrderItemRow({
       <td className="px-3 py-3 text-sm font-bold text-cult-success text-right whitespace-nowrap">
         {formatCurrency(Number(item.subtotal))}
       </td>
-      <td className="px-3 py-3 text-sm text-right sticky right-0 bg-cult-near-black border-l border-cult-medium-gray z-10">
+      <td className="px-3 py-3 text-sm text-right sticky right-0 bg-cult-surface border-l border-cult-border z-10">
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => setShowAssignmentModal(true)}
@@ -346,7 +346,7 @@ export const OrderItemRow = memo(function OrderItemRow({
                 ? 'bg-cult-success hover:bg-cult-success/80 text-white'
                 : isPartiallyAssigned
                 ? 'bg-cult-warning hover:bg-cult-warning/80 text-cult-surface'
-                : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white'
+                : 'bg-cult-border hover:bg-cult-text-muted text-cult-text-primary'
             }`}
             title={
               isFullyAssigned
@@ -373,7 +373,7 @@ export const OrderItemRow = memo(function OrderItemRow({
                   ? 'bg-cult-success hover:bg-cult-success/80 text-white'
                   : stats.printed > 0
                   ? 'bg-cult-warning hover:bg-cult-warning/80 text-cult-surface'
-                  : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white'
+                  : 'bg-cult-border hover:bg-cult-text-muted text-cult-text-primary'
               }`}
               title={`${stats.pending} label${stats.pending !== 1 ? 's' : ''} pending print`}
             >
@@ -387,7 +387,7 @@ export const OrderItemRow = memo(function OrderItemRow({
               className={`flex items-center gap-1 px-2 py-1 text-xs font-bold rounded transition-colors ${
                 item.is_sample
                   ? 'bg-cult-warning-muted text-cult-warning border border-cult-warning/50 hover:bg-cult-warning/30'
-                  : 'bg-cult-medium-gray hover:bg-cult-lighter-gray text-cult-white border border-transparent'
+                  : 'bg-cult-border hover:bg-cult-text-muted text-cult-text-primary border border-transparent'
               }`}
               title={item.is_sample ? 'Remove sample flag' : 'Mark as sample'}
             >
@@ -407,7 +407,7 @@ export const OrderItemRow = memo(function OrderItemRow({
 
       {showAssignedPackages && (
         <tr>
-          <td colSpan={7} className="px-4 py-4 bg-cult-near-black border-t border-cult-medium-gray">
+          <td colSpan={7} className="px-4 py-4 bg-cult-surface border-t border-cult-border">
             <AssignedPackagesDisplay
               orderItemId={item.id}
               unit={item.pricing_unit || 'units'}

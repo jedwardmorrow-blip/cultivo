@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cultivation Command · Redesign v3</title>
+<link rel="stylesheet" href="tokens/brand-tokens.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Command Center v3 — Styles
+   Home surface language + visual rhythm + interaction
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--op-canvas);
+  color: var(--op-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.cmd { padding: 18px 24px 48px; display: flex; flex-direction: column; gap: 14px; max-width: 1600px; margin: 0 auto; }
+
+/* ── Header ─────────────────────────────────────────────── */
+.hdr { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--op-line); padding-bottom: 12px; }
+.hdr-l { display: flex; align-items: baseline; gap: 16px; }
+.hdr-title { font-size: 14px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+.hdr-meta { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink-2); }
+.hdr-meta strong { color: var(--op-ink); font-weight: 500; }
+.hdr-r { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── Dot ────────────────────────────────────────────────── */
+.d { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.d-clone { background: var(--stage-clone); }
+.d-veg { background: var(--stage-veg); }
+.d-flower { background: var(--stage-flower); }
+.d-mother { background: var(--stage-mother); }
+.d-ok { background: var(--status-ok); }
+.d-warn { background: var(--status-warn); }
+.d-bad { background: var(--status-bad); }
+.d-muted { background: var(--op-ink-4); }
+
+/* ── Mono label ─────────────────────────────────────────── */
+.ml { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--op-ink-3); }
+.ml-sm { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); }
+.ml-r { margin-left: auto; }
+
+/* ── Section ────────────────────────────────────────────── */
+.sec { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.sec-hd { display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); }
+
+/* ── Attention ──────────────────────────────────────────── */
+.attn { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); padding: 10px 16px; display: flex; align-items: center; gap: 20px; overflow-x: auto; }
+.attn-item { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; white-space: nowrap; cursor: pointer; background: none; border: 0; color: inherit; padding: 0; transition: color 80ms; }
+.attn-item:hover { color: var(--op-ink); }
+.attn-code { font-weight: 600; color: var(--op-ink); }
+
+/* ── Cell ───────────────────────────────────────────────── */
+.cells { display: grid; background: var(--op-canvas); }
+.cells > .cell:not(:last-child) { border-right: 1px solid var(--op-line); }
+.cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background 120ms; background: transparent; border: 0; text-align: left; font-family: inherit; color: inherit; }
+.cell:hover { background: var(--op-surface); }
+.cell-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--op-ink-3); display: flex; align-items: center; gap: 6px; }
+.cell-val { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--op-ink); line-height: 1.1; letter-spacing: -0.01em; }
+.cell-val.proj { font-style: italic; }
+.cell-sub { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-2); letter-spacing: 0.02em; }
+.cell-spark { display: flex; align-items: flex-end; gap: 1px; height: 20px; margin-top: 4px; }
+.cell-spark-bar { width: 3px; border-radius: 1px; background: var(--op-ink-4); min-height: 2px; }
+
+/* ── Rooms ──────────────────────────────────────────────── */
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: var(--op-line); }
+.rm { background: var(--op-canvas); padding: 14px 16px; cursor: pointer; border: 0; border-left: 4px solid transparent; text-align: left; font-family: inherit; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: background 120ms; min-height: 130px; }
+.rm:hover { background: var(--op-surface); }
+.rm.empty { opacity: 0.3; cursor: default; border-left-color: transparent; }
+.rm.empty:hover { background: var(--op-canvas); }
+.rm.urgent { border-left-color: var(--status-bad); }
+.rm.warning { border-left-color: var(--status-warn); }
+.rm-top { display: flex; align-items: center; gap: 8px; }
+.rm-code { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+.rm-type { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--op-ink-3); }
+.rm-urg { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.rm-big { font-family: var(--font-mono); font-size: 22px; font-weight: 500; line-height: 1.1; }
+.rm-stats { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-2); display: flex; gap: 12px; }
+.rm-strains { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.rm-strain { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); border: 1px solid var(--op-line); padding: 1px 6px; }
+.rm-ft { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--op-line); }
+.rm-harv { font-family: var(--font-mono); font-size: 11px; }
+.rm-tasks { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); }
+.tbar { display: flex; gap: 2px; height: 4px; }
+.tseg { height: 4px; border-radius: 1px; }
+.tseg.done { background: var(--status-ok); }
+.tseg.act { background: var(--status-warn); }
+.tseg.pend { background: var(--op-ink-4); }
+
+/* ── Expanded ───────────────────────────────────────────── */
+.exp { display: flex; flex-direction: column; gap: 14px; }
+.exp-hdr { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.exp-hdr-top { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); flex-wrap: wrap; }
+.back-btn { background: none; border: 1px solid var(--op-line-strong); color: var(--op-ink-2); padding: 6px 12px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 120ms; }
+.back-btn:hover { color: var(--op-ink); border-color: var(--op-ink-3); }
+.exp-code { font-family: var(--font-mono); font-size: 18px; font-weight: 600; }
+.exp-meta { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); display: flex; gap: 12px; }
+.act-btn { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 16px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; cursor: pointer; transition: all 120ms; }
+.act-btn:hover { background: var(--accent); color: var(--op-canvas); }
+.act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Phase hero ─────────────────────────────────────────── */
+.phase-hero { padding: 16px; background: var(--op-canvas); }
+.phase-track { position: relative; height: 8px; background: var(--op-surface-2); border-radius: 4px; overflow: visible; }
+.phase-fill { height: 100%; border-radius: 4px; background: var(--op-ink-3); position: relative; }
+.phase-now { position: absolute; right: -1px; top: -4px; width: 2px; height: 16px; background: var(--accent); border-radius: 1px; }
+.phase-labels { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); }
+.phase-markers { position: relative; height: 0; }
+.phase-marker { position: absolute; top: -20px; font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-3); transform: translateX(-50%); white-space: nowrap; }
+.phase-marker::after { content: ''; position: absolute; bottom: -4px; left: 50%; width: 1px; height: 4px; background: var(--op-ink-4); }
+
+/* ── Body layout ────────────────────────────────────────── */
+.exp-body { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; }
+@media (max-width: 1024px) { .exp-body { grid-template-columns: 1fr; } }
+
+/* ── Tasks ──────────────────────────────────────────────── */
+.tl { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.tl-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--op-line); transition: background 120ms; cursor: pointer; }
+.tl-row:last-of-type { border-bottom: 0; }
+.tl-row:hover { background: var(--op-surface-2); }
+.tl-chk { width: 18px; height: 18px; border: 1px solid var(--op-line-strong); border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 150ms; }
+.tl-chk.done { background: var(--status-ok); border-color: var(--status-ok); color: var(--op-canvas); }
+.tl-chk.done::after { content: '✓'; font-weight: 700; }
+.tl-chk.act { border-color: var(--status-warn); }
+.tl-chk.act::after { content: ''; width: 8px; height: 8px; border-radius: 1px; background: var(--status-warn); display: block; }
+.tl-name { font-size: 13px; color: var(--op-ink); flex: 1; }
+.tl-name.struck { color: var(--op-ink-3); text-decoration: line-through; text-decoration-color: var(--op-ink-4); }
+.tl-who { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); letter-spacing: 0.06em; }
+.tl-time { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); }
+
+/* ── Sidebar ────────────────────────────────────────────── */
+.sidebar-wrap { display: flex; flex-direction: column; gap: 14px; }
+.sidebar-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 1280px) { .sidebar-2col { grid-template-columns: 1fr; } }
+
+.sc { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.sc-hd { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); }
+.sc-bd { padding: 12px 16px; }
+.sc-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.sc-row:not(:last-child) { border-bottom: 1px solid var(--op-line); }
+.sc-key { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--op-ink-4); width: 72px; flex-shrink: 0; }
+.sc-val { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink); }
+
+.sched-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-family: var(--font-mono); font-size: 11px; }
+.sched-day { width: 60px; color: var(--op-ink-4); flex-shrink: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.sched-tasks { color: var(--op-ink-2); }
+
+.pending-hint {
+  font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4);
+  letter-spacing: 0.08em; padding: 8px 0;
+  border-bottom: 1px dotted var(--op-line-strong);
+}
+
+/* ── Layout grid ────────────────────────────────────────── */
+.lay-grid { display: grid; gap: 4px; }
+.lay-cell { aspect-ratio: 1.2; border: 1px solid var(--op-line); border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); gap: 2px; transition: all 120ms; cursor: pointer; background: transparent; }
+.lay-cell.occ { background: var(--op-surface-2); color: var(--op-ink-3); }
+.lay-cell:hover { background: var(--op-surface-2); border-color: var(--op-line-strong); }
+.lay-cell-ct { font-size: 16px; font-weight: 500; color: var(--op-ink-2); }
+
+/* ── Feed ───────────────────────────────────────────────── */
+.feed-summary { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink-2); }
+.feed-summary strong { color: var(--accent); font-weight: 500; }
+.feed-row { display: grid; grid-template-columns: 1fr 56px 48px; gap: 8px; padding: 5px 0; font-family: var(--font-mono); font-size: 11px; align-items: center; }
+.feed-row:not(:last-child) { border-bottom: 1px solid var(--op-line); }
+.feed-nm { color: var(--op-ink-2); }
+.feed-v { color: var(--op-ink); text-align: right; }
+
+/* ── Footer timestamp ───────────────────────────────────── */
+.ft-ts { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); letter-spacing: 0.06em; padding: 8px 16px; border-top: 1px solid var(--op-line); background: var(--op-canvas); }
+
+/* ── Modal ──────────────────────────────────────────────── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.modal-card { background: var(--op-surface); border: 1px solid var(--op-line-strong); border-radius: var(--r-md); max-width: 440px; width: 100%; }
+.modal-hd { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); }
+.modal-close { background: none; border: 0; color: var(--op-ink-3); cursor: pointer; font-size: 16px; padding: 4px 8px; }
+.modal-close:hover { color: var(--op-ink); }
+.modal-bd { padding: 16px; }
+.modal-ft { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--op-line); }
+.modal-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; padding: 8px 0; align-items: center; border-bottom: 1px solid var(--op-line); }
+.modal-key { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--op-ink-4); }
+.modal-val { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink); }
+.modal-input { background: var(--op-canvas); border: 1px solid var(--op-line-strong); color: var(--op-ink); font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; width: 100%; outline: none; transition: border-color 120ms; }
+.modal-input:focus { border-color: var(--accent); }
+.modal-cancel { background: none; border: 1px solid var(--op-line-strong); color: var(--op-ink-2); padding: 8px 16px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 120ms; }
+.modal-cancel:hover { color: var(--op-ink); border-color: var(--op-ink-3); }
+
+/* ── Screen transition fade ─────────────────────────────── */
+.cmd-content { transition: opacity 120ms ease; }
+.cmd-content.fade-out { opacity: 0; }
+.cmd-content.fade-in { opacity: 0; animation: fadeIn 150ms ease forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" src="cmd-data.jsx"></script>
+<script type="text/babel" src="cmd-components.jsx"></script>
+<script type="text/babel">
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(React.createElement(window.CmdApp));
+</script>
+
+</body>
+</html>

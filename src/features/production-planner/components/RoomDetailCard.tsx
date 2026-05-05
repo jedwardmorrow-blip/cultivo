@@ -46,14 +46,14 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
         <div>
           <div className="flex items-center gap-2">
             <div className={`w-2.5 h-2.5 rounded-full ${ROOM_TYPE_DOT[room.room_type] ?? 'bg-cult-border'}`} />
-            <h2 className="text-base font-bold text-cult-white font-montserrat">{room.room_code}</h2>
+            <h2 className="text-base font-bold text-cult-text-primary font-mono">{room.room_code}</h2>
             <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CHIP_STAGE_COLORS[room.room_type] ?? CHIP_STAGE_COLORS.mixed}`}>
               {room.room_type}
             </span>
           </div>
           <p className="text-xs text-cult-text-muted mt-0.5">{room.room_name}</p>
         </div>
-        <button onClick={onClose} className="p-1.5 rounded hover:bg-cult-surface text-cult-text-muted hover:text-cult-white transition-colors">
+        <button onClick={onClose} className="p-1.5 rounded hover:bg-cult-surface text-cult-text-muted hover:text-cult-text-primary transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -61,18 +61,18 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-2 px-4 py-3 border-b border-cult-border">
         <div className="bg-cult-surface rounded-lg p-2.5 text-center">
-          <div className="text-lg font-bold text-cult-white">{room.total_plants}</div>
-          <div className="text-xs text-cult-silver uppercase tracking-wide">Plants</div>
+          <div className="text-lg font-bold text-cult-text-primary">{room.total_plants}</div>
+          <div className="text-xs text-cult-text-secondary uppercase tracking-wide">Plants</div>
         </div>
         <div className="bg-cult-surface rounded-lg p-2.5 text-center">
-          <div className="text-lg font-bold text-cult-white">{room.strain_count}</div>
-          <div className="text-xs text-cult-silver uppercase tracking-wide">Strains</div>
+          <div className="text-lg font-bold text-cult-text-primary">{room.strain_count}</div>
+          <div className="text-xs text-cult-text-secondary uppercase tracking-wide">Strains</div>
         </div>
         <div className="bg-cult-surface rounded-lg p-2.5 text-center">
-          <div className="text-lg font-bold text-cult-white">
+          <div className="text-lg font-bold text-cult-text-primary">
             {room.square_footage ? `${room.square_footage}` : '—'}
           </div>
-          <div className="text-xs text-cult-silver uppercase tracking-wide">Sq Ft</div>
+          <div className="text-xs text-cult-text-secondary uppercase tracking-wide">Sq Ft</div>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
         <div className="px-4 py-2 border-b border-cult-border">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-cult-text-muted">Capacity</span>
-            <span className="text-cult-white font-medium">{room.capacity_utilization_pct}%</span>
+            <span className="text-cult-text-primary font-medium">{room.capacity_utilization_pct}%</span>
           </div>
           <div className="h-1.5 bg-cult-surface-raised rounded-full overflow-hidden">
             <div
@@ -114,7 +114,7 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
           <div className="flex items-center gap-2 text-sm">
             <Sprout className="w-4 h-4 text-cult-stage-harvest" />
             <span className="text-cult-text-secondary">Next harvest:</span>
-            <span className={`font-semibold ${daysToHarvest <= 7 ? 'text-cult-stage-harvest' : 'text-cult-white'}`}>
+            <span className={`font-semibold ${daysToHarvest <= 7 ? 'text-cult-stage-harvest' : 'text-cult-text-primary'}`}>
               {daysToHarvest <= 0 ? 'Due now' : `${daysToHarvest} days`}
             </span>
           </div>
@@ -155,7 +155,7 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-cult-white truncate">{strain.strain_name}</span>
+                  <span className="text-sm font-semibold text-cult-text-primary truncate">{strain.strain_name}</span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${stageBadge}`}>
                     {strain.growth_stage}
                   </span>

@@ -47,7 +47,7 @@ export const OrderDetailsView = memo(function OrderDetailsView({
 
   if (isLoading) {
     return (
-      <div className="p-6 text-center text-cult-light-gray">
+      <div className="p-6 text-center text-cult-text-muted">
         Loading items...
       </div>
     );
@@ -64,7 +64,7 @@ export const OrderDetailsView = memo(function OrderDetailsView({
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">Order Details</h3>
+        <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">Order Details</h3>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowManifestModal(true)}
@@ -84,40 +84,40 @@ export const OrderDetailsView = memo(function OrderDetailsView({
       </div>
 
       {items.length === 0 ? (
-        <div className="text-center text-cult-light-gray py-6">
+        <div className="text-center text-cult-text-muted py-6">
           No items found
         </div>
       ) : (
         <div className="mb-4">
-          <h3 className="text-sm font-bold text-cult-white mb-4 uppercase tracking-wider border-b-2 border-cult-medium-gray pb-2">Order Items</h3>
-          <div className="bg-cult-near-black border-2 border-cult-medium-gray overflow-x-auto">
+          <h3 className="text-sm font-bold text-cult-text-primary mb-4 uppercase tracking-wider border-b-2 border-cult-border pb-2">Order Items</h3>
+          <div className="bg-cult-surface border-2 border-cult-border overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-cult-black border-b-2 border-cult-medium-gray">
+              <thead className="bg-cult-black border-b-2 border-cult-border">
                 <tr>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
                     Product
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
                     Strain
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
                     Batch
                   </th>
-                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
                     Qty
                   </th>
-                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
                     Unit Price
                   </th>
-                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap">
                     Subtotal
                   </th>
-                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-light-gray uppercase tracking-wider whitespace-nowrap sticky right-0 bg-cult-black border-l border-cult-medium-gray z-10">
+                  <th className="px-3 py-3 text-right text-xs font-bold text-cult-text-muted uppercase tracking-wider whitespace-nowrap sticky right-0 bg-cult-black border-l border-cult-border z-10">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-cult-medium-gray">
+              <tbody className="divide-y-2 divide-cult-border">
                 {items.map((item) => (
                   <OrderItemRow
                     key={item.id}
@@ -143,25 +143,25 @@ export const OrderDetailsView = memo(function OrderDetailsView({
         </div>
       )}
 
-      <div className="space-y-4 mt-6 pt-6 border-t-2 border-cult-medium-gray">
+      <div className="space-y-4 mt-6 pt-6 border-t-2 border-cult-border">
         <CoversheetButton orderId={order.id} orderNumber={order.order_number} />
         <OrderLabelGenerator orderId={order.id} orderNumber={order.order_number} />
 
         {(order.internal_notes || order.delivery_notes) && (
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-cult-white mb-4 uppercase tracking-wider">Order Notes</h3>
+            <h3 className="text-sm font-bold text-cult-text-primary mb-4 uppercase tracking-wider">Order Notes</h3>
             {order.internal_notes && (
               <div>
-                <h4 className="text-xs font-semibold text-cult-lighter-gray mb-2 uppercase tracking-wider">Internal Notes</h4>
-                <p className="text-sm text-cult-light-gray bg-cult-near-black border-2 border-cult-medium-gray p-3">
+                <h4 className="text-xs font-semibold text-cult-text-muted mb-2 uppercase tracking-wider">Internal Notes</h4>
+                <p className="text-sm text-cult-text-muted bg-cult-surface border-2 border-cult-border p-3">
                   {order.internal_notes}
                 </p>
               </div>
             )}
             {order.delivery_notes && (
               <div>
-                <h4 className="text-xs font-semibold text-cult-lighter-gray mb-2 uppercase tracking-wider">Delivery Notes</h4>
-                <p className="text-sm text-cult-light-gray bg-cult-near-black border-2 border-cult-medium-gray p-3">
+                <h4 className="text-xs font-semibold text-cult-text-muted mb-2 uppercase tracking-wider">Delivery Notes</h4>
+                <p className="text-sm text-cult-text-muted bg-cult-surface border-2 border-cult-border p-3">
                   {order.delivery_notes}
                 </p>
               </div>

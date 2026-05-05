@@ -78,10 +78,10 @@ export function CustomersManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+          <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
             Customers Management
           </h2>
-          <p className="text-cult-light-gray mt-1">
+          <p className="text-cult-text-muted mt-1">
             Manage dispensary customers and delivery information
           </p>
         </div>

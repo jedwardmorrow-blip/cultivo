@@ -321,7 +321,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
           label="Total Packages"
           value={stats.totalPackages}
           icon={<Package className="w-5 h-5" />}
-          accentColor="border-cult-medium-gray"
+          accentColor="border-cult-border"
         />
         <StatsCard
           label="Total Weight"
@@ -401,7 +401,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
               </button>
               <button
                 onClick={clearSelections}
-                className="px-4 py-2 bg-cult-medium-gray text-cult-silver rounded-lg hover:bg-cult-lighter-gray/30 hover:text-cult-white transition-colors text-sm"
+                className="px-4 py-2 bg-cult-border text-cult-text-secondary rounded-lg hover:bg-cult-text-muted/30 hover:text-cult-text-primary transition-colors text-sm"
               >
                 Clear
               </button>
@@ -412,12 +412,12 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {stageBreakdownConfig.map(({ key, label, icon: Icon, color, borderColor }) => (
-          <div key={key} className={`bg-cult-near-black border ${borderColor} rounded-lg p-4 transition-all duration-200 hover:border-cult-lighter-gray/50`}>
+          <div key={key} className={`bg-cult-surface border ${borderColor} rounded-lg p-4 transition-all duration-200 hover:border-cult-text-muted/50`}>
             <div className="flex items-center gap-2 mb-1.5">
               <Icon className={`w-4 h-4 ${color}`} />
-              <span className="text-xs font-medium uppercase tracking-wider text-cult-silver">{label}</span>
+              <span className="text-xs font-medium uppercase tracking-wider text-cult-text-secondary">{label}</span>
             </div>
-            <div className="text-2xl font-bold text-cult-white tabular-nums">{stats[key]}</div>
+            <div className="text-2xl font-bold text-cult-text-primary tabular-nums">{stats[key]}</div>
           </div>
         ))}
       </div>
@@ -431,8 +431,8 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
         return (
           <div className="flex items-center justify-between gap-4 mb-4 px-1">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-cult-lighter-gray" />
-              <div className="flex gap-0.5 p-0.5 bg-cult-dark-gray rounded-lg border border-cult-medium-gray">
+              <ShieldCheck className="w-4 h-4 text-cult-text-muted" />
+              <div className="flex gap-0.5 p-0.5 bg-cult-surface rounded-lg border border-cult-border">
                 {([
                   { key: 'all' as ReviewFilter, label: 'All' },
                   { key: 'verified' as ReviewFilter, label: 'Verified' },
@@ -447,8 +447,8 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
                           ? 'bg-cult-success-muted text-cult-success border border-cult-success/50'
                           : key === 'unverified'
                           ? 'bg-cult-warning-muted text-cult-warning border border-cult-warning/50'
-                          : 'bg-cult-medium-gray text-cult-white shadow-sm'
-                        : 'text-cult-lighter-gray hover:text-cult-white'
+                          : 'bg-cult-border text-cult-text-primary shadow-sm'
+                        : 'text-cult-text-muted hover:text-cult-text-primary'
                     }`}
                   >
                     {label}
@@ -458,13 +458,13 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-24 h-1.5 bg-cult-dark-gray rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-cult-surface rounded-full overflow-hidden">
                   <div
                     className="h-full bg-cult-success rounded-full transition-all duration-300"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className="text-xs text-cult-lighter-gray tabular-nums">
+                <span className="text-xs text-cult-text-muted tabular-nums">
                   {verifiedCount}/{totalCount} verified
                 </span>
               </div>
@@ -491,7 +491,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
               const s = stage as string | null;
               const name = s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Unknown';
               return (
-                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${stageBadgeStyles[s || ''] || 'bg-cult-medium-gray/50 text-cult-lighter-gray'}`}>
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${stageBadgeStyles[s || ''] || 'bg-cult-border/50 text-cult-text-muted'}`}>
                   {name}
                 </span>
               );
@@ -500,22 +500,22 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
           {
             header: 'Package ID',
             accessor: 'package_id',
-            format: (val) => <span className="font-medium text-cult-white">{val}</span>,
+            format: (val) => <span className="font-medium text-cult-text-primary">{val}</span>,
           },
           {
             header: 'Product',
             accessor: 'product_name',
-            format: (val) => <span className="text-cult-white">{val || '-'}</span>,
+            format: (val) => <span className="text-cult-text-primary">{val || '-'}</span>,
           },
           {
             header: 'Strain',
             accessor: 'strain',
-            format: (val) => <span className="text-cult-white">{val}</span>,
+            format: (val) => <span className="text-cult-text-primary">{val}</span>,
           },
           {
             header: 'Batch',
             accessor: 'batch_number',
-            format: (val) => <span className="text-cult-silver">{val || '-'}</span>,
+            format: (val) => <span className="text-cult-text-secondary">{val || '-'}</span>,
           },
           {
             header: 'Available Qty',
@@ -527,8 +527,8 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
               const formattedQty = isPackaged ? (val || 0).toFixed(0) : (val || 0).toFixed(1);
               const unit = isPackaged ? 'units' : 'g';
               return (
-                <span className="font-medium text-cult-white tabular-nums">
-                  {formattedQty} <span className="text-cult-silver text-xs">{unit}</span>
+                <span className="font-medium text-cult-text-primary tabular-nums">
+                  {formattedQty} <span className="text-cult-text-secondary text-xs">{unit}</span>
                 </span>
               );
             },
@@ -590,7 +590,7 @@ export function AllInventoryView({ items, stats, stageFilter, onDataRefresh }: A
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-all cursor-pointer ${
                     verified
                       ? 'bg-cult-success-muted text-cult-success hover:bg-cult-success/20'
-                      : 'bg-cult-medium-gray/30 text-cult-lighter-gray hover:bg-cult-medium-gray/50 hover:text-cult-silver'
+                      : 'bg-cult-border/30 text-cult-text-muted hover:bg-cult-border/50 hover:text-cult-text-secondary'
                   }`}
                   title={verified ? 'Click to mark as unverified' : 'Click to mark as verified'}
                 >

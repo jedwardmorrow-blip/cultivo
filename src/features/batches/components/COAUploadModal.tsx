@@ -222,20 +222,20 @@ export function COAUploadModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-cult-near-black border border-cult-medium-gray max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-cult-medium-gray">
+      <div className="bg-cult-surface border border-cult-border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-cult-border">
           <div>
-            <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+            <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
               Upload COA
             </h2>
-            <p className="text-sm text-cult-light-gray mt-1">
-              Batch: <span className="text-cult-white font-medium">{batchNumber}</span>
-              {' '} | Strain: <span className="text-cult-white font-medium">{strain}</span>
+            <p className="text-sm text-cult-text-muted mt-1">
+              Batch: <span className="text-cult-text-primary font-medium">{batchNumber}</span>
+              {' '} | Strain: <span className="text-cult-text-primary font-medium">{strain}</span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-cult-light-gray hover:text-cult-white transition-colors"
+            className="text-cult-text-muted hover:text-cult-text-primary transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -244,8 +244,8 @@ export function COAUploadModal({
         <div className="p-6">
           {checkingExisting ? (
             <div className="py-12 text-center">
-              <RefreshCw className="w-8 h-8 text-cult-light-gray mx-auto mb-4 animate-spin" />
-              <p className="text-cult-light-gray">Checking for existing COA...</p>
+              <RefreshCw className="w-8 h-8 text-cult-text-muted mx-auto mb-4 animate-spin" />
+              <p className="text-cult-text-muted">Checking for existing COA...</p>
             </div>
           ) : (
             <>
@@ -291,14 +291,14 @@ export function COAUploadModal({
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   disabled={isParsing}
-                  className={`w-full p-8 border-2 border-dashed transition-all flex flex-col items-center gap-4 disabled:opacity-50 ${isDragOver ? 'border-cult-white bg-cult-white/5' : 'border-cult-medium-gray hover:border-cult-white'}`}
+                  className={`w-full p-8 border-2 border-dashed transition-all flex flex-col items-center gap-4 disabled:opacity-50 ${isDragOver ? 'border-cult-accent bg-cult-accent/5' : 'border-cult-border hover:border-cult-accent'}`}
                 >
-                  <Upload className="w-12 h-12 text-cult-light-gray" />
+                  <Upload className="w-12 h-12 text-cult-text-muted" />
                   <div className="text-center">
-                    <p className="text-cult-white font-medium uppercase tracking-wider mb-2">
+                    <p className="text-cult-text-primary font-medium uppercase tracking-wider mb-2">
                       {isParsing ? 'Parsing PDF...' : isDragOver ? 'Drop PDF Here' : 'Click or Drop COA PDF'}
                     </p>
-                    <p className="text-sm text-cult-light-gray">
+                    <p className="text-sm text-cult-text-muted">
                       PDF file will be automatically scanned for cannabinoid data
                     </p>
                   </div>
@@ -317,11 +317,11 @@ export function COAUploadModal({
                     The COA PDF contains different information than the selected batch. Please confirm this is correct before proceeding.
                   </p>
 
-                  <div className="space-y-3 bg-cult-black p-4 border border-cult-medium-gray">
+                  <div className="space-y-3 bg-cult-black p-4 border border-cult-border">
                     {parsedData.strain_name && parsedData.strain_name.toLowerCase() !== strain?.toLowerCase() && (
                       <div>
-                        <p className="text-xs text-cult-light-gray uppercase mb-1">Strain</p>
-                        <p className="text-sm text-cult-white">
+                        <p className="text-xs text-cult-text-muted uppercase mb-1">Strain</p>
+                        <p className="text-sm text-cult-text-primary">
                           PDF: <span className="font-medium">{parsedData.strain_name}</span>
                           {' '} | Batch: <span className="font-medium">{strain}</span>
                         </p>
@@ -329,8 +329,8 @@ export function COAUploadModal({
                     )}
                     {parsedData.batch_number && parsedData.batch_number !== batchNumber && (
                       <div>
-                        <p className="text-xs text-cult-light-gray uppercase mb-1">Batch Number</p>
-                        <p className="text-sm text-cult-white">
+                        <p className="text-xs text-cult-text-muted uppercase mb-1">Batch Number</p>
+                        <p className="text-sm text-cult-text-primary">
                           PDF: <span className="font-medium">{parsedData.batch_number}</span>
                           {' '} | Batch: <span className="font-medium">{batchNumber}</span>
                         </p>
@@ -343,7 +343,7 @@ export function COAUploadModal({
               <div className="flex gap-3">
                 <button
                   onClick={handleConfirmMismatch}
-                  className="flex-1 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider"
+                  className="flex-1 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider"
                 >
                   Confirm & Continue
                 </button>
@@ -354,7 +354,7 @@ export function COAUploadModal({
                     setParsedData(null);
                     setConfirmedMismatch(false);
                   }}
-                  className="px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all font-medium uppercase tracking-wider"
+                  className="px-6 py-3 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all font-medium uppercase tracking-wider"
                 >
                   Cancel
                 </button>
@@ -384,15 +384,15 @@ export function COAUploadModal({
               )}
 
               {parsedData.terpenes && parsedData.terpenes.length > 0 && (
-                <div className="bg-cult-black p-4 border border-cult-medium-gray">
-                  <p className="text-sm text-cult-light-gray uppercase tracking-wider mb-3">
+                <div className="bg-cult-black p-4 border border-cult-border">
+                  <p className="text-sm text-cult-text-muted uppercase tracking-wider mb-3">
                     Detected Terpenes (Top 3 will be saved)
                   </p>
                   <div className="space-y-2">
                     {parsedData.terpenes.slice(0, 3).map((terp, idx) => (
-                      <div key={idx} className="text-sm text-cult-white flex justify-between">
+                      <div key={idx} className="text-sm text-cult-text-primary flex justify-between">
                         <span>{terp.name}</span>
-                        <span className="text-cult-light-gray">
+                        <span className="text-cult-text-muted">
                           {terp.value} mg/g ({terp.percentage}%)
                         </span>
                       </div>
@@ -403,43 +403,43 @@ export function COAUploadModal({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     Harvest Date
                   </label>
                   <input
                     type="date"
                     value={formData.harvest_date}
                     onChange={(e) => setFormData({ ...formData, harvest_date: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     Manufacture Date
                   </label>
                   <input
                     type="date"
                     value={formData.manufacture_date}
                     onChange={(e) => setFormData({ ...formData, manufacture_date: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     Sample Date
                   </label>
                   <input
                     type="date"
                     value={formData.sample_date}
                     onChange={(e) => setFormData({ ...formData, sample_date: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     THC %
                   </label>
                   <input
@@ -447,12 +447,12 @@ export function COAUploadModal({
                     step="0.01"
                     value={formData.thc_percentage}
                     onChange={(e) => setFormData({ ...formData, thc_percentage: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     CBD %
                   </label>
                   <input
@@ -460,12 +460,12 @@ export function COAUploadModal({
                     step="0.01"
                     value={formData.cbd_percentage}
                     onChange={(e) => setFormData({ ...formData, cbd_percentage: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     Total Cannabinoids %
                   </label>
                   <input
@@ -473,12 +473,12 @@ export function COAUploadModal({
                     step="0.01"
                     value={formData.total_cannabinoids_percentage}
                     onChange={(e) => setFormData({ ...formData, total_cannabinoids_percentage: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm text-cult-text-muted mb-2 uppercase tracking-wider">
                     Total Terpenes (mg/g)
                   </label>
                   <input
@@ -486,7 +486,7 @@ export function COAUploadModal({
                     step="0.01"
                     value={formData.total_terpenes_mg_g}
                     onChange={(e) => setFormData({ ...formData, total_terpenes_mg_g: e.target.value })}
-                    className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   />
                 </div>
               </div>
@@ -495,7 +495,7 @@ export function COAUploadModal({
                 <button
                   onClick={handleUpload}
                   disabled={isUploading}
-                  className="flex-1 px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isUploading ? (existingCOA ? 'Replacing...' : 'Uploading...') : (existingCOA ? 'Replace COA' : 'Upload COA')}
                 </button>
@@ -507,7 +507,7 @@ export function COAUploadModal({
                     setConfirmedMismatch(false);
                   }}
                   disabled={isUploading}
-                  className="px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all font-medium uppercase tracking-wider disabled:opacity-50"
+                  className="px-6 py-3 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all font-medium uppercase tracking-wider disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -518,10 +518,10 @@ export function COAUploadModal({
               {step === 'success' && (
                 <div className="py-12 text-center">
                   <CheckCircle className="w-16 h-16 text-cult-success mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wide mb-2">
+                  <h3 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide mb-2">
                     COA {existingCOA ? 'Replaced' : 'Uploaded'} Successfully
                   </h3>
-                  <p className="text-cult-light-gray">
+                  <p className="text-cult-text-muted">
                     Closing...
                   </p>
                 </div>

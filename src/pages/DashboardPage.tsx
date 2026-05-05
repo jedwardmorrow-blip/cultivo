@@ -63,7 +63,7 @@ export default function DashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <p className="font-mono text-xs text-cult-text tracking-widest uppercase mb-1">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
-          <h1 className="font-display text-4xl tracking-wider text-cult-white">{greeting()}, {firstName.toUpperCase()}</h1>
+          <h1 className="font-display text-4xl tracking-wider text-cult-text-primary">{greeting()}, {firstName.toUpperCase()}</h1>
         </div>
         {daysLeft !== null && (
           <div className="text-right">
@@ -81,7 +81,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="font-mono text-xs tracking-[0.3em] text-cult-gold/70 uppercase mb-1">North Star · Q1 2026</div>
-              <p className="text-cult-white text-sm leading-relaxed">{northStar}</p>
+              <p className="text-cult-text-primary text-sm leading-relaxed">{northStar}</p>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                 <div key={goal.id} className="flex items-start gap-3 py-2 border-b border-cult-border/50 last:border-0">
                   <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${s.dot}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-cult-white leading-snug">{goal.title}</p>
+                    <p className="text-xs text-cult-text-primary leading-snug">{goal.title}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`phase-pill border ${PHASE_COLORS[goal.phase]} text-xs`}>Day {goal.phase === 1 ? '1-30' : goal.phase === 2 ? '31-60' : '61-90'}</span>
                       <span className={`font-mono text-xs ${s.cls}`}>{s.label}</span>
@@ -152,7 +152,7 @@ export default function DashboardPage() {
               {todos.slice(0, 3).map(todo => (
                 <div key={todo.id} className="flex items-center gap-2">
                   <Circle size={12} className="text-cult-border flex-shrink-0" />
-                  <span className="text-xs text-cult-white flex-1 truncate">{todo.title}</span>
+                  <span className="text-xs text-cult-text-primary flex-1 truncate">{todo.title}</span>
                   {todo.due_date && <span className="font-mono text-xs text-cult-text flex-shrink-0">{format(parseISO(todo.due_date), 'MMM d')}</span>}
                 </div>
               ))}
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                 return (
                   <div key={issue.id} className="flex items-center gap-2">
                     <AlertCircle size={12} className={priorityColors[issue.priority]} />
-                    <span className="text-xs text-cult-white flex-1 truncate">{issue.title}</span>
+                    <span className="text-xs text-cult-text-primary flex-1 truncate">{issue.title}</span>
                     <span className={`font-mono text-xs uppercase ${priorityColors[issue.priority]}`}>{issue.priority}</span>
                   </div>
                 )

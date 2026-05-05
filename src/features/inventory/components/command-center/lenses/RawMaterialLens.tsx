@@ -64,11 +64,11 @@ export function RawMaterialLens({ onBatchClick }: RawMaterialLensProps) {
     <div className="space-y-4">
       {/* Summary */}
       <div className="flex items-center gap-4">
-        <div className="bg-cult-near-black rounded-xl px-4 py-3 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult px-4 py-3 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Queue</span>
           <p className="text-lg font-bold text-white tabular-nums">{batches.length} batches</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl px-4 py-3 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult px-4 py-3 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Raw Weight</span>
           <p className="text-lg font-bold text-amber-400 tabular-nums">{gramsToLbs(totalRaw)} lbs</p>
         </div>
@@ -85,7 +85,7 @@ export function RawMaterialLens({ onBatchClick }: RawMaterialLensProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.02, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => onBatchClick?.(batch.batch_id)}
-            className="w-full flex items-center gap-3 bg-cult-surface-subtle rounded-xl p-3 border border-cult-border-subtle hover:bg-cult-surface-raised hover:border-cult-border transition-all active:scale-[0.995]"
+            className="w-full flex items-center gap-3 bg-cult-surface-subtle rounded-cult p-3 border border-cult-border-subtle hover:bg-cult-surface-raised hover:border-cult-border transition-all active:scale-[0.995]"
           >
             {/* Age badge */}
             <span

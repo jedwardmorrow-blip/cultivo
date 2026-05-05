@@ -90,11 +90,11 @@ export function COABatchSelector({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
           Select Strain *
         </label>
         {loadingStrains ? (
-          <div className="px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-light-gray text-sm">
+          <div className="px-4 py-3 bg-cult-black border border-cult-border text-cult-text-muted text-sm">
             Loading strains...
           </div>
         ) : (
@@ -102,7 +102,7 @@ export function COABatchSelector({
             <select
               value={selectedStrain || ''}
               onChange={(e) => onStrainChange(e.target.value || null)}
-              className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all appearance-none"
+              className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all appearance-none"
               required
             >
               <option value="">-- Select a strain --</option>
@@ -131,19 +131,19 @@ export function COABatchSelector({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+        <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
           Select Batch *
         </label>
         {!selectedStrain ? (
-          <div className="px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-light-gray text-sm">
+          <div className="px-4 py-3 bg-cult-black border border-cult-border text-cult-text-muted text-sm">
             Select a strain first
           </div>
         ) : loadingBatches ? (
-          <div className="px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-light-gray text-sm">
+          <div className="px-4 py-3 bg-cult-black border border-cult-border text-cult-text-muted text-sm">
             Loading batches...
           </div>
         ) : batches.length === 0 ? (
-          <div className="px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-light-gray text-sm">
+          <div className="px-4 py-3 bg-cult-black border border-cult-border text-cult-text-muted text-sm">
             No active batches found for this strain
           </div>
         ) : (
@@ -151,7 +151,7 @@ export function COABatchSelector({
             <select
               value={selectedBatchId || ''}
               onChange={(e) => onBatchChange(e.target.value || null)}
-              className="w-full px-4 py-3 bg-cult-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all appearance-none"
+              className="w-full px-4 py-3 bg-cult-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all appearance-none"
               required
             >
               <option value="">-- Select a batch --</option>

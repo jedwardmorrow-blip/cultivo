@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Closed-Loop Cultivation · Intent · Execution · Outcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --op-canvas:      #0A0A0A;
+    --op-surface:     #111111;
+    --op-surface-2:   #161616;
+    --op-line:        rgba(255,255,255,0.06);
+    --op-line-strong: rgba(255,255,255,0.12);
+    --op-ink:         #F5F4F1;
+    --op-ink-2:       rgba(245,244,241,0.62);
+    --op-ink-3:       rgba(245,244,241,0.40);
+    --op-ink-4:       rgba(245,244,241,0.22);
+    --accent:         #E8E0D4;
+    --font-sans:      'IBM Plex Sans', -apple-system, system-ui, sans-serif;
+    --font-mono:      'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--op-canvas);
+    color: var(--op-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01","ss02";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 56px 64px 72px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--op-ink-3);
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--op-line);
+  }
+  .meta .brand { color: var(--op-ink); letter-spacing: 0.18em; }
+  .meta .right { display: flex; gap: 24px; }
+  .meta .live::before {
+    content: "";
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+
+  .lede {
+    margin: 64px 0 12px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--op-ink-3);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--op-ink);
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .deck {
+    margin-top: 22px;
+    max-width: 760px;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--op-ink-2);
+    font-weight: 300;
+  }
+
+  .matrix {
+    margin-top: 72px;
+    border-top: 1px solid var(--op-line);
+  }
+
+  .col-heads, .row {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr 1fr;
+    align-items: stretch;
+  }
+  .col-heads {
+    border-bottom: 1px solid var(--op-line);
+  }
+  .col-heads .h {
+    padding: 18px 22px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--op-ink-3);
+  }
+  .col-heads .h .sub {
+    display: block;
+    margin-top: 6px;
+    color: var(--op-ink-4);
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 10.5px;
+  }
+  .col-heads .h-rowlabel { color: var(--op-ink-4); }
+
+  .row {
+    border-bottom: 1px solid var(--op-line);
+  }
+  .row:last-child { border-bottom: 1px solid var(--op-line); }
+
+  .cell {
+    padding: 28px 22px 30px;
+    border-left: 1px solid var(--op-line);
+    min-height: 168px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cell:first-child { border-left: 0; }
+
+  .row-label {
+    padding: 28px 22px 30px;
+    border-left: 0;
+  }
+  .row-label .index {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--op-ink-4);
+    margin-bottom: 8px;
+  }
+  .row-label .name {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--op-ink);
+  }
+
+  .cell .lead {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--op-ink);
+    font-weight: 400;
+  }
+  .cell .meta-line {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--op-ink-3);
+    text-transform: none;
+  }
+  .cell .citation {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--op-ink-4);
+    letter-spacing: 0.04em;
+  }
+  .cell .accent {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .closer {
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid var(--op-line);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .closer .line {
+    font-size: 18px;
+    line-height: 1.45;
+    color: var(--op-ink);
+    font-weight: 300;
+    max-width: 820px;
+  }
+  .closer .line em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .closer .stamp {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--op-ink-3);
+    white-space: nowrap;
+  }
+  .closer .stamp .live::before {
+    content: "";
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+
+  @media (max-width: 1024px) {
+    .page { padding: 40px 32px 56px; }
+    h1 { font-size: 40px; }
+    .col-heads, .row { grid-template-columns: 160px 1fr 1fr 1fr; }
+    .cell { padding: 22px 16px 24px; min-height: 0; }
+    .row-label { padding: 22px 16px 24px; }
+  }
+  @media (max-width: 720px) {
+    .col-heads { display: none; }
+    .row { grid-template-columns: 1fr; }
+    .row-label { border-bottom: 1px solid var(--op-line); }
+    .cell { border-left: 0; border-top: 1px solid var(--op-line); }
+    .cell::before {
+      content: attr(data-col);
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--op-ink-4);
+      margin-bottom: 8px;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <div class="meta">
+    <div class="brand">CULTIVO &nbsp;·&nbsp; CLOSED-LOOP CULTIVATION</div>
+    <div class="right">
+      <span class="live">cult-prod-az · live</span>
+      <span>2026-04-29</span>
+    </div>
+  </div>
+
+  <header class="lede">
+    <div class="eyebrow">PARTNERSHIP FRAME &nbsp;·&nbsp; SOSTANZA × CULTIVO</div>
+    <h1>Intent. Execution. <em>Outcome.</em></h1>
+    <p class="deck">
+      Sostanza publishes the recommendation. Cultivo captures the execution at session granularity.
+      The outcome is a measurable signal per strain, per room, per batch. The loop closes when all three
+      live in the same operational ledger.
+    </p>
+  </header>
+
+  <section class="matrix" aria-label="Closed-loop matrix">
+
+    <div class="col-heads">
+      <div class="h h-rowlabel"></div>
+      <div class="h">
+        Intent
+        <span class="sub">Sostanza recommendation</span>
+      </div>
+      <div class="h">
+        Execution
+        <span class="sub">Cultivo captures</span>
+      </div>
+      <div class="h">
+        Outcome
+        <span class="sub">Measurable signal</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">
+        <div class="index">01</div>
+        <div class="name">Late-flower<br/>drought trigger</div>
+      </div>
+      <div class="cell" data-col="Intent">
+        <div class="lead">Drought stress at fan-leaf wilt, ~day 11 pre-harvest. Single late-flower event.</div>
+        <div class="citation">Caplan, Dixon, Zheng. HortScience, 2019.</div>
+      </div>
+      <div class="cell" data-col="Execution">
+        <div class="lead">Last-irrigation timestamp, substrate VWC curve, dry-weight outcome.</div>
+        <div class="meta-line">per harvest_session</div>
+      </div>
+      <div class="cell" data-col="Outcome">
+        <div class="lead"><span class="accent">Drought-trigger day</span> vs cannabinoid uplift, per strain, per room.</div>
+        <div class="meta-line">commercial-scale, n cultivars</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">
+        <div class="index">02</div>
+        <div class="name">Fertigation<br/>N-rate</div>
+      </div>
+      <div class="cell" data-col="Intent">
+        <div class="lead">212 to 261 mg N/L flowering, N:P:K 4:1.3:1.7 on coir.</div>
+        <div class="citation">Caplan, Dixon, Zheng. HortScience, 2017.</div>
+      </div>
+      <div class="cell" data-col="Execution">
+        <div class="lead">Recipe applied per fertigation event, COA cannabinoid result per finished batch.</div>
+        <div class="meta-line">per packaging_session · per coa_record</div>
+      </div>
+      <div class="cell" data-col="Outcome">
+        <div class="lead"><span class="accent">N-rate</span> vs THC% vs g per square foot, per strain, per room.</div>
+        <div class="meta-line">production-scale dose-response</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="row-label">
+        <div class="index">03</div>
+        <div class="name">Cure<br/>adherence</div>
+      </div>
+      <div class="cell" data-col="Intent">
+        <div class="lead">18°C / 60% RH / 14 days before dry-weight log.</div>
+        <div class="citation">Caplan, Flowr standard. Grow Opportunity, 2020.</div>
+      </div>
+      <div class="cell" data-col="Execution">
+        <div class="lead">Cure-room sensor data, dry-weight log timestamp.</div>
+        <div class="meta-line">per binning_session</div>
+      </div>
+      <div class="cell" data-col="Outcome">
+        <div class="lead"><span class="accent">Cure-condition adherence</span> vs terpene retention vs final grade, per batch.</div>
+        <div class="meta-line">commercial replication dataset</div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="closer">
+    <p class="line">
+      The loop closes when published recommendation, captured execution, and measured outcome live in the
+      <em>same operational ledger</em>.
+    </p>
+    <div class="stamp">
+      <span class="live">cult-prod-az</span>
+      &nbsp;·&nbsp; ledger current &nbsp;·&nbsp; 14 strains &nbsp;·&nbsp; 248 packaging sessions &nbsp;·&nbsp; 120 d window
+    </div>
+  </footer>
+
+</main>
+</body>
+</html>

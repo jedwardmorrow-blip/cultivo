@@ -90,7 +90,7 @@ export function DeliverySchedule() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-light-gray">Loading delivery schedule...</div>
+        <div className="text-cult-text-muted">Loading delivery schedule...</div>
       </div>
     );
   }
@@ -98,28 +98,28 @@ export function DeliverySchedule() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-cult-white">Delivery Schedule</h1>
-        <p className="text-cult-light-gray mt-2">Coordinate delivery routes and track shipments</p>
+        <h1 className="text-3xl font-bold text-cult-text-primary">Delivery Schedule</h1>
+        <p className="text-cult-text-muted mt-2">Coordinate delivery routes and track shipments</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-cult-light-gray">Scheduled Deliveries</div>
-          <div className="text-3xl font-bold text-cult-white mt-2">{schedules.length}</div>
+          <div className="text-sm font-medium text-cult-text-muted">Scheduled Deliveries</div>
+          <div className="text-3xl font-bold text-cult-text-primary mt-2">{schedules.length}</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-cult-light-gray">In Transit</div>
+          <div className="text-sm font-medium text-cult-text-muted">In Transit</div>
           <div className="text-3xl font-bold text-cult-info mt-2">{inTransitCount}</div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-cult-light-gray">Delivered</div>
+          <div className="text-sm font-medium text-cult-text-muted">Delivered</div>
           <div className="text-3xl font-bold text-cult-success mt-2">
             {deliveredCount} / {schedules.length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-cult-light-gray">Active Routes</div>
-          <div className="text-3xl font-bold text-cult-white mt-2">{routes.size}</div>
+          <div className="text-sm font-medium text-cult-text-muted">Active Routes</div>
+          <div className="text-3xl font-bold text-cult-text-primary mt-2">{routes.size}</div>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export function DeliverySchedule() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cult-success"
           />
-          <span className="text-sm text-cult-light-gray">
+          <span className="text-sm text-cult-text-muted">
             Showing deliveries for {new Date(selectedDate).toLocaleDateString()}
           </span>
         </div>
@@ -140,35 +140,35 @@ export function DeliverySchedule() {
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {schedules.length === 0 ? (
-          <div className="p-12 text-center text-cult-light-gray">
+          <div className="p-12 text-center text-cult-text-muted">
             No deliveries scheduled for this date
           </div>
         ) : (
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Order
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Customer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Time Window
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Route
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Driver
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-cult-light-gray uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-medium text-cult-text-muted uppercase tracking-wide">
                   Actions
                 </th>
               </tr>
@@ -176,22 +176,22 @@ export function DeliverySchedule() {
             <tbody className="bg-white divide-y divide-slate-200">
               {schedules.map((schedule) => (
                 <tr key={schedule.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-cult-white">
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-cult-text-primary">
                     {schedule.order_number}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-text-primary">
                     {schedule.customer_name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-cult-white max-w-xs truncate">
+                  <td className="px-6 py-4 text-sm text-cult-text-primary max-w-xs truncate">
                     {schedule.customer_address || 'No address'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-text-primary">
                     {schedule.scheduled_time_window || 'Not set'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-text-primary">
                     {schedule.route_number || 'Unassigned'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-cult-text-primary">
                     {schedule.driver_name || 'Unassigned'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

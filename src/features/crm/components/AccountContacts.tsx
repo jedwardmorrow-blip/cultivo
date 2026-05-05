@@ -12,7 +12,7 @@ interface AccountContactsProps {
   onReload: () => void;
 }
 
-const INPUT_CLASS = 'px-3 py-2 bg-cult-near-black border border-cult-medium-gray rounded text-sm text-cult-white placeholder-cult-silver focus:outline-none focus:border-cult-lighter-gray';
+const INPUT_CLASS = 'px-3 py-2 bg-cult-surface border border-cult-border rounded text-sm text-cult-text-primary placeholder-cult-text-secondary focus:outline-none focus:border-cult-text-muted';
 
 export function AccountContacts({
   contacts,
@@ -83,15 +83,15 @@ export function AccountContacts({
   };
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
-      <div className="px-5 py-4 border-b border-cult-charcoal flex items-center justify-between">
+    <div className="bg-cult-surface border border-cult-border rounded-lg overflow-hidden">
+      <div className="px-5 py-4 border-b border-cult-surface-raised flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-cult-silver" />
-          <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">Contacts</h3>
+          <Users className="w-4 h-4 text-cult-text-secondary" />
+          <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">Contacts</h3>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-cult-white bg-cult-dark-gray border border-cult-medium-gray rounded hover:bg-cult-charcoal transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-cult-text-primary bg-cult-surface border border-cult-border rounded hover:bg-cult-surface-raised transition-colors"
         >
           <Plus className="w-3 h-3" />
           Add
@@ -99,7 +99,7 @@ export function AccountContacts({
       </div>
 
       {showForm && (
-        <div className="px-5 py-4 border-b border-cult-charcoal bg-cult-dark-gray/30">
+        <div className="px-5 py-4 border-b border-cult-surface-raised bg-cult-surface/30">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input type="text" placeholder="Name *" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className={INPUT_CLASS} />
             <input type="text" placeholder="Title (e.g., Buyer)" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className={INPUT_CLASS} />
@@ -110,14 +110,14 @@ export function AccountContacts({
             <button
               onClick={handleSave}
               disabled={!formData.name.trim() || saving}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-cult-opaque-black bg-cult-accent rounded hover:bg-cult-accent-hover transition-colors disabled:opacity-50"
             >
               <Save className="w-3 h-3" />
               Save Contact
             </button>
             <button
               onClick={() => { setShowForm(false); setFormData({ name: '', title: '', email: '', phone: '' }); }}
-              className="px-3 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+              className="px-3 py-1.5 text-xs text-cult-text-secondary hover:text-cult-text-primary transition-colors"
             >
               Cancel
             </button>
@@ -125,10 +125,10 @@ export function AccountContacts({
         </div>
       )}
 
-      <div className="divide-y divide-cult-charcoal/50">
+      <div className="divide-y divide-cult-surface-raised/50">
         {contacts.map((contact) => (
           editingId === contact.id ? (
-            <div key={contact.id} className="px-5 py-3 bg-cult-dark-gray/30">
+            <div key={contact.id} className="px-5 py-3 bg-cult-surface/30">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input type="text" placeholder="Name *" value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} className={INPUT_CLASS} />
                 <input type="text" placeholder="Title" value={editData.title} onChange={(e) => setEditData({ ...editData, title: e.target.value })} className={INPUT_CLASS} />
@@ -139,14 +139,14 @@ export function AccountContacts({
                 <button
                   onClick={handleEditSave}
                   disabled={!editData.name.trim() || saving}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-cult-black bg-cult-white rounded hover:bg-cult-off-white transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-cult-opaque-black bg-cult-accent rounded hover:bg-cult-accent-hover transition-colors disabled:opacity-50"
                 >
                   <Check className="w-3 h-3" />
                   Save
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
-                  className="px-3 py-1.5 text-xs text-cult-silver hover:text-cult-white transition-colors"
+                  className="px-3 py-1.5 text-xs text-cult-text-secondary hover:text-cult-text-primary transition-colors"
                 >
                   Cancel
                 </button>
@@ -156,31 +156,31 @@ export function AccountContacts({
             <div key={contact.id} className="px-5 py-3 flex items-center justify-between group">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-cult-white">{contact.name}</span>
+                  <span className="text-sm font-medium text-cult-text-primary">{contact.name}</span>
                   <button
                     onClick={() => handleTogglePrimary(contact)}
                     className={`transition-all ${
                       contact.is_primary
                         ? 'text-cult-warning'
-                        : 'text-cult-charcoal hover:text-cult-warning/60 opacity-0 group-hover:opacity-100'
+                        : 'text-cult-surface-raised hover:text-cult-warning/60 opacity-0 group-hover:opacity-100'
                     }`}
                     title={contact.is_primary ? 'Primary contact' : 'Set as primary'}
                   >
                     <Star className={`w-3 h-3 ${contact.is_primary ? 'fill-cult-warning' : ''}`} />
                   </button>
                   {contact.title && (
-                    <span className="text-xs text-cult-light-gray bg-cult-dark-gray px-1.5 py-0.5 rounded">{contact.title}</span>
+                    <span className="text-xs text-cult-text-muted bg-cult-surface px-1.5 py-0.5 rounded">{contact.title}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-1">
                   {contact.email && (
-                    <a href={`mailto:${contact.email}`} className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors">
+                    <a href={`mailto:${contact.email}`} className="flex items-center gap-1 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors">
                       <Mail className="w-3 h-3" />
                       {contact.email}
                     </a>
                   )}
                   {contact.phone && (
-                    <a href={`tel:${contact.phone}`} className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors">
+                    <a href={`tel:${contact.phone}`} className="flex items-center gap-1 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors">
                       <Phone className="w-3 h-3" />
                       {contact.phone}
                     </a>
@@ -190,14 +190,14 @@ export function AccountContacts({
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                 <button
                   onClick={() => startEdit(contact)}
-                  className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+                  className="p-1.5 text-cult-border hover:text-cult-text-primary transition-colors"
                   title="Edit contact"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => handleDelete(contact.id)}
-                  className="p-1.5 text-cult-medium-gray hover:text-cult-danger transition-colors"
+                  className="p-1.5 text-cult-border hover:text-cult-danger transition-colors"
                   title="Remove contact"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -209,20 +209,20 @@ export function AccountContacts({
 
         {contacts.length === 0 && hasLegacyData && (
           <>
-            <div className="px-5 py-2 bg-cult-dark-gray/20">
-              <span className="text-xs uppercase tracking-wider text-cult-silver">Legacy Contact Data</span>
+            <div className="px-5 py-2 bg-cult-surface/20">
+              <span className="text-xs uppercase tracking-wider text-cult-text-secondary">Legacy Contact Data</span>
             </div>
             {legacyContacts.map((lc, i) => (
               <div key={i} className="px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-cult-light-gray">{lc.name}</span>
+                  <span className="text-sm text-cult-text-muted">{lc.name}</span>
                   {lc.title && (
-                    <span className="text-xs text-cult-silver bg-cult-dark-gray px-1.5 py-0.5 rounded">{lc.title}</span>
+                    <span className="text-xs text-cult-text-secondary bg-cult-surface px-1.5 py-0.5 rounded">{lc.title}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-1">
                   {lc.email && (
-                    <a href={`mailto:${lc.email}`} className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors">
+                    <a href={`mailto:${lc.email}`} className="flex items-center gap-1 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors">
                       <Mail className="w-3 h-3" />
                       {lc.email}
                     </a>
@@ -234,7 +234,7 @@ export function AccountContacts({
         )}
 
         {contacts.length === 0 && !hasLegacyData && !showForm && (
-          <div className="px-5 py-6 text-center text-sm text-cult-light-gray">
+          <div className="px-5 py-6 text-center text-sm text-cult-text-muted">
             No contacts added yet.
           </div>
         )}

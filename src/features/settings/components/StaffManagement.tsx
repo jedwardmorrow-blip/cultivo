@@ -173,54 +173,54 @@ export function StaffManagement() {
     return matchesDept && matchesSearch;
   });
 
-  if (loading) return (<div className="flex items-center justify-center py-12"><div className="text-cult-light-gray">Loading staff directory...</div></div>);
+  if (loading) return (<div className="flex items-center justify-center py-12"><div className="text-cult-text-muted">Loading staff directory...</div></div>);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-cult-white" />
-          <h2 className="text-lg font-semibold text-cult-white">Staff Directory</h2>
-          <span className="text-sm text-cult-light-gray">({staff.length} members)</span>
+          <Users className="w-5 h-5 text-cult-text-primary" />
+          <h2 className="text-lg font-semibold text-cult-text-primary">Staff Directory</h2>
+          <span className="text-sm text-cult-text-muted">({staff.length} members)</span>
         </div>
         <Button onClick={handleAddNew} size="sm" icon={Plus}>Add Staff</Button>
       </div>
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-medium-gray" />
-          <input type="text" placeholder="Search by name, email, or title..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm placeholder-cult-medium-gray focus:outline-none focus:border-cult-light-gray" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-border" />
+          <input type="text" placeholder="Search by name, email, or title..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm placeholder-cult-border focus:outline-none focus:border-cult-text-muted" />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-cult-medium-gray" />
-          <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm px-3 py-2 focus:outline-none focus:border-cult-light-gray">
+          <Filter className="w-4 h-4 text-cult-border" />
+          <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm px-3 py-2 focus:outline-none focus:border-cult-text-muted">
             <option value="all">All Departments</option>
             {DEPARTMENTS.map((dept) => (<option key={dept} value={dept}>{dept.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>))}
           </select>
         </div>
       </div>
       {error && (<div className="bg-cult-danger-muted border border-cult-danger text-cult-danger px-4 py-2 rounded-lg text-sm">{error}</div>)}
-      <div className="overflow-x-auto border border-cult-medium-gray rounded-lg">
+      <div className="overflow-x-auto border border-cult-border rounded-lg">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cult-medium-gray bg-cult-near-black">
-              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Name</th>
-              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Position</th>
-              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Department</th>
-              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Role</th>
-              <th className="text-left px-4 py-3 text-cult-light-gray font-medium">Email</th>
-              <th className="text-center px-4 py-3 text-cult-light-gray font-medium">Status</th>
-              <th className="text-right px-4 py-3 text-cult-light-gray font-medium">Actions</th>
+            <tr className="border-b border-cult-border bg-cult-surface">
+              <th className="text-left px-4 py-3 text-cult-text-muted font-medium">Name</th>
+              <th className="text-left px-4 py-3 text-cult-text-muted font-medium">Position</th>
+              <th className="text-left px-4 py-3 text-cult-text-muted font-medium">Department</th>
+              <th className="text-left px-4 py-3 text-cult-text-muted font-medium">Role</th>
+              <th className="text-left px-4 py-3 text-cult-text-muted font-medium">Email</th>
+              <th className="text-center px-4 py-3 text-cult-text-muted font-medium">Status</th>
+              <th className="text-right px-4 py-3 text-cult-text-muted font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredStaff.length === 0 ? (<tr><td colSpan={7} className="text-center py-8 text-cult-medium-gray">{searchQuery || departmentFilter !== 'all' ? 'No staff members match your filters' : 'No staff members found'}</td></tr>) : (
+            {filteredStaff.length === 0 ? (<tr><td colSpan={7} className="text-center py-8 text-cult-border">{searchQuery || departmentFilter !== 'all' ? 'No staff members match your filters' : 'No staff members found'}</td></tr>) : (
               filteredStaff.map((member) => (
-                <tr key={member.id} className="border-b border-cult-medium-gray/50 hover:bg-cult-black/50 cursor-pointer" onClick={() => handleEdit(member)}>
-                  <td className="px-4 py-3 text-cult-white font-medium">{member.first_name} {member.last_name || ''}</td>
-                  <td className="px-4 py-3 text-cult-light-gray">{member.position_title || '\u2014'}</td>
-                  <td className="px-4 py-3 text-cult-light-gray">{formatDepartment(member.department)}</td>
-                  <td className="px-4 py-3 text-cult-light-gray capitalize">{member.role || '\u2014'}</td>
-                  <td className="px-4 py-3 text-cult-light-gray">{member.email || '\u2014'}</td>
+                <tr key={member.id} className="border-b border-cult-border/50 hover:bg-cult-black/50 cursor-pointer" onClick={() => handleEdit(member)}>
+                  <td className="px-4 py-3 text-cult-text-primary font-medium">{member.first_name} {member.last_name || ''}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{member.position_title || '\u2014'}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{formatDepartment(member.department)}</td>
+                  <td className="px-4 py-3 text-cult-text-muted capitalize">{member.role || '\u2014'}</td>
+                  <td className="px-4 py-3 text-cult-text-muted">{member.email || '\u2014'}</td>
                   <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => toggleActive(member)} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-colors ${member.is_active ? 'bg-cult-success-muted text-cult-success border-cult-success hover:bg-cult-success-muted/80' : 'bg-red-900/30 text-cult-danger border-red-600 hover:bg-red-900/50'}`}>
                       {member.is_active ? (<><Check className="w-3 h-3" /> Active</>) : (<><X className="w-3 h-3" /> Inactive</>)}
@@ -228,8 +228,8 @@ export function StaffManagement() {
                   </td>
                   <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => handleEdit(member)} className="p-1.5 rounded hover:bg-cult-medium-gray/30 text-cult-light-gray hover:text-cult-white transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                      <button onClick={() => handleDelete(member)} className="p-1.5 rounded hover:bg-cult-danger-muted text-cult-light-gray hover:text-cult-danger transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleEdit(member)} className="p-1.5 rounded hover:bg-cult-border/30 text-cult-text-muted hover:text-cult-text-primary transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(member)} className="p-1.5 rounded hover:bg-cult-danger-muted text-cult-text-muted hover:text-cult-danger transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
                 </tr>
@@ -240,42 +240,42 @@ export function StaffManagement() {
       </div>
       {showModal && (
         <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4">
-          <div className="bg-cult-near-black border border-cult-medium-gray rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-cult-medium-gray">
-              <h3 className="text-lg font-semibold text-cult-white">{editingStaff ? 'Edit Staff Member' : 'Add Staff Member'}</h3>
-              <button onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="text-cult-light-gray hover:text-cult-white transition-colors"><X className="w-5 h-5" /></button>
+          <div className="bg-cult-surface border border-cult-border rounded-cult w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border">
+              <h3 className="text-lg font-semibold text-cult-text-primary">{editingStaff ? 'Edit Staff Member' : 'Add Staff Member'}</h3>
+              <button onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="text-cult-text-muted hover:text-cult-text-primary transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">First Name <span className="text-cult-danger">*</span></label><input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">Last Name</label><input type="text" value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">First Name <span className="text-cult-danger">*</span></label><input type="text" required value={formData.first_name} onChange={(e) => setFormData({ ...formData, first_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Last Name</label><input type="text" value={formData.last_name} onChange={(e) => setFormData({ ...formData, last_name: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">Position Title</label><input type="text" value={formData.position_title} onChange={(e) => setFormData({ ...formData, position_title: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">Department</label><select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray"><option value="">Select Department</option>{DEPARTMENTS.map((dept) => (<option key={dept} value={dept}>{dept.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>))}</select></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Position Title</label><input type="text" value={formData.position_title} onChange={(e) => setFormData({ ...formData, position_title: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Department</label><select value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted"><option value="">Select Department</option>{DEPARTMENTS.map((dept) => (<option key={dept} value={dept}>{dept.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>))}</select></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">Role</label><select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray"><option value="">Select Role</option>{ROLES.map((role) => (<option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>))}</select></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">Reports To</label><select value={formData.reports_to} onChange={(e) => setFormData({ ...formData, reports_to: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray"><option value="">None</option>{staff.filter((s) => s.id !== editingStaff?.id).map((s) => (<option key={s.id} value={s.id}>{s.first_name} {s.last_name || ''} {s.position_title ? '(' + s.position_title + ')' : ''}</option>))}</select></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Role</label><select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted"><option value="">Select Role</option>{ROLES.map((role) => (<option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>))}</select></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Reports To</label><select value={formData.reports_to} onChange={(e) => setFormData({ ...formData, reports_to: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted"><option value="">None</option>{staff.filter((s) => s.id !== editingStaff?.id).map((s) => (<option key={s.id} value={s.id}>{s.first_name} {s.last_name || ''} {s.position_title ? '(' + s.position_title + ')' : ''}</option>))}</select></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">Email</label><input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">Phone</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Email</label><input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Phone</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">Hourly Rate ($)</label><input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">Slack ID</label><input type="text" value={formData.slack_id} onChange={(e) => setFormData({ ...formData, slack_id: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">Worker PIN</label><input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={formData.pin_code} onChange={(e) => setFormData({ ...formData, pin_code: e.target.value.replace(/\D/g, '').slice(0, 6) })} placeholder="4-6 digit PIN for /worker login" className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray font-mono tracking-widest" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Hourly Rate ($)</label><input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Slack ID</label><input type="text" value={formData.slack_id} onChange={(e) => setFormData({ ...formData, slack_id: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Worker PIN</label><input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={formData.pin_code} onChange={(e) => setFormData({ ...formData, pin_code: e.target.value.replace(/\D/g, '').slice(0, 6) })} placeholder="4-6 digit PIN for /worker login" className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted font-mono tracking-widest" /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><label className="block text-sm text-cult-light-gray mb-1">Start Date</label><input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
-                <div><label className="block text-sm text-cult-light-gray mb-1">End Date</label><input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">Start Date</label><input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
+                <div><label className="block text-sm text-cult-text-muted mb-1">End Date</label><input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted" /></div>
               </div>
-              <div><label className="block text-sm text-cult-light-gray mb-1">Notes</label><textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-3 py-2 bg-cult-black border border-cult-medium-gray rounded-lg text-cult-white text-sm focus:outline-none focus:border-cult-light-gray resize-none" /></div>
-              <div className="flex items-center gap-2"><input type="checkbox" id="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="rounded border-cult-medium-gray" /><label htmlFor="is_active" className="text-sm text-cult-light-gray">Active Staff Member</label></div>
+              <div><label className="block text-sm text-cult-text-muted mb-1">Notes</label><textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-3 py-2 bg-cult-black border border-cult-border rounded-lg text-cult-text-primary text-sm focus:outline-none focus:border-cult-text-muted resize-none" /></div>
+              <div className="flex items-center gap-2"><input type="checkbox" id="is_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="rounded border-cult-border" /><label htmlFor="is_active" className="text-sm text-cult-text-muted">Active Staff Member</label></div>
               {error && (<div className="bg-cult-danger-muted border border-cult-danger text-cult-danger px-4 py-2 rounded-lg text-sm">{error}</div>)}
               <div className="flex items-center justify-end gap-3 pt-2">
-                <button type="button" onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="px-4 py-2 text-sm text-cult-light-gray hover:text-cult-white transition-colors">Cancel</button>
+                <button type="button" onClick={() => { setShowModal(false); setEditingStaff(null); setFormData(emptyFormData); }} className="px-4 py-2 text-sm text-cult-text-muted hover:text-cult-text-primary transition-colors">Cancel</button>
                 <Button type="submit" size="sm" icon={editingStaff ? Check : Plus}>{editingStaff ? 'Save Changes' : 'Add Staff Member'}</Button>
               </div>
             </form>

@@ -36,7 +36,7 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLab
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult p-5">
+    <div className="bg-cult-surface border border-cult-border rounded-cult p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLab
                     ? 'bg-sky-500/5 border-sky-500/20 hover:bg-sky-500/10'
                     : day.isPast
                       ? 'bg-gray-800/30 border-gray-700/30 hover:bg-gray-800/50'
-                      : 'bg-cult-dark-gray/50 border-cult-medium-gray/50 hover:bg-cult-dark-gray'
+                      : 'bg-cult-surface/50 border-cult-border/50 hover:bg-cult-surface'
               }`}
             >
               {/* Day label */}
@@ -148,7 +148,7 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLab
         const day = days.find(d => d.date === selectedDate);
         if (!day || day.orders.length === 0) return null;
         return (
-          <div className="mt-3 pt-3 border-t border-cult-medium-gray/50">
+          <div className="mt-3 pt-3 border-t border-cult-border/50">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="w-3.5 h-3.5 text-gray-500" />
               <span className="text-xs text-gray-500 uppercase tracking-wider">
@@ -159,7 +159,7 @@ export function DeliveryLoadBalancer({ days, selectedDate, onSelectDate, weekLab
               {day.orders.map(o => (
                 <div
                   key={o.orderId}
-                  className="flex items-center gap-2 px-2.5 py-1.5 bg-cult-dark-gray rounded-cult border border-cult-medium-gray/50 text-xs"
+                  className="flex items-center gap-2 px-2.5 py-1.5 bg-cult-surface rounded-cult border border-cult-border/50 text-xs"
                 >
                   <span className="text-gray-400 font-mono">{o.orderNumber}</span>
                   <span className="text-gray-500">·</span>

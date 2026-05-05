@@ -70,7 +70,7 @@ export function StagesManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-cult-lighter-gray">Loading stages...</div>
+        <div className="text-cult-text-muted">Loading stages...</div>
       </div>
     );
   }
@@ -89,16 +89,16 @@ export function StagesManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black border border-cult-medium-gray p-8">
+      <div className="bg-cult-surface border border-cult-border p-8">
         <div className="flex items-center gap-3 mb-6">
-          <Package className="w-6 h-6 text-cult-white" />
-          <h2 className="text-xl font-semibold text-cult-white uppercase tracking-wide">
+          <Package className="w-6 h-6 text-cult-text-primary" />
+          <h2 className="text-xl font-semibold text-cult-text-primary uppercase tracking-wide">
             Product Stages
           </h2>
         </div>
 
-        <div className="mb-6 bg-cult-black border border-cult-medium-gray p-4">
-          <p className="text-sm text-cult-light-gray">
+        <div className="mb-6 bg-cult-black border border-cult-border p-4">
+          <p className="text-sm text-cult-text-muted">
             Product stages represent the different phases of your product workflow.
             Each stage can have its own pricing unit and quantity rules.
           </p>
@@ -108,25 +108,25 @@ export function StagesManagement() {
           {stages.map((stage) => (
             <div
               key={stage.id}
-              className="bg-cult-black border border-cult-medium-gray p-6"
+              className="bg-cult-black border border-cult-border p-6"
             >
               {editingId === stage.id ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+                    <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
                       {stage.name}
                     </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(stage.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                       >
                         <Save className="w-4 h-4" />
                         Save
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                        className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                       >
                         <X className="w-4 h-4" />
                         Cancel
@@ -136,7 +136,7 @@ export function StagesManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                      <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                         Default Pricing Unit
                       </label>
                       <select
@@ -144,7 +144,7 @@ export function StagesManagement() {
                         onChange={(e) =>
                           setEditForm({ ...editForm, default_pricing_unit: e.target.value })
                         }
-                        className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                        className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                       >
                         <option value="unit">Unit</option>
                         <option value="lb">Pound (lb)</option>
@@ -164,9 +164,9 @@ export function StagesManagement() {
                               allows_fractional_quantity: e.target.checked,
                             })
                           }
-                          className="w-5 h-5 bg-cult-near-black border-2 border-cult-medium-gray checked:bg-cult-white checked:border-cult-white"
+                          className="w-5 h-5 bg-cult-surface border-2 border-cult-border checked:bg-cult-accent checked:border-cult-accent"
                         />
-                        <span className="text-sm font-medium text-cult-white uppercase tracking-wider">
+                        <span className="text-sm font-medium text-cult-text-primary uppercase tracking-wider">
                           Allow Fractional Quantities
                         </span>
                       </label>
@@ -174,14 +174,14 @@ export function StagesManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                    <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                       Description
                     </label>
                     <textarea
                       value={editForm.description || ''}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                       rows={2}
-                      className="w-full px-4 py-3 bg-cult-near-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white"
+                      className="w-full px-4 py-3 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent"
                       placeholder="Optional description"
                     />
                   </div>
@@ -189,12 +189,12 @@ export function StagesManagement() {
               ) : (
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-cult-white uppercase tracking-wide">
+                    <h3 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">
                       {stage.name}
                     </h3>
                     <button
                       onClick={() => handleEdit(stage)}
-                      className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 text-sm font-medium uppercase tracking-wider"
+                      className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 text-sm font-medium uppercase tracking-wider"
                     >
                       <Edit2 className="w-4 h-4" />
                       Edit
@@ -203,34 +203,34 @@ export function StagesManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span className="text-cult-lighter-gray uppercase tracking-wider text-xs">
+                      <span className="text-cult-text-muted uppercase tracking-wider text-xs">
                         Pricing Unit
                       </span>
-                      <p className="text-cult-white mt-1 font-medium">
+                      <p className="text-cult-text-primary mt-1 font-medium">
                         {stage.default_pricing_unit.toUpperCase()}
                       </p>
                     </div>
 
                     <div>
-                      <span className="text-cult-lighter-gray uppercase tracking-wider text-xs">
+                      <span className="text-cult-text-muted uppercase tracking-wider text-xs">
                         Fractional Quantities
                       </span>
-                      <p className="text-cult-white mt-1 font-medium">
+                      <p className="text-cult-text-primary mt-1 font-medium">
                         {stage.allows_fractional_quantity ? 'Allowed' : 'Not Allowed'}
                       </p>
                     </div>
 
                     <div>
-                      <span className="text-cult-lighter-gray uppercase tracking-wider text-xs">
+                      <span className="text-cult-text-muted uppercase tracking-wider text-xs">
                         Sort Order
                       </span>
-                      <p className="text-cult-white mt-1 font-medium">{stage.sort_order}</p>
+                      <p className="text-cult-text-primary mt-1 font-medium">{stage.sort_order}</p>
                     </div>
                   </div>
 
                   {stage.description && (
-                    <div className="mt-4 pt-4 border-t border-cult-medium-gray">
-                      <p className="text-sm text-cult-light-gray">{stage.description}</p>
+                    <div className="mt-4 pt-4 border-t border-cult-border">
+                      <p className="text-sm text-cult-text-muted">{stage.description}</p>
                     </div>
                   )}
                 </div>

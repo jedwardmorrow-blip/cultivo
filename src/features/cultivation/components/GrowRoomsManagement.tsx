@@ -60,10 +60,10 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
   }
 
   function countdownColor(): string {
-    if (daysToHarvest === null) return 'text-cult-medium-gray';
+    if (daysToHarvest === null) return 'text-cult-border';
     if (daysToHarvest < 0) return 'text-cult-danger';
     if (daysToHarvest <= 7) return 'text-cult-warning';
-    return 'text-cult-light-gray';
+    return 'text-cult-text-muted';
   }
 
   function countdownText(): string {
@@ -76,7 +76,7 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-cult-medium-gray uppercase tracking-wider w-20 flex-shrink-0">Flip</span>
+        <span className="text-xs text-cult-border uppercase tracking-wider w-20 flex-shrink-0">Flip</span>
         {editingFlip ? (
           <div className="flex items-center gap-1">
             <input
@@ -89,7 +89,7 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
               }}
               autoFocus
               disabled={saving}
-              className="bg-cult-black border border-rose-700 text-cult-white px-2 py-0.5 text-xs focus:outline-none focus:border-rose-500"
+              className="bg-cult-black border border-rose-700 text-cult-text-primary px-2 py-0.5 text-xs focus:outline-none focus:border-rose-500"
             />
             <button
               onClick={() => saveFlip(flipVal)}
@@ -98,21 +98,21 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
             >
               {saving ? '...' : 'Save'}
             </button>
-            <button onClick={() => setEditingFlip(false)} className="text-xs text-cult-medium-gray hover:text-cult-light-gray px-1">Cancel</button>
+            <button onClick={() => setEditingFlip(false)} className="text-xs text-cult-border hover:text-cult-text-muted px-1">Cancel</button>
           </div>
         ) : (
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => { setFlipVal(flipDate ?? ''); setEditingFlip(true); }}
-              className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+              className="flex items-center gap-1 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors"
             >
               <Calendar className="w-3 h-3 opacity-60" />
-              {flipDate ? formatDate(flipDate) : <span className="text-cult-medium-gray italic">Set flip date</span>}
+              {flipDate ? formatDate(flipDate) : <span className="text-cult-border italic">Set flip date</span>}
             </button>
             {flipDate && (
               <button
                 onClick={() => onUpdate(section.id, null, section.projected_harvest_date)}
-                className="text-cult-medium-gray hover:text-cult-danger transition-colors"
+                className="text-cult-border hover:text-cult-danger transition-colors"
                 title="Clear flip date"
               >
                 <X className="w-3 h-3" />
@@ -128,7 +128,7 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-cult-medium-gray uppercase tracking-wider w-20 flex-shrink-0">Harvest</span>
+        <span className="text-xs text-cult-border uppercase tracking-wider w-20 flex-shrink-0">Harvest</span>
         {editingHarvest ? (
           <div className="flex items-center gap-1">
             <input
@@ -141,7 +141,7 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
               }}
               autoFocus
               disabled={saving}
-              className="bg-cult-black border border-rose-700 text-cult-white px-2 py-0.5 text-xs focus:outline-none focus:border-rose-500"
+              className="bg-cult-black border border-rose-700 text-cult-text-primary px-2 py-0.5 text-xs focus:outline-none focus:border-rose-500"
             />
             <button
               onClick={() => saveHarvest(harvestVal)}
@@ -150,28 +150,28 @@ function RunDates({ section, onUpdate }: RunDatesProps) {
             >
               {saving ? '...' : 'Save'}
             </button>
-            <button onClick={() => setEditingHarvest(false)} className="text-xs text-cult-medium-gray hover:text-cult-light-gray px-1">Cancel</button>
+            <button onClick={() => setEditingHarvest(false)} className="text-xs text-cult-border hover:text-cult-text-muted px-1">Cancel</button>
           </div>
         ) : (
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => { setHarvestVal(harvestDate ?? ''); setEditingHarvest(true); }}
-              className="flex items-center gap-1 text-xs text-cult-light-gray hover:text-cult-white transition-colors"
+              className="flex items-center gap-1 text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors"
             >
               <Calendar className="w-3 h-3 opacity-60" />
-              {harvestDate ? formatDate(harvestDate) : <span className="text-cult-medium-gray italic">Set harvest date</span>}
+              {harvestDate ? formatDate(harvestDate) : <span className="text-cult-border italic">Set harvest date</span>}
             </button>
             {harvestDate && (
               <button
                 onClick={() => onUpdate(section.id, section.flip_date, null)}
-                className="text-cult-medium-gray hover:text-cult-danger transition-colors"
+                className="text-cult-border hover:text-cult-danger transition-colors"
                 title="Clear harvest date"
               >
                 <X className="w-3 h-3" />
               </button>
             )}
             {runLength !== null && (
-              <span className="text-xs text-cult-medium-gray">{runLength}-day run</span>
+              <span className="text-xs text-cult-border">{runLength}-day run</span>
             )}
             {countdownText() && (
               <span className={`text-xs font-medium ${countdownColor()}`}>{countdownText()}</span>
@@ -198,7 +198,7 @@ function FlowerSectionPanel({ roomId }: FlowerSectionPanelProps) {
   }
 
   if (loading) {
-    return <p className="text-xs text-cult-medium-gray px-1 py-2">Loading sections...</p>;
+    return <p className="text-xs text-cult-border px-1 py-2">Loading sections...</p>;
   }
 
   if (error) {
@@ -207,7 +207,7 @@ function FlowerSectionPanel({ roomId }: FlowerSectionPanelProps) {
 
   if (!hasSections) {
     return (
-      <p className="text-xs text-cult-medium-gray italic px-1 py-2">
+      <p className="text-xs text-cult-border italic px-1 py-2">
         No sections configured. Add tables and sections in the room layout settings.
       </p>
     );
@@ -217,7 +217,7 @@ function FlowerSectionPanel({ roomId }: FlowerSectionPanelProps) {
     <div className="space-y-4">
       {tables.map((table: RoomTable) => (
         <div key={table.id}>
-          <p className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2">
+          <p className="text-xs text-cult-border uppercase tracking-wider mb-2">
             Table {table.table_number}{table.table_name ? ` — ${table.table_name}` : ''}
           </p>
           <div className="space-y-3">
@@ -226,7 +226,7 @@ function FlowerSectionPanel({ roomId }: FlowerSectionPanelProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-bold text-rose-300 font-mono">Section {section.section_label}</span>
                   {section.section_sqft && (
-                    <span className="text-xs text-cult-medium-gray">{section.section_sqft} sqft</span>
+                    <span className="text-xs text-cult-border">{section.section_sqft} sqft</span>
                   )}
                 </div>
                 <RunDates section={section} onUpdate={handleUpdate} />
@@ -284,7 +284,7 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray p-5 space-y-4">
+    <div className="bg-cult-surface border border-cult-border p-5 space-y-4">
       {error && (
         <div className="flex items-start gap-2 bg-cult-danger-muted border border-cult-danger text-cult-danger text-sm p-3">
           <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -294,18 +294,18 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Room Name *</label>
+          <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Room Name *</label>
           <input
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="e.g. Veg Room A"
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
           />
         </div>
 
         <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">
+          <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">
             Room Code {!isEdit && '*'}
           </label>
           <input
@@ -314,17 +314,17 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
             onChange={(e) => setForm({ ...form, room_code: e.target.value.toUpperCase() })}
             placeholder="e.g. VEG-A"
             readOnly={isEdit}
-            className={`w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray ${isEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted ${isEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
-          {isEdit && <p className="text-cult-medium-gray text-xs mt-1">Room code cannot be changed after creation.</p>}
+          {isEdit && <p className="text-cult-border text-xs mt-1">Room code cannot be changed after creation.</p>}
         </div>
 
         <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Room Type *</label>
+          <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Room Type *</label>
           <select
             value={form.room_type}
             onChange={(e) => setForm({ ...form, room_type: e.target.value as RoomType })}
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
           >
             {ROOM_TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -333,14 +333,14 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
         </div>
 
         <div>
-          <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Capacity (plants)</label>
+          <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Capacity (plants)</label>
           <input
             type="number"
             min="1"
             value={form.capacity_plants}
             onChange={(e) => setForm({ ...form, capacity_plants: e.target.value })}
             placeholder="Optional"
-            className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+            className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
           />
         </div>
       </div>
@@ -355,7 +355,7 @@ function RoomForm({ initial = EMPTY_FORM, isEdit = false, onSave, onCancel }: Ro
         </Button>
         <button
           onClick={onCancel}
-          className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+          className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
         >
           Cancel
         </button>
@@ -378,7 +378,7 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
   const [layoutExpanded, setLayoutExpanded] = useState(false);
 
   return (
-    <div className={`border ${room.is_active ? typeCls : 'border-cult-medium-gray text-cult-medium-gray bg-cult-near-black opacity-60'}`}>
+    <div className={`border ${room.is_active ? typeCls : 'border-cult-border text-cult-border bg-cult-surface opacity-60'}`}>
       <div
         className={`p-4 ${isFlower && room.is_active ? 'cursor-pointer select-none' : ''}`}
         onClick={isFlower && room.is_active ? () => setExpanded((v) => !v) : undefined}
@@ -391,12 +391,12 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
                 {room.room_type}
               </span>
               {!room.is_active && (
-                <span className="text-xs border border-cult-medium-gray px-1.5 py-0.5 uppercase tracking-wider text-cult-medium-gray">
+                <span className="text-xs border border-cult-border px-1.5 py-0.5 uppercase tracking-wider text-cult-border">
                   Archived
                 </span>
               )}
             </div>
-            <span className="text-cult-white text-sm font-semibold truncate">{room.name}</span>
+            <span className="text-cult-text-primary text-sm font-semibold truncate">{room.name}</span>
             {room.capacity_plants && (
               <span className="text-xs opacity-70">{room.capacity_plants} plant capacity</span>
             )}
@@ -418,14 +418,14 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
               <>
                 <button
                   onClick={() => onEdit(room)}
-                  className="p-1.5 text-cult-medium-gray hover:text-cult-white transition-colors"
+                  className="p-1.5 text-cult-border hover:text-cult-text-primary transition-colors"
                   title="Edit room"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => onArchive(room)}
-                  className="p-1.5 text-cult-medium-gray hover:text-cult-danger transition-colors"
+                  className="p-1.5 text-cult-border hover:text-cult-danger transition-colors"
                   title="Archive room"
                 >
                   <Archive className="w-3.5 h-3.5" />
@@ -435,7 +435,7 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
             {!room.is_active && (
               <button
                 onClick={() => onRestore(room)}
-                className="p-1.5 text-cult-medium-gray hover:text-cult-success transition-colors"
+                className="p-1.5 text-cult-border hover:text-cult-success transition-colors"
                 title="Restore room"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -453,10 +453,10 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
       )}
 
       {room.is_active && (
-        <div className="border-t border-cult-dark-gray">
+        <div className="border-t border-cult-surface">
           <button
             onClick={() => setLayoutExpanded((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-cult-medium-gray hover:text-cult-light-gray transition-colors"
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-cult-border hover:text-cult-text-muted transition-colors"
           >
             <div className="flex items-center gap-1.5">
               <Layers className="w-3 h-3" />
@@ -468,7 +468,7 @@ function RoomCard({ room, onEdit, onArchive, onRestore }: RoomCardProps) {
             }
           </button>
           {layoutExpanded && (
-            <div className="border-t border-cult-dark-gray px-4 pb-4 pt-3">
+            <div className="border-t border-cult-surface px-4 pb-4 pt-3">
               <LayoutBuilder roomId={room.id} />
             </div>
           )}
@@ -488,15 +488,15 @@ export function GrowRoomsManagement() {
   const archivedRooms = rooms.filter((r) => !r.is_active);
 
   if (loading) {
-    return <div className="p-6 text-cult-light-gray">Loading grow rooms...</div>;
+    return <div className="p-6 text-cult-text-muted">Loading grow rooms...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Room Configuration</h1>
-          <p className="text-cult-light-gray mt-2">Add, edit, and archive grow rooms</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Room Configuration</h1>
+          <p className="text-cult-text-muted mt-2">Add, edit, and archive grow rooms</p>
         </div>
         <Button
           onClick={() => { setShowAddForm(!showAddForm); setEditingRoom(null); }}
@@ -535,8 +535,8 @@ export function GrowRoomsManagement() {
       )}
 
       {activeRooms.length === 0 && !showAddForm ? (
-        <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-          <p className="text-cult-medium-gray text-sm uppercase tracking-wider">No active grow rooms — add one to get started</p>
+        <div className="bg-cult-surface border border-cult-border p-8 text-center">
+          <p className="text-cult-border text-sm uppercase tracking-wider">No active grow rooms — add one to get started</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -556,7 +556,7 @@ export function GrowRoomsManagement() {
         <div>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className="text-xs text-cult-medium-gray hover:text-cult-light-gray uppercase tracking-wider transition-colors"
+            className="text-xs text-cult-border hover:text-cult-text-muted uppercase tracking-wider transition-colors"
           >
             {showArchived ? 'Hide' : 'Show'} {archivedRooms.length} archived room{archivedRooms.length !== 1 ? 's' : ''}
           </button>

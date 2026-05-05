@@ -39,91 +39,91 @@ export function CompletedBuckingSessionsTable({
   );
 
   return (
-    <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray">
-      <div className="p-4 border-b border-cult-medium-gray flex justify-between items-center">
+    <div className="bg-cult-surface rounded-lg shadow border border-cult-border">
+      <div className="p-4 border-b border-cult-border flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-bold text-cult-white">Completed Bucking Sessions ({filteredSessions.length})</h2>
-          <p className="text-xs text-cult-light-gray mt-1">Showing last 50 sessions (excludes cancelled sessions)</p>
+          <h2 className="text-lg font-bold text-cult-text-primary">Completed Bucking Sessions ({filteredSessions.length})</h2>
+          <p className="text-xs text-cult-text-muted mt-1">Showing last 50 sessions (excludes cancelled sessions)</p>
         </div>
         <input
           type="text"
           placeholder="Search by strain, bucker, or package ID..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded text-cult-white placeholder-cult-silver focus:ring-2 focus:ring-cult-green w-80"
+          className="px-4 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary placeholder-cult-text-secondary focus:ring-2 focus:ring-cult-green w-80"
         />
       </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+            <thead className="bg-cult-surface border-b border-cult-border">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Bucker
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Strain
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Package
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Input (kg)
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Flower (kg)
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Smalls (kg)
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   kg/hr
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                   Details
                 </th>
                 {onUndo && (
-                  <th className="px-4 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wider">
+                  <th className="px-4 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wider">
                     Actions
                   </th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-cult-medium-gray">
+            <tbody className="divide-y divide-cult-border">
               {filteredSessions.map((session) => (
                 <>
                   <tr
                     key={session.id}
-                    className="hover:bg-cult-dark-gray/50 transition-colors cursor-pointer"
+                    className="hover:bg-cult-surface/50 transition-colors cursor-pointer"
                     onClick={() => setExpandedId(expandedId === session.id ? null : session.id)}
                   >
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {new Date(session.session_date).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white font-medium">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary font-medium">
                       {session.bucker_name}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {session.strain}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-silver font-mono">
+                    <td className="px-4 py-3 text-sm text-cult-text-secondary font-mono">
                       {session.binned_package_id}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {(session.binned_weight_grams / 1000).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {(session.bucked_flower_grams / 1000).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {(session.bucked_smalls_grams / 1000).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-cult-white">
+                    <td className="px-4 py-3 text-sm text-cult-text-primary">
                       {session.kg_per_hour ? session.kg_per_hour.toFixed(2) : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -139,9 +139,9 @@ export function CompletedBuckingSessionsTable({
                     </td>
                     <td className="px-4 py-3 text-center">
                       {expandedId === session.id ? (
-                        <ChevronUp className="w-5 h-5 text-cult-silver mx-auto" />
+                        <ChevronUp className="w-5 h-5 text-cult-text-secondary mx-auto" />
                       ) : (
-                        <ChevronDown className="w-5 h-5 text-cult-silver mx-auto" />
+                        <ChevronDown className="w-5 h-5 text-cult-text-secondary mx-auto" />
                       )}
                     </td>
                     {onUndo && (
@@ -170,35 +170,35 @@ export function CompletedBuckingSessionsTable({
                     )}
                   </tr>
                   {expandedId === session.id && (
-                    <tr className="bg-cult-dark-gray">
+                    <tr className="bg-cult-surface">
                       <td colSpan={onUndo ? 11 : 10} className="px-4 py-4">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="text-cult-silver">Waste:</span>
-                            <span className="text-cult-white ml-2 font-medium">
+                            <span className="text-cult-text-secondary">Waste:</span>
+                            <span className="text-cult-text-primary ml-2 font-medium">
                               {(session.waste_grams / 1000).toFixed(2)} kg
                             </span>
                           </div>
                           <div>
-                            <span className="text-cult-silver">Variance:</span>
-                            <span className={`ml-2 font-medium ${Math.abs(session.variance_grams) > 100 ? 'text-cult-warning' : 'text-cult-white'}`}>
+                            <span className="text-cult-text-secondary">Variance:</span>
+                            <span className={`ml-2 font-medium ${Math.abs(session.variance_grams) > 100 ? 'text-cult-warning' : 'text-cult-text-primary'}`}>
                               {session.variance_grams >= 0 ? '+' : ''}{(session.variance_grams / 1000).toFixed(2)} kg
                             </span>
                           </div>
                           <div>
-                            <span className="text-cult-silver">Duration:</span>
-                            <span className="text-cult-white ml-2 font-medium">
+                            <span className="text-cult-text-secondary">Duration:</span>
+                            <span className="text-cult-text-primary ml-2 font-medium">
                               {session.minutes_bucked ? `${Math.floor(session.minutes_bucked / 60)}h ${Math.floor(session.minutes_bucked % 60)}m` : '-'}
                             </span>
                           </div>
                           <div>
-                            <span className="text-cult-silver">Batch:</span>
-                            <span className="text-cult-white ml-2 font-medium">{session.batch_id}</span>
+                            <span className="text-cult-text-secondary">Batch:</span>
+                            <span className="text-cult-text-primary ml-2 font-medium">{session.batch_id}</span>
                           </div>
                           {session.notes && (
                             <div className="col-span-2 md:col-span-4">
-                              <span className="text-cult-silver">Notes:</span>
-                              <p className="text-cult-white mt-1">{session.notes}</p>
+                              <span className="text-cult-text-secondary">Notes:</span>
+                              <p className="text-cult-text-primary mt-1">{session.notes}</p>
                             </div>
                           )}
                         </div>
@@ -209,7 +209,7 @@ export function CompletedBuckingSessionsTable({
               ))}
               {filteredSessions.length === 0 && (
                 <tr>
-                  <td colSpan={onUndo ? 11 : 10} className="px-4 py-8 text-center text-cult-silver">
+                  <td colSpan={onUndo ? 11 : 10} className="px-4 py-8 text-center text-cult-text-secondary">
                     {searchTerm ? 'No sessions match your search.' : 'No completed bucking sessions yet.'}
                   </td>
                 </tr>

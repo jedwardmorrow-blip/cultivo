@@ -20,9 +20,9 @@ function MetricCard({ label, value, unit, source, icon: Icon }: {
     <div className="bg-cult-surface rounded-lg p-3">
       <div className="flex items-center gap-1.5 mb-1">
         {Icon && <Icon className="w-3.5 h-3.5 text-cult-text-muted" />}
-        <span className="text-xs text-cult-silver uppercase tracking-wide">{label}</span>
+        <span className="text-xs text-cult-text-secondary uppercase tracking-wide">{label}</span>
       </div>
-      <div className={`text-lg font-bold ${hasValue ? 'text-cult-white' : 'text-cult-text-muted'}`}>
+      <div className={`text-lg font-bold ${hasValue ? 'text-cult-text-primary' : 'text-cult-text-muted'}`}>
         {hasValue ? `${value}${unit ?? ''}` : '—'}
       </div>
       {source && <div className="text-[9px] text-cult-text-muted mt-0.5">{source}</div>}
@@ -69,14 +69,14 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-cult-border">
-        <button onClick={onBack} className="p-1 rounded hover:bg-cult-surface text-cult-text-muted hover:text-cult-white transition-colors">
+        <button onClick={onBack} className="p-1 rounded hover:bg-cult-surface text-cult-text-muted hover:text-cult-text-primary transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="text-base font-bold text-cult-white font-montserrat truncate">{strain.strain_name}</h2>
+          <h2 className="text-base font-bold text-cult-text-primary font-mono truncate">{strain.strain_name}</h2>
           <div className="flex items-center gap-2 mt-0.5">
             {strain.dominance_type && (
-              <span className="text-xs text-cult-silver">{strain.dominance_type}</span>
+              <span className="text-xs text-cult-text-secondary">{strain.dominance_type}</span>
             )}
             {strain.feed_group && feedBadge && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${feedBadge}`}>
@@ -143,12 +143,12 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
             <h3 className="text-xs font-semibold text-cult-text-secondary uppercase tracking-wide mb-2">Demand Signal</h3>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-cult-surface rounded-lg p-3">
-                <div className="text-lg font-bold text-cult-white">{strain.demand_unassigned_units ?? 0}</div>
-                <div className="text-xs text-cult-silver">Unassigned units</div>
+                <div className="text-lg font-bold text-cult-text-primary">{strain.demand_unassigned_units ?? 0}</div>
+                <div className="text-xs text-cult-text-secondary">Unassigned units</div>
               </div>
               <div className="bg-cult-surface rounded-lg p-3">
-                <div className="text-lg font-bold text-cult-white">{strain.order_count ?? 0}</div>
-                <div className="text-xs text-cult-silver">Open orders</div>
+                <div className="text-lg font-bold text-cult-text-primary">{strain.order_count ?? 0}</div>
+                <div className="text-xs text-cult-text-secondary">Open orders</div>
               </div>
             </div>
           </div>
@@ -193,12 +193,12 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-1 text-xs text-cult-silver">
+          <div className="flex justify-between mt-1 text-xs text-cult-text-secondary">
             <span>Veg</span>
             <span>Flower</span>
             <span>Dry</span>
           </div>
-          <div className="text-center text-xs text-cult-silver mt-1">
+          <div className="text-center text-xs text-cult-text-secondary mt-1">
             Total cycle: {totalCycle} days
           </div>
         </div>
@@ -209,19 +209,19 @@ export function StrainStatsPanel({ strain, onBack }: StrainStatsPanelProps) {
           <div className="bg-cult-surface rounded-lg p-3 space-y-1.5 text-xs text-cult-text-secondary">
             <div className="flex justify-between">
               <span>Mother prep time</span>
-              <span className="text-cult-white font-medium">4–8 weeks</span>
+              <span className="text-cult-text-primary font-medium">4–8 weeks</span>
             </div>
             <div className="flex justify-between">
               <span>Clones per session</span>
-              <span className="text-cult-white font-medium">10–30</span>
+              <span className="text-cult-text-primary font-medium">10–30</span>
             </div>
             <div className="flex justify-between">
               <span>Recovery between cuts</span>
-              <span className="text-cult-white font-medium">2–3 weeks</span>
+              <span className="text-cult-text-primary font-medium">2–3 weeks</span>
             </div>
             <div className="flex justify-between">
               <span>Clone rooting</span>
-              <span className="text-cult-white font-medium">10–21 days</span>
+              <span className="text-cult-text-primary font-medium">10–21 days</span>
             </div>
           </div>
         </div>

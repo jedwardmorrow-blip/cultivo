@@ -268,10 +268,10 @@ export function ScheduleBuilder() {
         <button
           type="button"
           onClick={() => { setMode('templates'); setSelectedType(null); }}
-          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 ${
+          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-cult transition-all duration-200 active:scale-95 ${
             mode === 'templates'
               ? 'bg-white/10 text-white/80 border border-white/15'
-              : 'text-white/30 border border-transparent hover:bg-white/5'
+              : 'text-white/30 border border-transparent hover:bg-cult-surface-subtle'
           }`}
         >
           <ClipboardList className="w-3.5 h-3.5" />
@@ -280,10 +280,10 @@ export function ScheduleBuilder() {
         <button
           type="button"
           onClick={() => setMode('task-types')}
-          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 ${
+          className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-cult transition-all duration-200 active:scale-95 ${
             mode === 'task-types'
               ? 'bg-white/10 text-white/80 border border-white/15'
-              : 'text-white/30 border border-transparent hover:bg-white/5'
+              : 'text-white/30 border border-transparent hover:bg-cult-surface-subtle'
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
@@ -343,10 +343,10 @@ export function ScheduleBuilder() {
                   variants={staggerItem}
                   type="button"
                   onClick={() => setSelectedType(type)}
-                  className={`p-5 rounded-2xl text-left transition-all duration-300 active:scale-[0.97] ${
+                  className={`p-5 rounded-cult text-left transition-all duration-300 active:scale-[0.97] ${
                     t
-                      ? 'glass-card hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01]'
-                      : 'bg-white/[0.03] backdrop-blur-2xl border border-dashed border-white/[0.08] rounded-2xl hover:bg-white/[0.06] hover:border-white/[0.12]'
+                      ? 'glass-card hover:bg-cult-surface-overlay hover:border-cult-border-strong hover:scale-[1.01]'
+                      : 'bg-cult-surface-inset border border-dashed border-cult-border rounded-cult hover:bg-cult-surface-raised hover:border-cult-border-active'
                   }`}
                   style={
                     t
@@ -378,7 +378,7 @@ export function ScheduleBuilder() {
                               );
                             })}
                             {grid[day].length === 0 && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-white/[0.06]" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-cult-surface-raised" />
                             )}
                           </div>
                         ))}
@@ -472,7 +472,7 @@ export function ScheduleBuilder() {
                     <button
                       type="button"
                       onClick={startEditing}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 transition-all duration-200 active:scale-95"
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-cult-surface-overlay transition-all duration-200 active:scale-95"
                     >
                       <Pencil className="w-3 h-3" />
                       Edit
@@ -484,7 +484,7 @@ export function ScheduleBuilder() {
                           setShowApply(!showApply);
                           setApplySuccess(null);
                         }}
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 transition-all duration-200 active:scale-95"
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 text-white/60 hover:bg-cult-surface-overlay transition-all duration-200 active:scale-95"
                       >
                         Apply
                         <ChevronDown className={`w-3 h-3 transition-transform ${showApply ? 'rotate-180' : ''}`} />
@@ -512,7 +512,7 @@ export function ScheduleBuilder() {
                           className="relative group"
                         >
                           <div
-                            className="rounded-xl px-3 py-2.5 text-[10px] font-medium truncate"
+                            className="rounded-cult px-3 py-2.5 text-[10px] font-medium truncate"
                             style={{
                               backgroundColor: `${config.color}15`,
                               borderWidth: 1,
@@ -537,7 +537,7 @@ export function ScheduleBuilder() {
 
                     {/* Empty column placeholder */}
                     {dayGrid[day].length === 0 && !isEditing && (
-                      <div className="min-h-[60px] rounded-xl border border-dashed border-white/[0.06]" />
+                      <div className="min-h-[60px] rounded-cult border border-dashed border-cult-border-subtle" />
                     )}
 
                     {/* Add to this day */}
@@ -553,7 +553,7 @@ export function ScheduleBuilder() {
 
             {/* Add daily task strip */}
             {isEditing && (
-              <div className="pt-4 border-t border-white/5">
+              <div className="pt-4 border-t border-cult-border-faint">
                 <p className="text-[10px] text-white/20 uppercase tracking-wider mb-2">
                   Add daily task
                 </p>
@@ -569,7 +569,7 @@ export function ScheduleBuilder() {
                         type="button"
                         onClick={() => addTask(type, [0, 1, 2, 3, 4, 5, 6])}
                         disabled={alreadyDaily}
-                        className="px-2.5 py-1 rounded-lg text-[10px] border border-white/5 transition-all duration-200 active:scale-95 disabled:opacity-20"
+                        className="px-2.5 py-1 rounded-lg text-[10px] border border-cult-border-faint transition-all duration-200 active:scale-95 disabled:opacity-20"
                         style={{
                           backgroundColor: alreadyDaily ? 'transparent' : `${config.color}10`,
                           color: `${config.color}99`,
@@ -619,13 +619,13 @@ export function ScheduleBuilder() {
                   transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                   className="overflow-hidden"
                 >
-                  <div className="pt-4 border-t border-white/5 space-y-4">
+                  <div className="pt-4 border-t border-cult-border-faint space-y-4">
                     {applySuccess ? (
                       /* ── Success state ─────────────────────────── */
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="rounded-2xl border p-5 text-center space-y-3"
+                        className="rounded-cult border p-5 text-center space-y-3"
                         style={{
                           borderColor: '#10B98133',
                           boxShadow: '0 0 20px #10B98115',
@@ -639,14 +639,14 @@ export function ScheduleBuilder() {
                           <button
                             type="button"
                             onClick={goBack}
-                            className="text-xs px-4 py-2 rounded-xl bg-white/5 text-white/60 hover:bg-white/10 transition-all duration-200 active:scale-95"
+                            className="text-xs px-4 py-2 rounded-cult bg-white/5 text-white/60 hover:bg-cult-surface-overlay transition-all duration-200 active:scale-95"
                           >
                             Back to Schedule Builder
                           </button>
                           <button
                             type="button"
                             onClick={() => navigate('/cultivation-command-center')}
-                            className="text-xs px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95"
+                            className="text-xs px-4 py-2 rounded-cult bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95"
                           >
                             Open Command Center &rarr;
                           </button>
@@ -667,10 +667,10 @@ export function ScheduleBuilder() {
                                 key={room.id}
                                 type="button"
                                 onClick={() => toggleRoom(room.id)}
-                                className={`relative p-3 rounded-xl border transition-all duration-200 active:scale-95 text-left ${
+                                className={`relative p-3 rounded-cult border transition-all duration-200 active:scale-95 text-left ${
                                   isSelected
                                     ? 'glass-elevated'
-                                    : 'bg-white/[0.03] border-white/5 hover:bg-white/5'
+                                    : 'bg-cult-surface-inset border-cult-border-faint hover:bg-cult-surface-subtle'
                                 }`}
                                 style={
                                   isSelected
@@ -748,7 +748,7 @@ export function ScheduleBuilder() {
                           type="button"
                           onClick={handleApply}
                           disabled={saving || selectedRoomIds.size === 0}
-                          className="w-full rounded-xl py-3 bg-emerald-500/20 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-30 transition-all duration-200 active:scale-[0.98]"
+                          className="w-full rounded-cult py-3 bg-emerald-500/20 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-30 transition-all duration-200 active:scale-[0.98]"
                         >
                           {saving
                             ? 'Applying...'
@@ -783,7 +783,7 @@ export function ScheduleBuilder() {
                     setApplySuccess(null);
                     setSelectedRoomIds(new Set());
                   }}
-                  className="w-full p-4 rounded-2xl glass-card text-left hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300 active:scale-[0.97]"
+                  className="w-full p-4 rounded-cult glass-card text-left hover:bg-cult-surface-overlay hover:border-cult-border-strong hover:scale-[1.01] transition-all duration-300 active:scale-[0.97]"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
@@ -817,7 +817,7 @@ export function ScheduleBuilder() {
                                 );
                               })}
                               {grid[day].length === 0 && (
-                                <div className="w-1 h-1 rounded-full bg-white/[0.06]" />
+                                <div className="w-1 h-1 rounded-full bg-cult-surface-raised" />
                               )}
                             </div>
                           );
@@ -831,7 +831,7 @@ export function ScheduleBuilder() {
 
             {/* Active indicator */}
             <div
-              className="p-3 rounded-xl border text-center"
+              className="p-3 rounded-cult border text-center"
               style={{
                 borderColor: `${color}33`,
                 background: `${color}08`,
@@ -919,7 +919,7 @@ function TaskTypesPanel() {
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/25 transition-all duration-200 active:scale-95"
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-cult bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/25 transition-all duration-200 active:scale-95"
         >
           <Plus className="w-3 h-3" />
           New Task Type
@@ -940,14 +940,14 @@ function TaskTypesPanel() {
               variants={staggerItem}
               type="button"
               onClick={() => setEditingId(tt.id)}
-              className={`glass-card p-4 text-left hover:bg-white/[0.09] hover:border-white/[0.14] hover:scale-[1.01] transition-all duration-300 active:scale-[0.97] ${
+              className={`glass-card p-4 text-left hover:bg-cult-surface-overlay hover:border-cult-border-strong hover:scale-[1.01] transition-all duration-300 active:scale-[0.97] ${
                 !tt.is_enabled ? 'opacity-40' : ''
               }`}
               style={{ borderLeftWidth: 3, borderLeftColor: `${tt.color}60` }}
             >
               <div className="flex items-center gap-2.5 mb-2">
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-8 h-8 rounded-cult flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: `${tt.color}15` }}
                 >
                   <Icon className="w-4 h-4" style={{ color: tt.color }} />
@@ -967,7 +967,7 @@ function TaskTypesPanel() {
               {tt.fields && tt.fields.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {tt.fields.slice(0, 3).map(f => (
-                    <span key={f} className="text-[9px] text-white/20 px-1.5 py-0.5 rounded bg-white/[0.04]">{f}</span>
+                    <span key={f} className="text-[9px] text-white/20 px-1.5 py-0.5 rounded bg-cult-surface-inset">{f}</span>
                   ))}
                   {tt.fields.length > 3 && <span className="text-[9px] text-white/15">+{tt.fields.length - 3}</span>}
                 </div>
@@ -1069,7 +1069,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
             <button
               type="button"
               onClick={onDelete}
-              className="text-xs px-3 py-1.5 rounded-xl text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all active:scale-95"
+              className="text-xs px-3 py-1.5 rounded-cult text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all active:scale-95"
             >
               Delete
             </button>
@@ -1078,7 +1078,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
             type="button"
             onClick={handleSave}
             disabled={saving || !label.trim()}
-            className="flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95 disabled:opacity-30"
+            className="flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-cult bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all duration-200 active:scale-95 disabled:opacity-30"
           >
             <Save className="w-3 h-3" />
             {saving ? 'Saving...' : 'Save'}
@@ -1090,8 +1090,8 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
         {/* Left: basic info */}
         <div className="space-y-4">
           {/* Preview */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+          <div className="flex items-center gap-3 p-3 rounded-cult bg-cult-surface-inset border border-cult-border-subtle">
+            <div className="w-10 h-10 rounded-cult flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
               <SelectedIcon className="w-5 h-5" style={{ color }} />
             </div>
             <div>
@@ -1108,7 +1108,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g., Flush"
-              className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/25"
+              className="w-full glass-input rounded-cult px-4 py-2.5 text-sm text-white placeholder:text-white/25"
             />
           </div>
 
@@ -1120,7 +1120,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
                 value={taskKey}
                 onChange={(e) => setTaskKey(e.target.value)}
                 placeholder="e.g., flush"
-                className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white font-mono placeholder:text-white/25"
+                className="w-full glass-input rounded-cult px-4 py-2.5 text-sm text-white font-mono placeholder:text-white/25"
               />
             </div>
           )}
@@ -1133,7 +1133,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="What does this task involve?"
-              className="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/25 resize-none"
+              className="w-full glass-input rounded-cult px-4 py-2.5 text-sm text-white placeholder:text-white/25 resize-none"
             />
           </div>
 
@@ -1180,7 +1180,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
                     type="button"
                     onClick={() => setIcon(name)}
                     className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 ${
-                      icon === name ? 'bg-white/15 border border-white/20' : 'bg-white/[0.04] hover:bg-white/[0.08]'
+                      icon === name ? 'bg-cult-surface-active border border-cult-border-active' : 'bg-cult-surface-inset hover:bg-cult-surface-overlay'
                     }`}
                   >
                     <Ic className="w-4 h-4" style={{ color: icon === name ? color : 'rgba(255,255,255,0.3)' }} />
@@ -1195,7 +1195,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
             <label className="text-[10px] text-white/30 uppercase tracking-wider mb-2 block">Completion Fields</label>
             <div className="space-y-1.5 mb-2">
               {fields.map(f => (
-                <div key={f} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                <div key={f} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cult-surface-inset border border-cult-border-subtle">
                   <span className="text-xs text-white/50 flex-1">{f}</span>
                   <button
                     type="button"
@@ -1220,7 +1220,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
                 type="button"
                 onClick={addField}
                 disabled={!newField.trim()}
-                className="px-3 py-1.5 rounded-lg bg-white/5 text-white/40 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-20"
+                className="px-3 py-1.5 rounded-lg bg-white/5 text-white/40 hover:bg-cult-surface-overlay transition-all active:scale-95 disabled:opacity-20"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -1230,7 +1230,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
       </div>
 
       {/* Team & Duration section */}
-      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] space-y-4">
+      <div className="p-4 rounded-cult bg-cult-surface-inset border border-cult-border-subtle space-y-4">
         <h3 className="text-[10px] text-white/30 uppercase tracking-wider font-medium">Team & Duration</h3>
 
         {/* Default Crew Size */}
@@ -1245,7 +1245,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
             <button
               type="button"
               onClick={() => setDefaultCrewSize(Math.max(1, defaultCrewSize - 1))}
-              className="w-7 h-7 rounded-lg bg-white/[0.05] text-white/40 hover:bg-white/[0.08] flex items-center justify-center active:scale-90 transition-all"
+              className="w-7 h-7 rounded-lg bg-cult-surface-subtle text-white/40 hover:bg-cult-surface-overlay flex items-center justify-center active:scale-90 transition-all"
             >
               −
             </button>
@@ -1253,7 +1253,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
             <button
               type="button"
               onClick={() => setDefaultCrewSize(Math.min(8, defaultCrewSize + 1))}
-              className="w-7 h-7 rounded-lg bg-white/[0.05] text-white/40 hover:bg-white/[0.08] flex items-center justify-center active:scale-90 transition-all"
+              className="w-7 h-7 rounded-lg bg-cult-surface-subtle text-white/40 hover:bg-cult-surface-overlay flex items-center justify-center active:scale-90 transition-all"
             >
               +
             </button>
@@ -1272,7 +1272,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
                 className={`px-2 py-1 text-[10px] font-medium rounded-lg transition-all active:scale-95 ${
                   typicalDuration === d
                     ? 'bg-white/10 text-white/70 border border-white/15'
-                    : 'text-white/25 hover:bg-white/[0.05] border border-transparent'
+                    : 'text-white/25 hover:bg-cult-surface-subtle border border-transparent'
                 }`}
               >
                 {d === 'full_day' ? 'Day' : d}
@@ -1296,7 +1296,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
         {/* Completion Mode */}
         <div className="flex items-center justify-between">
           <span className="text-xs text-white/50">Completion Mode</span>
-          <div className="flex rounded-xl overflow-hidden border border-white/[0.08]">
+          <div className="flex rounded-cult overflow-hidden border border-cult-border">
             {(['manual', 'event_driven'] as const).map(mode => (
               <button
                 key={mode}
@@ -1305,7 +1305,7 @@ function TaskTypeEditor({ taskType, onSave, onDelete, onCancel }: {
                 className={`px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider transition-all ${
                   completionMode === mode
                     ? 'bg-white/10 text-white/70'
-                    : 'text-white/25 hover:bg-white/[0.04]'
+                    : 'text-white/25 hover:bg-cult-surface-subtle'
                 }`}
               >
                 {mode === 'manual' ? 'Manual' : 'Event'}
@@ -1328,7 +1328,7 @@ function AddTaskPopover({ onAdd }: { onAdd: (type: TaskType) => void }) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full py-1.5 rounded-lg border border-dashed border-white/[0.06] text-white/15 hover:text-white/30 hover:border-white/15 transition-colors flex items-center justify-center"
+        className="w-full py-1.5 rounded-lg border border-dashed border-cult-border-subtle text-white/15 hover:text-white/30 hover:border-cult-border-strong transition-colors flex items-center justify-center"
       >
         <Plus className="w-3 h-3" />
       </button>
@@ -1351,7 +1351,7 @@ function AddTaskPopover({ onAdd }: { onAdd: (type: TaskType) => void }) {
                     onAdd(type);
                     setOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] text-white/60 hover:bg-white/10 transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] text-white/60 hover:bg-cult-surface-overlay transition-colors text-left"
                 >
                   <div
                     className="w-1.5 h-1.5 rounded-full"
@@ -1399,7 +1399,7 @@ function PhaseMilestones({
   }
 
   return (
-    <div className="pt-4 border-t border-white/5 space-y-3">
+    <div className="pt-4 border-t border-cult-border-faint space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-[10px] text-white/20 uppercase tracking-wider">Phase Milestones</h3>
         {isEditing && (
@@ -1433,7 +1433,7 @@ function PhaseMilestones({
                           key={type}
                           type="button"
                           onClick={() => setSelectedTaskType(type)}
-                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] text-white/60 hover:bg-white/10 transition-colors text-left"
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[10px] text-white/60 hover:bg-cult-surface-overlay transition-colors text-left"
                         >
                           <div
                             className="w-1.5 h-1.5 rounded-full"
@@ -1461,7 +1461,7 @@ function PhaseMilestones({
                           min={1}
                           value={phaseDay}
                           onChange={(e) => setPhaseDay(Math.max(1, parseInt(e.target.value) || 1))}
-                          className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/80 font-mono focus:outline-none focus:border-white/20"
+                          className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/80 font-mono focus:outline-none focus:border-cult-border-active"
                         />
                       </div>
                       <div className="flex gap-2">
@@ -1497,7 +1497,7 @@ function PhaseMilestones({
             return (
               <div
                 key={`milestone-${index}`}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                className="flex items-center gap-3 px-3 py-2 rounded-cult"
                 style={{ backgroundColor: `${config.color}08` }}
               >
                 <div className="w-2 h-2 rotate-45" style={{ backgroundColor: config.color }} />

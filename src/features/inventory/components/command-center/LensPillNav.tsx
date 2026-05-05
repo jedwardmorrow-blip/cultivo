@@ -18,7 +18,7 @@ interface LensPillNavProps {
 
 export function LensPillNav({ lenses, active, onChange }: LensPillNavProps) {
   return (
-    <div className="flex items-center gap-1 p-1 rounded-xl bg-cult-near-black border border-cult-border-subtle w-fit">
+    <div className="flex items-center gap-1 p-1 rounded-cult bg-cult-surface border border-cult-border-subtle w-fit">
       {lenses.map((lens) => {
         const isActive = lens.id === active;
         const Icon = lens.icon;

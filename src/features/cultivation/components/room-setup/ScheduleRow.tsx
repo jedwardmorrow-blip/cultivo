@@ -17,7 +17,7 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
     <button
       type="button"
       onClick={onEdit}
-      className="w-full text-left bg-cult-near-black border border-cult-dark-gray/60 hover:border-cult-medium-gray p-4 transition-all hover:bg-cult-charcoal/40 group rounded-sm"
+      className="w-full text-left bg-cult-surface border border-cult-surface/60 hover:border-cult-border p-4 transition-all hover:bg-cult-surface-raised/40 group rounded-sm"
     >
       {/* Top row: task name + badges */}
       <div className="flex items-center justify-between mb-2">
@@ -26,7 +26,7 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
             className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-black/20"
             style={{ backgroundColor: config.color }}
           />
-          <span className="text-xs font-bold text-cult-white uppercase tracking-wider">{config.label}</span>
+          <span className="text-xs font-bold text-cult-text-primary uppercase tracking-wider">{config.label}</span>
         </div>
         <div className="flex items-center gap-2">
           {isPhaseDay && (
@@ -34,7 +34,7 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
               Phase
             </span>
           )}
-          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cult-light-gray bg-cult-charcoal/80 rounded-sm border border-cult-dark-gray/40">
+          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cult-text-muted bg-cult-surface-raised/80 rounded-sm border border-cult-surface/40">
             {schedule.recurrence}
           </span>
           {schedule.priority === 'high' && (
@@ -46,7 +46,7 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
       </div>
 
       {/* Frequency description */}
-      <div className="text-[11px] text-cult-medium-gray mb-2" style={{ color: `${config.color}99` }}>
+      <div className="text-[11px] text-cult-border mb-2" style={{ color: `${config.color}99` }}>
         {frequency}
       </div>
 
@@ -60,8 +60,8 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
                 key={idx}
                 className={`w-7 h-6 flex items-center justify-center text-[10px] font-bold uppercase rounded-sm transition-colors ${
                   active
-                    ? 'text-white bg-cult-medium-gray/60 border border-cult-medium-gray/40'
-                    : 'text-cult-dark-gray/50 border border-transparent'
+                    ? 'text-white bg-cult-border/60 border border-cult-border/40'
+                    : 'text-cult-surface/50 border border-transparent'
                 }`}
                 style={active ? { color: config.color } : undefined}
               >
@@ -81,7 +81,7 @@ export function ScheduleRow({ schedule, onEdit }: ScheduleRowProps) {
 
       {/* Notes */}
       {schedule.notes && (
-        <div className={`${schedule.end_date ? 'mt-1' : 'mt-2'} text-xs text-cult-medium-gray truncate`}>{schedule.notes}</div>
+        <div className={`${schedule.end_date ? 'mt-1' : 'mt-2'} text-xs text-cult-border truncate`}>{schedule.notes}</div>
       )}
     </button>
   );

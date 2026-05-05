@@ -543,7 +543,7 @@ export function DistributionMap({
 
       <div
         ref={containerRef}
-        className="absolute inset-0 rounded-2xl"
+        className="absolute inset-0 rounded-cult"
       />
 
       {!expanded && (

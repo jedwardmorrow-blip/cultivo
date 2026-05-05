@@ -3,7 +3,7 @@ import { formatWeight } from '../../utils';
 import { ROOM_TYPE_BADGE as ROOM_TYPE_COLORS } from '../../constants/stageColors';
 import type { RoomAggregate } from '../../hooks/useHarvestMetrics';
 
-const MEDAL_COLORS = ['text-amber-400', 'text-cult-light-gray', 'text-amber-700'];
+const MEDAL_COLORS = ['text-amber-400', 'text-cult-text-muted', 'text-amber-700'];
 
 interface RoomLeaderboardProps {
   roomAggregates: RoomAggregate[];
@@ -12,8 +12,8 @@ interface RoomLeaderboardProps {
 export function RoomLeaderboard({ roomAggregates }: RoomLeaderboardProps) {
   if (roomAggregates.length === 0) {
     return (
-      <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-        <p className="text-cult-medium-gray text-sm uppercase tracking-wider">No room data to display</p>
+      <div className="bg-cult-surface border border-cult-border p-8 text-center">
+        <p className="text-cult-border text-sm uppercase tracking-wider">No room data to display</p>
       </div>
     );
   }
@@ -29,14 +29,14 @@ export function RoomLeaderboard({ roomAggregates }: RoomLeaderboardProps) {
         return (
           <div
             key={room.grow_room_code}
-            className="bg-cult-near-black border border-cult-dark-gray hover:border-cult-medium-gray transition-all"
+            className="bg-cult-surface border border-cult-surface hover:border-cult-border transition-all"
           >
             <div className="flex items-center gap-4 px-4 py-3">
               <div className="w-8 flex-shrink-0 text-center">
                 {idx < 3 ? (
                   <Trophy className={`w-5 h-5 mx-auto ${MEDAL_COLORS[idx]}`} />
                 ) : (
-                  <span className="text-cult-medium-gray font-mono text-sm">#{idx + 1}</span>
+                  <span className="text-cult-border font-mono text-sm">#{idx + 1}</span>
                 )}
               </div>
 
@@ -50,40 +50,40 @@ export function RoomLeaderboard({ roomAggregates }: RoomLeaderboardProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-6 text-xs">
                   <div>
-                    <span className="text-cult-medium-gray">Harvests </span>
-                    <span className="text-cult-white font-mono">{room.harvest_count}</span>
+                    <span className="text-cult-border">Harvests </span>
+                    <span className="text-cult-text-primary font-mono">{room.harvest_count}</span>
                   </div>
                   <div>
-                    <span className="text-cult-medium-gray">Plants </span>
-                    <span className="text-cult-white font-mono">{room.total_plants}</span>
+                    <span className="text-cult-border">Plants </span>
+                    <span className="text-cult-text-primary font-mono">{room.total_plants}</span>
                   </div>
                   <div>
-                    <span className="text-cult-medium-gray">Wet </span>
-                    <span className="text-cult-light-gray font-mono">{formatWeight(room.total_wet_grams)}</span>
+                    <span className="text-cult-border">Wet </span>
+                    <span className="text-cult-text-muted font-mono">{formatWeight(room.total_wet_grams)}</span>
                   </div>
                   <div>
-                    <span className="text-cult-medium-gray">Dry </span>
-                    <span className="text-cult-white font-mono font-semibold">
+                    <span className="text-cult-border">Dry </span>
+                    <span className="text-cult-text-primary font-mono font-semibold">
                       {room.total_dry_grams > 0 ? formatWeight(room.total_dry_grams) : '—'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-cult-medium-gray">Yield </span>
+                    <span className="text-cult-border">Yield </span>
                     {room.avg_yield_pct != null ? (
                       <span className="text-cult-success font-mono font-semibold">{room.avg_yield_pct}%</span>
                     ) : (
-                      <span className="text-cult-medium-gray">—</span>
+                      <span className="text-cult-border">—</span>
                     )}
                   </div>
                   <div>
-                    <span className="text-cult-medium-gray">Dry/Plant </span>
-                    <span className="text-cult-light-gray font-mono">
+                    <span className="text-cult-border">Dry/Plant </span>
+                    <span className="text-cult-text-muted font-mono">
                       {room.avg_dry_per_plant != null ? formatWeight(room.avg_dry_per_plant) : '—'}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-2 w-full bg-cult-dark-gray h-1.5 overflow-hidden">
+                <div className="mt-2 w-full bg-cult-surface h-1.5 overflow-hidden">
                   <div
                     className="h-full bg-cult-success transition-all"
                     style={{ width: `${barWidth}%` }}

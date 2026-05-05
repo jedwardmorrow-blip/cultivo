@@ -66,7 +66,7 @@ export function AuditInitiationModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-cult-border-subtle">
           <h2 className="text-2xl font-bold text-cult-text-primary">Initiate Inventory Audit</h2>
@@ -181,7 +181,7 @@ export function AuditInitiationModal({
           <button
             onClick={handleSubmit}
             disabled={isLoading || selectedStages.length === 0}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-6 py-2 border border-cult-accent text-cult-accent rounded hover:bg-cult-accent hover:text-cult-opaque-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-mono uppercase tracking-[0.16em] text-[11px]"
           >
             {isLoading ? 'Starting Audit...' : 'Start Audit'}
           </button>

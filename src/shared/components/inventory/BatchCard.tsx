@@ -9,7 +9,7 @@ import { StageBar } from './StageBar';
 
 export function BatchCard({ batch }: { batch: BatchSummary }) {
   return (
-    <div className="rounded-lg p-3 border border-cult-medium-gray/20 bg-cult-black hover:border-cult-medium-gray/40 transition-colors">
+    <div className="rounded-lg p-3 border border-cult-border/20 bg-cult-black hover:border-cult-border/40 transition-colors">
       <div className="flex justify-between items-center mb-2">
         <span className="text-xs font-bold text-neutral-300 font-mono tracking-wide">
           {batch.batchNumber}

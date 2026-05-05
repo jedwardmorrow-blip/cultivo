@@ -47,18 +47,18 @@ export function InventoryPipelineWidget() {
         <div className="flex items-center gap-3">
           <Layers className="w-5 h-5 text-cult-green" />
           <div>
-            <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide">Inventory Pipeline</h2>
-            <p className="text-xs text-cult-light-gray mt-0.5">Production stage overview across all strains</p>
+            <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide">Inventory Pipeline</h2>
+            <p className="text-xs text-cult-text-muted mt-0.5">Production stage overview across all strains</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex bg-cult-black border border-cult-medium-gray">
+          <div className="flex bg-cult-black border border-cult-border">
             <button
               onClick={() => setViewMode('strain')}
               className={`px-3 py-1.5 text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 transition-colors ${
                 viewMode === 'strain'
-                  ? 'bg-cult-medium-gray/40 text-cult-white'
-                  : 'text-cult-light-gray hover:text-cult-white'
+                  ? 'bg-cult-border/40 text-cult-text-primary'
+                  : 'text-cult-text-muted hover:text-cult-text-primary'
               }`}
             >
               <LayoutGrid className="w-3 h-3" />
@@ -68,8 +68,8 @@ export function InventoryPipelineWidget() {
               onClick={() => setViewMode('batch')}
               className={`px-3 py-1.5 text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 transition-colors ${
                 viewMode === 'batch'
-                  ? 'bg-cult-medium-gray/40 text-cult-white'
-                  : 'text-cult-light-gray hover:text-cult-white'
+                  ? 'bg-cult-border/40 text-cult-text-primary'
+                  : 'text-cult-text-muted hover:text-cult-text-primary'
               }`}
             >
               <List className="w-3 h-3" />
@@ -79,7 +79,7 @@ export function InventoryPipelineWidget() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="p-1.5 text-cult-light-gray hover:text-cult-white transition-colors disabled:opacity-50"
+            className="p-1.5 text-cult-text-muted hover:text-cult-text-primary transition-colors disabled:opacity-50"
             title="Refresh data"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -99,11 +99,11 @@ export function InventoryPipelineWidget() {
           return (
             <div
               key={stage}
-              className={`bg-cult-black p-4 border border-cult-medium-gray border-l-4 ${meta.borderColor}`}
+              className={`bg-cult-black p-4 border border-cult-border border-l-4 ${meta.borderColor}`}
             >
-              <p className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">{stage}</p>
+              <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">{stage}</p>
               <p className={`text-xl font-bold ${meta.color} tabular-nums`}>{primaryValue}</p>
-              <p className="text-xs text-cult-medium-gray mt-0.5">{secondaryValue}</p>
+              <p className="text-xs text-cult-border mt-0.5">{secondaryValue}</p>
             </div>
           );
         })}
@@ -111,15 +111,15 @@ export function InventoryPipelineWidget() {
 
       {/* Matrix Table */}
       {strains.length === 0 ? (
-        <div className="bg-cult-black border border-cult-medium-gray p-12 text-center">
-          <p className="text-cult-light-gray">No inventory data available</p>
+        <div className="bg-cult-black border border-cult-border p-12 text-center">
+          <p className="text-cult-text-muted">No inventory data available</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b-2 border-cult-medium-gray">
-                <th className="px-3 py-2.5 text-left text-xs font-semibold text-cult-light-gray uppercase tracking-wider w-[200px]">
+              <tr className="border-b-2 border-cult-border">
+                <th className="px-3 py-2.5 text-left text-xs font-semibold text-cult-text-muted uppercase tracking-wider w-[200px]">
                   {viewMode === 'strain' ? 'Strain' : 'Batch'}
                 </th>
                 {STAGES.map(stage => (
@@ -141,11 +141,11 @@ export function InventoryPipelineWidget() {
                 ))
               ) : (
                 allBatches.map(batch => (
-                  <tr key={batch.batchId} className="border-b border-cult-medium-gray/50 hover:bg-cult-near-black/80">
+                  <tr key={batch.batchId} className="border-b border-cult-border/50 hover:bg-cult-surface/80">
                     <td className="px-3 py-2.5">
                       <div>
-                        <span className="text-sm font-mono text-cult-white">{batch.batchNumber}</span>
-                        <span className="text-xs text-cult-medium-gray ml-2">{batch.strain}</span>
+                        <span className="text-sm font-mono text-cult-text-primary">{batch.batchNumber}</span>
+                        <span className="text-xs text-cult-border ml-2">{batch.strain}</span>
                       </div>
                     </td>
                     {STAGES.map(stage => {
@@ -163,7 +163,7 @@ export function InventoryPipelineWidget() {
                       return (
                         <td key={stage} className="px-3 py-2.5 text-right relative">
                           {opacity > 0 && <div className={`absolute inset-0 ${bgColor}`} style={{ opacity }} />}
-                          <span className={`relative z-10 text-sm tabular-nums ${display ? 'text-cult-white font-medium' : 'text-cult-medium-gray'}`}>
+                          <span className={`relative z-10 text-sm tabular-nums ${display ? 'text-cult-text-primary font-medium' : 'text-cult-border'}`}>
                             {display || '\u2014'}
                           </span>
                         </td>
@@ -174,8 +174,8 @@ export function InventoryPipelineWidget() {
               )}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-cult-medium-gray bg-cult-black/40">
-                <td className="px-3 py-2.5 text-xs font-semibold text-cult-light-gray uppercase tracking-wider">Total</td>
+              <tr className="border-t-2 border-cult-border bg-cult-black/40">
+                <td className="px-3 py-2.5 text-xs font-semibold text-cult-text-muted uppercase tracking-wider">Total</td>
                 {STAGES.map(stage => {
                   const d = grandTotals.stages[stage];
                   const isPackaged = stage === 'Packaged';

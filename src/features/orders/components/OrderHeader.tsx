@@ -53,20 +53,20 @@ export function OrderHeader({
   };
 
   return (
-    <div onClick={onToggle} className="p-5 cursor-pointer hover:bg-cult-dark-gray transition-colors">
+    <div onClick={onToggle} className="p-5 cursor-pointer hover:bg-cult-surface transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
           <div className="flex-shrink-0">
             {isExpanded ? (
-              <ChevronDown className="w-6 h-6 text-cult-white" />
+              <ChevronDown className="w-6 h-6 text-cult-text-primary" />
             ) : (
-              <ChevronRight className="w-6 h-6 text-cult-white" />
+              <ChevronRight className="w-6 h-6 text-cult-text-primary" />
             )}
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <span className="text-xl font-bold text-cult-white uppercase tracking-wider">
+              <span className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
                 {order.order_number}
               </span>
               <select
@@ -76,7 +76,7 @@ export function OrderHeader({
                   onStatusChange(e.target.value);
                 }}
                 onClick={(e) => e.stopPropagation()}
-                className={`px-3 py-1.5 text-xs font-bold border-2 ${getStatusColor(order.status)} cursor-pointer hover:opacity-80 transition-all uppercase tracking-wider bg-cult-near-black`}
+                className={`px-3 py-1.5 text-xs font-bold border-2 ${getStatusColor(order.status)} cursor-pointer hover:opacity-80 transition-all uppercase tracking-wider bg-cult-surface`}
               >
                 <option value="submitted">Submitted</option>
                 <option value="accepted">Accepted</option>
@@ -102,14 +102,14 @@ export function OrderHeader({
                 </span>
               )}
             </div>
-            <div className="text-sm text-cult-light-gray font-medium">
+            <div className="text-sm text-cult-text-muted font-medium">
               {order.customer_name || 'Unknown Customer'}
             </div>
             <div
               className="flex items-center gap-2 mt-1 group"
               onClick={(e) => e.stopPropagation()}
             >
-              <Calendar className="w-3 h-3 text-cult-lighter-gray" />
+              <Calendar className="w-3 h-3 text-cult-text-muted" />
               {isEditingDate ? (
                 <input
                   type="date"
@@ -125,7 +125,7 @@ export function OrderHeader({
                     }
                   }}
                   autoFocus
-                  className="px-2 py-1 text-xs bg-cult-dark-gray border border-cult-white text-cult-white focus:outline-none"
+                  className="px-2 py-1 text-xs bg-cult-surface border border-cult-accent text-cult-text-primary focus:outline-none"
                   style={{ colorScheme: 'dark' }}
                 />
               ) : (
@@ -135,7 +135,7 @@ export function OrderHeader({
                     setIsEditingDate(true);
                     setTempDate(deliveryDate || '');
                   }}
-                  className="text-xs text-cult-lighter-gray hover:text-cult-white transition-colors hover:underline"
+                  className="text-xs text-cult-text-muted hover:text-cult-text-primary transition-colors hover:underline"
                 >
                   {deliveryDate
                     ? `Delivery: ${new Date(deliveryDate).toLocaleDateString()}`
@@ -147,14 +147,14 @@ export function OrderHeader({
 
           <div className="hidden md:flex items-center gap-8 text-sm">
             <div className="text-center">
-              <div className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Items</div>
-              <div className="flex items-center gap-2 text-cult-white font-bold">
+              <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Items</div>
+              <div className="flex items-center gap-2 text-cult-text-primary font-bold">
                 <Package className="w-4 h-4" />
                 <span>{order.item_count}</span>
               </div>
             </div>
             <div className="text-center">
-              <div className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Order Total</div>
+              <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Order Total</div>
               <div className="flex items-center gap-2 font-bold text-cult-success text-lg">
                 <DollarSign className="w-5 h-5" />
                 <span>{formatCurrency(order.total_amount)}</span>

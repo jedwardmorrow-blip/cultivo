@@ -117,17 +117,17 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
       {/* ── Summary Bar ────────────────────────────────────── */}
       <div className="flex items-center flex-wrap gap-3 sm:gap-6 px-1">
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-cult-white font-mono">{rooms.length}</span>
-          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Rooms</span>
+          <span className="text-2xl font-bold text-cult-text-primary font-mono">{rooms.length}</span>
+          <span className="text-xs text-cult-border uppercase tracking-wider">Rooms</span>
         </div>
-        <div className="w-px h-6 bg-cult-dark-gray" />
+        <div className="w-px h-6 bg-cult-surface" />
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold text-cult-success font-mono">{totalScheduleCount}</span>
-          <span className="text-xs text-cult-medium-gray uppercase tracking-wider">Active Schedules</span>
+          <span className="text-xs text-cult-border uppercase tracking-wider">Active Schedules</span>
         </div>
         {unconfiguredRooms > 0 && (
           <>
-            <div className="w-px h-6 bg-cult-dark-gray" />
+            <div className="w-px h-6 bg-cult-surface" />
             <button
               type="button"
               onClick={() => {
@@ -140,7 +140,7 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
               className={`flex items-center gap-2 px-2.5 py-1.5 rounded-sm transition-all ${
                 filterUnconfigured
                   ? 'bg-cult-warning-muted border border-cult-warning/30'
-                  : 'hover:bg-cult-charcoal/40'
+                  : 'hover:bg-cult-surface-raised/40'
               }`}
             >
               <AlertCircle className="w-4 h-4 text-cult-warning" />
@@ -160,12 +160,12 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
       {/* ── Controls Row ───────────────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={prevMonth} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
-            <ChevronLeft className="w-5 h-5 text-cult-light-gray" />
+          <button type="button" onClick={prevMonth} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-surface-raised active:bg-cult-surface-raised/60 rounded-lg transition-colors">
+            <ChevronLeft className="w-5 h-5 text-cult-text-muted" />
           </button>
-          <h2 className="text-base sm:text-lg font-semibold text-cult-white min-w-[140px] sm:min-w-[180px] text-center">{monthLabel}</h2>
-          <button type="button" onClick={nextMonth} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-charcoal active:bg-cult-charcoal/60 rounded-lg transition-colors">
-            <ChevronRight className="w-5 h-5 text-cult-light-gray" />
+          <h2 className="text-base sm:text-lg font-semibold text-cult-text-primary min-w-[140px] sm:min-w-[180px] text-center">{monthLabel}</h2>
+          <button type="button" onClick={nextMonth} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-cult-surface-raised active:bg-cult-surface-raised/60 rounded-lg transition-colors">
+            <ChevronRight className="w-5 h-5 text-cult-text-muted" />
           </button>
         </div>
 
@@ -175,16 +175,16 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
             {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
               <div key={t} className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getTaskTypeConfig(t).color }} />
-                <span className="text-xs text-cult-medium-gray uppercase tracking-wider whitespace-nowrap">{getTaskTypeConfig(t).label}</span>
+                <span className="text-xs text-cult-border uppercase tracking-wider whitespace-nowrap">{getTaskTypeConfig(t).label}</span>
               </div>
             ))}
           </div>
 
-          <div className="flex border border-cult-dark-gray rounded-sm overflow-hidden">
+          <div className="flex border border-cult-surface rounded-sm overflow-hidden">
             <button
               type="button"
               onClick={() => setCalendarMode('gantt')}
-              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${calendarMode === 'gantt' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${calendarMode === 'gantt' ? 'bg-cult-surface-raised text-cult-text-primary' : 'text-cult-border hover:text-cult-text-muted'}`}
               title="Timeline view"
             >
               <LayoutList className="w-4 h-4" />
@@ -192,7 +192,7 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
             <button
               type="button"
               onClick={() => setCalendarMode('month')}
-              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${calendarMode === 'month' ? 'bg-cult-charcoal text-cult-white' : 'text-cult-medium-gray hover:text-cult-light-gray'}`}
+              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors ${calendarMode === 'month' ? 'bg-cult-surface-raised text-cult-text-primary' : 'text-cult-border hover:text-cult-text-muted'}`}
               title="Month view"
             >
               <Grid3X3 className="w-4 h-4" />
@@ -201,7 +201,7 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
           <button
             type="button"
             onClick={goToday}
-            className="px-3.5 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-light-gray border border-cult-dark-gray hover:bg-cult-charcoal hover:border-cult-medium-gray active:bg-cult-charcoal/60 rounded-sm transition-colors"
+            className="px-3.5 py-2.5 min-h-[44px] text-xs font-semibold uppercase tracking-wider text-cult-text-muted border border-cult-surface hover:bg-cult-surface-raised hover:border-cult-border active:bg-cult-surface-raised/60 rounded-sm transition-colors"
           >
             Today
           </button>
@@ -235,7 +235,7 @@ export function RoomCalendar({ rooms, onEditRoom, onSwitchToSetup }: RoomCalenda
         {TASK_TYPES.filter((t) => t !== 'custom').map((t) => (
           <div key={t} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: getTaskTypeConfig(t).color }} />
-            <span className="text-xs text-cult-medium-gray">{getTaskTypeConfig(t).label}</span>
+            <span className="text-xs text-cult-border">{getTaskTypeConfig(t).label}</span>
           </div>
         ))}
       </div>

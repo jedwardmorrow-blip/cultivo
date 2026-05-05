@@ -206,10 +206,10 @@ export function PublicMenu() {
   if (orderSuccess) {
     return (
       <div className="min-h-screen bg-cult-opaque-black flex items-center justify-center p-4">
-        <div className="bg-cult-opaque-near-black border-2 border-cult-green rounded-lg p-8 max-w-md w-full text-center">
+        <div className="bg-cult-surface border-2 border-cult-green rounded-lg p-8 max-w-md w-full text-center">
           <CheckCircle2 className="w-16 h-16 text-cult-green mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-cult-white mb-2">Order Submitted!</h2>
-          <p className="text-cult-light-gray mb-6">Your order has been received and will be processed shortly.</p>
+          <h2 className="text-2xl font-bold text-cult-text-primary mb-2">Order Submitted!</h2>
+          <p className="text-cult-text-muted mb-6">Your order has been received and will be processed shortly.</p>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-cult-green text-cult-black rounded-lg font-semibold hover:bg-opacity-90"
@@ -222,8 +222,8 @@ export function PublicMenu() {
   }
 
   return (
-    <div className="min-h-screen bg-cult-opaque-black text-cult-white">
-      <div className="sticky top-0 z-20 bg-cult-opaque-near-black border-b border-cult-medium-gray shadow-lg">
+    <div className="min-h-screen bg-cult-opaque-black text-cult-text-primary">
+      <div className="sticky top-0 z-20 bg-cult-surface border-b border-cult-border shadow-lg">
         <div className="px-4 py-4">
           <div className="flex items-center gap-3 mb-4">
             <img
@@ -232,14 +232,14 @@ export function PublicMenu() {
               className="h-12 w-auto"
             />
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-cult-white uppercase tracking-wide">
+              <h1 className="text-xl font-bold text-cult-text-primary uppercase tracking-wide">
                 Quick Order
               </h1>
-              <p className="text-xs text-cult-light-gray">Sales Order Form</p>
+              <p className="text-xs text-cult-text-muted">Sales Order Form</p>
             </div>
             {cartItemCount > 0 && (
               <div className="text-right">
-                <div className="text-xs text-cult-light-gray">Items</div>
+                <div className="text-xs text-cult-text-muted">Items</div>
                 <div className="text-lg font-bold text-cult-green">{cartItemCount}</div>
               </div>
             )}
@@ -247,22 +247,22 @@ export function PublicMenu() {
 
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-cult-light-gray mb-1 uppercase tracking-wide">
+              <label className="block text-xs font-semibold text-cult-text-muted mb-1 uppercase tracking-wide">
                 Select Dispensary
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cult-light-gray pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cult-text-muted pointer-events-none" />
                 <input
                   type="text"
                   value={dispensarySearch}
                   onChange={(e) => setDispensarySearch(e.target.value)}
                   onFocus={(e) => e.target.select()}
                   placeholder="Search dispensaries..."
-                  className="w-full pl-10 pr-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green text-base"
+                  className="w-full pl-10 pr-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-green text-base"
                 />
               </div>
               {dispensarySearch && filteredCustomers.length > 0 && (
-                <div className="mt-1 bg-cult-dark-gray border border-cult-medium-gray rounded-lg overflow-hidden max-h-40 overflow-y-auto">
+                <div className="mt-1 bg-cult-surface border border-cult-border rounded-lg overflow-hidden max-h-40 overflow-y-auto">
                   {filteredCustomers.slice(0, 5).map(customer => (
                     <button
                       key={customer.id}
@@ -270,10 +270,10 @@ export function PublicMenu() {
                         setSelectedCustomer(customer.id);
                         setDispensarySearch(customer.name);
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-cult-medium-gray transition-colors border-b border-cult-medium-gray last:border-b-0"
+                      className="w-full px-4 py-2 text-left hover:bg-cult-border transition-colors border-b border-cult-border last:border-b-0"
                     >
-                      <div className="text-cult-white font-medium">{customer.name}</div>
-                      <div className="text-xs text-cult-light-gray">{customer.dispensary_code}</div>
+                      <div className="text-cult-text-primary font-medium">{customer.name}</div>
+                      <div className="text-xs text-cult-text-muted">{customer.dispensary_code}</div>
                     </button>
                   ))}
                 </div>
@@ -286,7 +286,7 @@ export function PublicMenu() {
                     const customer = customers.find(c => c.id === e.target.value);
                     if (customer) setDispensarySearch(customer.name);
                   }}
-                  className="w-full mt-1 px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green text-base"
+                  className="w-full mt-1 px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-green text-base"
                 >
                   <option value="">Choose from list...</option>
                   {customers.map(customer => (
@@ -299,7 +299,7 @@ export function PublicMenu() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-cult-light-gray mb-1 uppercase tracking-wide">
+              <label className="block text-xs font-semibold text-cult-text-muted mb-1 uppercase tracking-wide">
                 <Calendar className="inline w-3 h-3 mr-1" />
                 Requested Delivery Date
               </label>
@@ -313,12 +313,12 @@ export function PublicMenu() {
                 }}
                 min={getDateInputConstraints().min}
                 max={getDateInputConstraints().max}
-                className={`w-full px-4 py-3 bg-cult-dark-gray border rounded-lg text-cult-white focus:outline-none focus:ring-2 text-base ${
+                className={`w-full px-4 py-3 bg-cult-surface border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 text-base ${
                   dateError
                     ? 'border-red-500 focus:ring-red-500'
                     : deliveryDate
                     ? 'border-cult-green focus:ring-cult-green'
-                    : 'border-cult-medium-gray focus:ring-cult-green'
+                    : 'border-cult-border focus:ring-cult-green'
                 }`}
                 placeholder="Select date"
               />
@@ -328,7 +328,7 @@ export function PublicMenu() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-cult-light-gray mb-1 uppercase tracking-wide">
+              <label className="block text-xs font-semibold text-cult-text-muted mb-1 uppercase tracking-wide">
                 Order Notes (Optional)
               </label>
               <textarea
@@ -336,13 +336,13 @@ export function PublicMenu() {
                 onChange={(e) => setOrderNotes(e.target.value)}
                 placeholder="Special instructions, delivery notes, etc..."
                 rows={2}
-                className="w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green text-base resize-none"
+                className="w-full px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-green text-base resize-none"
               />
             </div>
           </div>
 
           <div className="mt-4">
-            <label className="block text-xs font-semibold text-cult-light-gray mb-2 uppercase tracking-wide">
+            <label className="block text-xs font-semibold text-cult-text-muted mb-2 uppercase tracking-wide">
               <Search className="inline w-3 h-3 mr-1" />
               Search Products
             </label>
@@ -351,7 +351,7 @@ export function PublicMenu() {
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
               placeholder="Search by name, strain, or type..."
-              className="w-full px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white focus:outline-none focus:ring-2 focus:ring-cult-green text-base"
+              className="w-full px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary focus:outline-none focus:ring-2 focus:ring-cult-green text-base"
             />
           </div>
 
@@ -363,7 +363,7 @@ export function PublicMenu() {
                 className={`px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap text-sm ${
                   selectedCategory === category.id
                     ? 'bg-cult-green text-cult-black'
-                    : 'bg-cult-dark-gray text-cult-light-gray'
+                    : 'bg-cult-surface text-cult-text-muted'
                 }`}
               >
                 {category.icon} {category.label}
@@ -387,16 +387,16 @@ export function PublicMenu() {
             return (
               <div
                 key={product.id}
-                className={`bg-cult-opaque-near-black border rounded-lg p-4 transition-all ${
-                  quantity > 0 ? 'border-cult-green bg-opacity-50' : 'border-cult-medium-gray'
+                className={`bg-cult-surface border rounded-lg p-4 transition-all ${
+                  quantity > 0 ? 'border-cult-green bg-opacity-50' : 'border-cult-border'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-cult-white text-base leading-tight mb-1">
+                    <div className="font-semibold text-cult-text-primary text-base leading-tight mb-1">
                       {product.name}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-cult-light-gray">
+                    <div className="flex items-center gap-3 text-xs text-cult-text-muted">
                       <span className="flex items-center gap-1">
                         <DollarSign className="w-3 h-3" />
                         {priceDisplay}
@@ -420,14 +420,14 @@ export function PublicMenu() {
                       max={product.available_quantity}
                       placeholder="0"
                       inputMode="decimal"
-                      className="w-20 px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white text-center text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green"
+                      className="w-20 px-3 py-2 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary text-center text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green"
                     />
                   </div>
                 </div>
 
                 {quantity > 0 && (
-                  <div className="mt-2 pt-2 border-t border-cult-medium-gray flex items-center justify-between">
-                    <span className="text-xs text-cult-light-gray">Line Total</span>
+                  <div className="mt-2 pt-2 border-t border-cult-border flex items-center justify-between">
+                    <span className="text-xs text-cult-text-muted">Line Total</span>
                     <span className="text-cult-green font-bold">
                       ${(product.price_per_unit * quantity).toFixed(2)}
                     </span>
@@ -439,8 +439,8 @@ export function PublicMenu() {
 
           {filteredProducts.length === 0 && (
             <div className="text-center py-12">
-              <Package className="w-16 h-16 text-cult-medium-gray mx-auto mb-4" />
-              <p className="text-cult-light-gray">
+              <Package className="w-16 h-16 text-cult-border mx-auto mb-4" />
+              <p className="text-cult-text-muted">
                 {productSearch ? 'No products match your search' : 'No products available'}
               </p>
             </div>
@@ -449,15 +449,15 @@ export function PublicMenu() {
       </div>
 
       {cartItemCount > 0 && (
-        <div className="sticky bottom-0 z-20 bg-cult-opaque-near-black border-t-2 border-cult-green p-4 shadow-lg">
+        <div className="sticky bottom-0 z-20 bg-cult-surface border-t-2 border-cult-green p-4 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="text-xs text-cult-light-gray uppercase tracking-wide">Order Total</div>
+              <div className="text-xs text-cult-text-muted uppercase tracking-wide">Order Total</div>
               <div className="text-2xl font-bold text-cult-green">${cartTotal.toFixed(2)}</div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-cult-light-gray uppercase tracking-wide">Items</div>
-              <div className="text-lg font-bold text-cult-white">{cartItemCount}</div>
+              <div className="text-xs text-cult-text-muted uppercase tracking-wide">Items</div>
+              <div className="text-lg font-bold text-cult-text-primary">{cartItemCount}</div>
             </div>
           </div>
 

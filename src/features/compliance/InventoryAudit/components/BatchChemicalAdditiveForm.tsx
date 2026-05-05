@@ -48,7 +48,7 @@ const TYPE_COLORS: Record<ChemicalAdditiveType, string> = {
   pesticide: 'bg-cult-danger-muted text-cult-danger border-cult-danger/30',
   herbicide: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
   fertilizer: 'bg-cult-success-muted text-cult-success border-cult-success/30',
-  other: 'bg-cult-charcoal text-cult-text-muted border-cult-medium-gray/40',
+  other: 'bg-cult-surface-raised text-cult-text-muted border-cult-border/40',
 };
 
 function formatDate(dateStr: string | null): string {
@@ -91,13 +91,13 @@ function AdditiveFormFields({
         type={type}
         value={form[key]}
         onChange={e => onChange(key, e.target.value)}
-        className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded"
+        className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded"
       />
     </div>
   );
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded p-4 space-y-3">
+    <div className="bg-cult-surface border border-cult-border rounded p-4 space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">
@@ -106,7 +106,7 @@ function AdditiveFormFields({
           <select
             value={form.additive_type}
             onChange={e => onChange('additive_type', e.target.value)}
-            className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded"
+            className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-2.5 py-1.5 text-[12px] focus:outline-none focus:border-cult-accent rounded"
           >
             {(Object.keys(TYPE_LABELS) as ChemicalAdditiveType[]).map(t => (
               <option key={t} value={t}>{TYPE_LABELS[t]}</option>
@@ -152,7 +152,7 @@ function AdditiveFormFields({
         </button>
         <button
           onClick={onCancel}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-medium-gray text-cult-white rounded hover:bg-cult-charcoal transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-border text-cult-text-primary rounded hover:bg-cult-surface-raised transition-colors"
         >
           <X className="w-3.5 h-3.5" />
           Cancel
@@ -176,12 +176,12 @@ function AdditiveRow({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-cult-charcoal/40 last:border-b-0">
+    <div className="flex items-start gap-3 py-3 border-b border-cult-surface-raised/40 last:border-b-0">
       <span className={`text-[10px] px-2 py-0.5 rounded border flex-shrink-0 mt-0.5 font-medium ${TYPE_COLORS[additive.additive_type]}`}>
         {TYPE_LABELS[additive.additive_type]}
       </span>
       <div className="flex-1 min-w-0">
-        <div className="text-[13px] text-cult-white font-medium">{additive.product_name}</div>
+        <div className="text-[13px] text-cult-text-primary font-medium">{additive.product_name}</div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 mt-0.5 text-[11px] text-cult-text-muted">
           <span>Applied: {formatDate(additive.application_date)}</span>
           {additive.active_ingredient && <span>AI: {additive.active_ingredient}</span>}
@@ -194,13 +194,13 @@ function AdditiveRow({
           )}
         </div>
         {additive.notes && (
-          <div className="mt-1 text-[11px] text-cult-lighter-gray">{additive.notes}</div>
+          <div className="mt-1 text-[11px] text-cult-text-muted">{additive.notes}</div>
         )}
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={() => onEdit(additive)}
-          className="p-1.5 text-cult-text-muted hover:text-cult-white hover:bg-cult-charcoal rounded transition-colors"
+          className="p-1.5 text-cult-text-muted hover:text-cult-text-primary hover:bg-cult-surface-raised rounded transition-colors"
           title="Edit"
         >
           <Pencil className="w-3.5 h-3.5" />
@@ -223,7 +223,7 @@ function AdditiveRow({
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="px-2 py-1 text-[10px] border border-cult-medium-gray text-cult-white rounded hover:bg-cult-charcoal"
+              className="px-2 py-1 text-[10px] border border-cult-border text-cult-text-primary rounded hover:bg-cult-surface-raised"
             >
               No
             </button>
@@ -336,17 +336,17 @@ export function BatchChemicalAdditiveForm({ batchId }: BatchChemicalAdditiveForm
   }, []);
 
   return (
-    <div className="border border-cult-dark-gray rounded">
+    <div className="border border-cult-surface rounded">
       {/* Collapsible header */}
       <button
         onClick={() => setExpanded(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-cult-charcoal/30 transition-colors rounded"
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-cult-surface-raised/30 transition-colors rounded"
       >
         <div className="flex items-center gap-2">
           <FlaskConical className="w-4 h-4 text-cult-text-muted" />
-          <span className="text-[13px] font-medium text-cult-white">Chemical Additives</span>
+          <span className="text-[13px] font-medium text-cult-text-primary">Chemical Additives</span>
           {additives.length > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-cult-charcoal border border-cult-medium-gray/40 rounded text-cult-text-muted">
+            <span className="text-[10px] px-1.5 py-0.5 bg-cult-surface-raised border border-cult-border/40 rounded text-cult-text-muted">
               {additives.length}
             </span>
           )}
@@ -371,7 +371,7 @@ export function BatchChemicalAdditiveForm({ batchId }: BatchChemicalAdditiveForm
           {/* Loading */}
           {loading && (
             <div className="animate-pulse space-y-2">
-              {[1, 2].map(i => <div key={i} className="h-14 bg-cult-charcoal rounded" />)}
+              {[1, 2].map(i => <div key={i} className="h-14 bg-cult-surface-raised rounded" />)}
             </div>
           )}
 
@@ -424,7 +424,7 @@ export function BatchChemicalAdditiveForm({ batchId }: BatchChemicalAdditiveForm
               {!showAddForm && !editingId && (
                 <button
                   onClick={() => { setShowAddForm(true); setFormError(null); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-medium-gray text-cult-lighter-gray rounded hover:bg-cult-charcoal hover:text-cult-white transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] border border-cult-border text-cult-text-muted rounded hover:bg-cult-surface-raised hover:text-cult-text-primary transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add Chemical Additive

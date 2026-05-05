@@ -42,30 +42,30 @@ export function UpcomingDeliveries({ onSelectOrder }: { onSelectOrder: (orderId:
   }
 
   if (loading) {
-    return <div className="text-cult-light-gray">Loading upcoming deliveries...</div>;
+    return <div className="text-cult-text-muted">Loading upcoming deliveries...</div>;
   }
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-cult-white uppercase tracking-wide mb-4">Upcoming Deliveries</h2>
+      <h2 className="text-lg font-semibold text-cult-text-primary uppercase tracking-wide mb-4">Upcoming Deliveries</h2>
       {orders.length === 0 ? (
-        <p className="text-cult-light-gray">No deliveries scheduled for the next 7 days</p>
+        <p className="text-cult-text-muted">No deliveries scheduled for the next 7 days</p>
       ) : (
         <div className="space-y-2">
           {orders.map((order) => (
             <button
               key={order.id}
               onClick={() => onSelectOrder(order.id)}
-              className="w-full p-3 bg-cult-black border border-cult-medium-gray hover:border-cult-white transition-all text-left"
+              className="w-full p-3 bg-cult-black border border-cult-border hover:border-cult-accent transition-all text-left"
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-cult-white font-medium">{order.order_number}</p>
-                  <p className="text-cult-light-gray text-sm">{order.customer_name}</p>
+                  <p className="text-cult-text-primary font-medium">{order.order_number}</p>
+                  <p className="text-cult-text-muted text-sm">{order.customer_name}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-cult-white font-medium">${order.total_amount.toFixed(2)}</p>
-                  <p className="text-cult-light-gray text-sm">
+                  <p className="text-cult-text-primary font-medium">${order.total_amount.toFixed(2)}</p>
+                  <p className="text-cult-text-muted text-sm">
                     {new Date(order.scheduled_delivery_date || order.requested_delivery_date || '').toLocaleDateString()}
                   </p>
                 </div>

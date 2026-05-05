@@ -205,10 +205,10 @@ function ProductionDashboardInner() {
   return (
     <div className="p-6 max-w-[1800px] mx-auto space-y-6 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">
+        <h1 className="text-3xl font-bold text-cult-text-primary">
           Production
         </h1>
-        <p className="text-cult-light-gray mt-2">Real-time floor activity across all session types</p>
+        <p className="text-cult-text-muted mt-2">Real-time floor activity across all session types</p>
       </div>
 
       {/* Pending Finalization Banner */}
@@ -258,11 +258,11 @@ function ProductionDashboardInner() {
       </div>
 
       {/* Active Sessions */}
-      <div className="bg-cult-near-black border border-cult-medium-gray">
-        <div className="px-6 py-4 border-b border-cult-medium-gray flex items-center justify-between">
+      <div className="bg-cult-surface border border-cult-border">
+        <div className="px-6 py-4 border-b border-cult-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-2 h-2 rounded-full ${totalActive > 0 ? 'bg-cult-green animate-pulse' : 'bg-cult-medium-gray'}`} />
-            <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+            <div className={`w-2 h-2 rounded-full ${totalActive > 0 ? 'bg-cult-green animate-pulse' : 'bg-cult-border'}`} />
+            <h2 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">
               Active Sessions
             </h2>
             {totalActive > 0 && (
@@ -274,51 +274,51 @@ function ProductionDashboardInner() {
         </div>
         {activeRows.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <Clock className="w-10 h-10 text-cult-medium-gray mx-auto mb-3" />
-            <p className="text-cult-light-gray text-sm">No active sessions on the floor</p>
-            <p className="text-cult-silver text-xs mt-1">Start a session from the buttons below</p>
+            <Clock className="w-10 h-10 text-cult-border mx-auto mb-3" />
+            <p className="text-cult-text-muted text-sm">No active sessions on the floor</p>
+            <p className="text-cult-text-secondary text-xs mt-1">Start a session from the buttons below</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-cult-dark-gray border-b border-cult-medium-gray">
+              <thead className="bg-cult-surface border-b border-cult-border">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wide">
                     Type
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wide">
                     Worker
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wide">
                     Strain
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-silver uppercase tracking-wide">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wide">
                     Package ID
                   </th>
-                  <th className="px-5 py-3 text-center text-xs font-medium text-cult-silver uppercase tracking-wide">
+                  <th className="px-5 py-3 text-center text-xs font-medium text-cult-text-secondary uppercase tracking-wide">
                     Elapsed
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cult-medium-gray/50">
+              <tbody className="divide-y divide-cult-border/50">
                 {activeRows.map((row) => {
                   const cfg = TYPE_CONFIG[row.type];
                   const TypeIcon = cfg.icon;
                   return (
-                    <tr key={row.id} className="hover:bg-cult-dark-gray/50 transition-colors">
+                    <tr key={row.id} className="hover:bg-cult-surface/50 transition-colors">
                       <td className="px-5 py-3">
                         <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded ${cfg.bg} ${cfg.color} ${cfg.border} border`}>
                           <TypeIcon className="w-3.5 h-3.5" />
                           {cfg.label}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-sm font-medium text-cult-white">
+                      <td className="px-5 py-3 text-sm font-medium text-cult-text-primary">
                         {row.worker}
                       </td>
-                      <td className="px-5 py-3 text-sm text-cult-white">
+                      <td className="px-5 py-3 text-sm text-cult-text-primary">
                         {row.strain}
                       </td>
-                      <td className="px-5 py-3 text-sm text-cult-silver font-mono">
+                      <td className="px-5 py-3 text-sm text-cult-text-secondary font-mono">
                         {row.packageId || '-'}
                       </td>
                       <td className="px-5 py-3 text-sm text-center font-medium text-cult-green">
@@ -358,8 +358,8 @@ function ProductionDashboardInner() {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-cult-near-black border border-cult-medium-gray p-6">
-        <h2 className="text-sm font-semibold text-cult-white uppercase tracking-wider mb-4">
+      <div className="bg-cult-surface border border-cult-border p-6">
+        <h2 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider mb-4">
           Start Session
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -399,12 +399,12 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`bg-cult-near-black border p-5 transition-all duration-200 hover:scale-[1.01] ${highlight ? 'border-cult-green/30' : 'border-cult-medium-gray'}`}>
+    <div className={`bg-cult-surface border p-5 transition-all duration-200 hover:scale-[1.01] ${highlight ? 'border-cult-green/30' : 'border-cult-border'}`}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-cult-silver uppercase tracking-wider font-medium">{label}</p>
+        <p className="text-xs text-cult-text-secondary uppercase tracking-wider font-medium">{label}</p>
         {icon}
       </div>
-      <p className={`text-3xl font-bold ${highlight ? 'text-cult-green' : 'text-cult-white'}`}>
+      <p className={`text-3xl font-bold ${highlight ? 'text-cult-green' : 'text-cult-text-primary'}`}>
         {value}
       </p>
     </div>
@@ -430,17 +430,17 @@ function CompletedCard({
   return (
     <button
       onClick={onNavigate}
-      className="bg-cult-near-black border border-cult-medium-gray p-5 text-left hover:border-cult-light-gray transition-colors group"
+      className="bg-cult-surface border border-cult-border p-5 text-left hover:border-cult-text-muted transition-colors group"
     >
       <div className="flex items-center justify-between mb-2">
         <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${cfg.color}`}>
           <TypeIcon className="w-3.5 h-3.5" />
           {cfg.label}
         </span>
-        <ArrowRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+        <ArrowRight className="w-4 h-4 text-cult-border group-hover:text-cult-text-primary transition-colors" />
       </div>
-      <p className="text-2xl font-bold text-cult-white">{count} completed</p>
-      <p className="text-sm text-cult-silver mt-1">{metric}</p>
+      <p className="text-2xl font-bold text-cult-text-primary">{count} completed</p>
+      <p className="text-sm text-cult-text-secondary mt-1">{metric}</p>
     </button>
   );
 }
@@ -465,7 +465,7 @@ function QuickActionButton({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 px-5 py-4 bg-cult-black border border-cult-medium-gray text-cult-white font-bold uppercase tracking-wider text-sm transition-all duration-200 ${hoverMap[accentColor]}`}
+      className={`flex items-center gap-3 px-5 py-4 bg-cult-black border border-cult-border text-cult-text-primary font-bold uppercase tracking-wider text-sm transition-all duration-200 ${hoverMap[accentColor]}`}
     >
       {icon}
       {label}

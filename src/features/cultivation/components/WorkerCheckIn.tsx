@@ -115,29 +115,29 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
   }
 
   return (
-    <div className="bg-cult-near-black border border-cult-dark-gray">
+    <div className="bg-cult-surface border border-cult-surface">
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cult-charcoal/30 active:bg-cult-charcoal/50 transition-colors min-h-[48px]"
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cult-surface-raised/30 active:bg-cult-surface-raised/50 transition-colors min-h-[48px]"
       >
         <div className="flex items-center gap-2">
-          {collapsed ? <ChevronRight className="w-4 h-4 text-cult-medium-gray" /> : <ChevronDown className="w-4 h-4 text-cult-medium-gray" />}
-          <Users className="w-4 h-4 text-cult-light-gray" />
-          <span className="text-xs text-cult-light-gray uppercase tracking-wider font-semibold">Staff Check-In</span>
+          {collapsed ? <ChevronRight className="w-4 h-4 text-cult-border" /> : <ChevronDown className="w-4 h-4 text-cult-border" />}
+          <Users className="w-4 h-4 text-cult-text-muted" />
+          <span className="text-xs text-cult-text-muted uppercase tracking-wider font-semibold">Staff Check-In</span>
         </div>
-        <span className="text-xs text-cult-light-gray">
+        <span className="text-xs text-cult-text-muted">
           {summary.present} of {staff.length} present
-          <span className="text-cult-medium-gray mx-1">&middot;</span>
+          <span className="text-cult-border mx-1">&middot;</span>
           {summary.totalHours} hrs
-          <span className="text-cult-medium-gray mx-1">&middot;</span>
+          <span className="text-cult-border mx-1">&middot;</span>
           Est. ${summary.totalCost.toLocaleString()}
         </span>
       </button>
 
       {!collapsed && (
-        <div className="border-t border-cult-dark-gray">
-          <div className="divide-y divide-cult-dark-gray/50">
+        <div className="border-t border-cult-surface">
+          <div className="divide-y divide-cult-surface/50">
             {staff.map((s) => {
               const rec = getRecord(s.id);
               const isPresent = rec?.is_present ?? false;
@@ -150,15 +150,15 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                        isPresent ? 'bg-cult-success-muted text-cult-success' : 'bg-cult-charcoal text-cult-medium-gray'
+                        isPresent ? 'bg-cult-success-muted text-cult-success' : 'bg-cult-surface-raised text-cult-border'
                       }`}>
                         {s.first_name.charAt(0)}
                         {isPresent && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-cult-success ring-2 ring-cult-near-black" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-cult-success ring-2 ring-cult-surface" />
                         )}
                       </span>
-                      <span className={`text-sm font-medium truncate ${isPresent ? 'text-cult-white' : 'text-cult-medium-gray'}`}>{s.first_name}</span>
-                      <span className={`hidden sm:inline-flex px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm ${ROLE_STYLES[s.role] ?? 'bg-cult-charcoal text-cult-light-gray'}`}>
+                      <span className={`text-sm font-medium truncate ${isPresent ? 'text-cult-text-primary' : 'text-cult-border'}`}>{s.first_name}</span>
+                      <span className={`hidden sm:inline-flex px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm ${ROLE_STYLES[s.role] ?? 'bg-cult-surface-raised text-cult-text-muted'}`}>
                         {s.role.replace(/_/g, ' ')}
                       </span>
                     </div>
@@ -173,9 +173,9 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                           value={hours}
                           onChange={(e) => updateHours(s.id, parseFloat(e.target.value) || 0)}
                           disabled={isSaving}
-                          className="w-14 bg-cult-charcoal border border-cult-medium-gray text-cult-white text-xs text-center py-1 rounded-sm focus:outline-none focus:border-cult-accent"
+                          className="w-14 bg-cult-surface-raised border border-cult-border text-cult-text-primary text-xs text-center py-1 rounded-sm focus:outline-none focus:border-cult-accent"
                         />
-                        <span className="text-xs text-cult-medium-gray">hrs</span>
+                        <span className="text-xs text-cult-border">hrs</span>
                       </div>
 
                       <button
@@ -205,8 +205,8 @@ export function WorkerCheckIn({ staff, rooms, attendance, date, onUpsertAttendan
                             disabled={isSaving}
                             className={`px-3 py-2 text-xs font-mono font-semibold rounded-md transition-colors min-h-[40px] ${
                               assigned
-                                ? 'bg-cult-charcoal text-cult-white border border-cult-medium-gray'
-                                : 'bg-transparent text-cult-medium-gray border border-cult-dark-gray hover:border-cult-medium-gray'
+                                ? 'bg-cult-surface-raised text-cult-text-primary border border-cult-border'
+                                : 'bg-transparent text-cult-border border border-cult-surface hover:border-cult-border'
                             }`}
                           >
                             {r.room_code}
@@ -289,42 +289,42 @@ function RoomAllocationBreakdown({
   if (allocations.length === 0) return null;
 
   return (
-    <div className="border-t border-cult-dark-gray">
+    <div className="border-t border-cult-surface">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cult-charcoal/30 active:bg-cult-charcoal/50 transition-colors min-h-[48px]"
+        className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-cult-surface-raised/30 active:bg-cult-surface-raised/50 transition-colors min-h-[48px]"
       >
         <div className="flex items-center gap-2">
-          <MapPin className="w-3.5 h-3.5 text-cult-medium-gray" />
-          <span className="text-xs text-cult-medium-gray uppercase tracking-wider font-semibold">
+          <MapPin className="w-3.5 h-3.5 text-cult-border" />
+          <span className="text-xs text-cult-border uppercase tracking-wider font-semibold">
             Room Allocation Breakdown
           </span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-cult-medium-gray transition-transform ${expanded ? '' : '-rotate-90'}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-cult-border transition-transform ${expanded ? '' : '-rotate-90'}`} />
       </button>
 
       {expanded && (
         <div className="px-4 pb-3 space-y-2">
           {allocations.map((alloc) => (
-            <div key={alloc.room_code} className="bg-cult-charcoal/30 border border-cult-dark-gray p-2.5">
+            <div key={alloc.room_code} className="bg-cult-surface-raised/30 border border-cult-surface p-2.5">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="font-mono text-xs font-bold text-cult-white">{alloc.room_code}</span>
+                <span className="font-mono text-xs font-bold text-cult-text-primary">{alloc.room_code}</span>
                 <div className="flex items-center gap-3 text-xs">
-                  <span className="text-cult-light-gray">{alloc.totalHours.toFixed(1)} hrs</span>
-                  <span className="text-cult-white font-semibold">${alloc.totalCost.toFixed(0)}</span>
+                  <span className="text-cult-text-muted">{alloc.totalHours.toFixed(1)} hrs</span>
+                  <span className="text-cult-text-primary font-semibold">${alloc.totalCost.toFixed(0)}</span>
                 </div>
               </div>
               <div className="space-y-0.5">
                 {alloc.workers.map((w) => (
                   <div key={w.name} className="flex items-center justify-between text-xs">
-                    <span className="text-cult-light-gray">{w.name}</span>
-                    <span className="text-cult-medium-gray font-mono">{w.hours.toFixed(1)}h · ${w.cost.toFixed(0)}</span>
+                    <span className="text-cult-text-muted">{w.name}</span>
+                    <span className="text-cult-border font-mono">{w.hours.toFixed(1)}h · ${w.cost.toFixed(0)}</span>
                   </div>
                 ))}
               </div>
               {/* Cost bar proportional to max room */}
-              <div className="mt-1.5 w-full h-1 bg-cult-dark-gray rounded-full overflow-hidden">
+              <div className="mt-1.5 w-full h-1 bg-cult-surface rounded-full overflow-hidden">
                 <div
                   className="h-full bg-cult-green rounded-full"
                   style={{ width: `${Math.min(100, (alloc.totalCost / Math.max(...allocations.map((a) => a.totalCost))) * 100)}%` }}

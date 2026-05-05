@@ -32,7 +32,7 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
   if (error) {
     return (
       <div className="space-y-4">
-        <button onClick={onBack} className="flex items-center gap-2 text-cult-light-gray hover:text-cult-white text-sm transition-colors">
+        <button onClick={onBack} className="flex items-center gap-2 text-cult-text-muted hover:text-cult-text-primary text-sm transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Back to Harvests
         </button>
@@ -47,28 +47,28 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
         <div>
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-cult-light-gray hover:text-cult-white text-sm transition-colors mb-3"
+            className="flex items-center gap-2 text-cult-text-muted hover:text-cult-text-primary text-sm transition-colors mb-3"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Harvests
           </button>
-          <h1 className="text-3xl font-bold text-cult-white">Harvest Metrics</h1>
-          <p className="text-cult-light-gray mt-2">
+          <h1 className="text-3xl font-bold text-cult-text-primary">Harvest Metrics</h1>
+          <p className="text-cult-text-muted mt-2">
             Yield analysis across {totals.harvest_count} completed harvest{totals.harvest_count !== 1 ? 's' : ''}
             {strainAggregates.length > 0 && ` covering ${strainAggregates.length} strain${strainAggregates.length !== 1 ? 's' : ''}`}
           </p>
         </div>
       </div>
 
-      <div className="flex gap-0 border-b border-cult-medium-gray">
+      <div className="flex gap-0 border-b border-cult-border">
         {TAB_CONFIG.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-all border-b-2 -mb-px ${
               activeTab === key
-                ? 'border-cult-white text-cult-white'
-                : 'border-transparent text-cult-medium-gray hover:text-cult-light-gray'
+                ? 'border-cult-accent text-cult-text-primary'
+                : 'border-transparent text-cult-border hover:text-cult-text-muted'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -83,7 +83,7 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
 
           {strainAggregates.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-bold text-cult-white uppercase tracking-wider">Strain Breakdown</h2>
+              <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">Strain Breakdown</h2>
               <StrainBreakdown strainAggregates={strainAggregates} rows={rows} />
             </div>
           )}
@@ -92,16 +92,16 @@ export function HarvestMetricsDashboard({ onBack }: HarvestMetricsDashboardProps
 
       {activeTab === 'strains' && (
         <div className="space-y-3">
-          <h2 className="text-lg font-bold text-cult-white uppercase tracking-wider">Strain Leaderboard</h2>
-          <p className="text-cult-light-gray text-sm">Strains ranked by average dry yield percentage</p>
+          <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">Strain Leaderboard</h2>
+          <p className="text-cult-text-muted text-sm">Strains ranked by average dry yield percentage</p>
           <StrainLeaderboard strainAggregates={strainAggregates} />
         </div>
       )}
 
       {activeTab === 'rooms' && (
         <div className="space-y-3">
-          <h2 className="text-lg font-bold text-cult-white uppercase tracking-wider">Room Leaderboard</h2>
-          <p className="text-cult-light-gray text-sm">Rooms ranked by total dry weight output</p>
+          <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">Room Leaderboard</h2>
+          <p className="text-cult-text-muted text-sm">Rooms ranked by total dry weight output</p>
           <RoomLeaderboard roomAggregates={roomAggregates} />
         </div>
       )}

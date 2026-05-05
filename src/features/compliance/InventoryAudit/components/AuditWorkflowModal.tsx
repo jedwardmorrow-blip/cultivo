@@ -27,9 +27,9 @@ function formatG(g: number | null): string {
 
 function SummaryRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`flex justify-between items-center py-2 border-b border-cult-charcoal/40 last:border-b-0 ${highlight ? 'font-semibold' : ''}`}>
-      <span className={`text-[12px] ${highlight ? 'text-cult-white' : 'text-cult-lighter-gray'}`}>{label}</span>
-      <span className={`text-[12px] tabular-nums ${highlight ? 'text-cult-white' : 'text-cult-text-primary'}`}>{value}</span>
+    <div className={`flex justify-between items-center py-2 border-b border-cult-surface-raised/40 last:border-b-0 ${highlight ? 'font-semibold' : ''}`}>
+      <span className={`text-[12px] ${highlight ? 'text-cult-text-primary' : 'text-cult-text-muted'}`}>{label}</span>
+      <span className={`text-[12px] tabular-nums ${highlight ? 'text-cult-text-primary' : 'text-cult-text-primary'}`}>{value}</span>
     </div>
   );
 }
@@ -47,7 +47,7 @@ function StepSelectPeriod({
 }) {
   return (
     <div className="space-y-4">
-      <p className="text-[13px] text-cult-lighter-gray">
+      <p className="text-[13px] text-cult-text-muted">
         Select the compliance audit period. The system auto-suggests a 30-day window ending today,
         starting from the last completed audit.
       </p>
@@ -60,7 +60,7 @@ function StepSelectPeriod({
             type="date"
             value={periodStart}
             onChange={e => onChange(e.target.value, periodEnd)}
-            className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded"
+            className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded"
           />
         </div>
         <div>
@@ -71,7 +71,7 @@ function StepSelectPeriod({
             type="date"
             value={periodEnd}
             onChange={e => onChange(periodStart, e.target.value)}
-            className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded"
+            className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded"
           />
         </div>
       </div>
@@ -92,7 +92,7 @@ function StepReviewBalances({
     return (
       <div className="animate-pulse space-y-2">
         {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-          <div key={i} className="h-9 bg-cult-charcoal rounded" />
+          <div key={i} className="h-9 bg-cult-surface-raised rounded" />
         ))}
       </div>
     );
@@ -117,7 +117,7 @@ function StepReviewBalances({
       <p className="text-[11px] text-cult-text-muted uppercase tracking-wider mb-3">
         Auto-calculated balances — read only
       </p>
-      <div className="bg-cult-charcoal/40 rounded p-3">
+      <div className="bg-cult-surface-raised/40 rounded p-3">
         <SummaryRow label="Beginning Inventory" value={formatG(summary.beginning_inventory_g)} />
         <SummaryRow label="+ Acquisitions" value={formatG(summary.acquisitions_g)} />
         <SummaryRow label="+ Harvests" value={formatG(summary.harvests_g)} />
@@ -144,7 +144,7 @@ function StepPhysicalCount({
 }) {
   return (
     <div className="space-y-4">
-      <p className="text-[13px] text-cult-lighter-gray">
+      <p className="text-[13px] text-cult-text-muted">
         Enter the physical ending inventory count you performed at the end of the audit period.
       </p>
       <div>
@@ -158,7 +158,7 @@ function StepPhysicalCount({
           value={physicalCount}
           onChange={e => onChange(e.target.value)}
           placeholder="e.g. 45230.5"
-          className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-3 py-2.5 text-[15px] focus:outline-none focus:border-cult-accent rounded"
+          className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-3 py-2.5 text-[15px] focus:outline-none focus:border-cult-accent rounded"
           autoFocus
         />
         <p className="text-[11px] text-cult-text-muted mt-1.5">
@@ -191,15 +191,15 @@ function StepVarianceReview({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-cult-charcoal/40 rounded p-3 text-center">
+        <div className="bg-cult-surface-raised/40 rounded p-3 text-center">
           <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">Calculated</div>
-          <div className="text-[16px] font-semibold text-cult-white tabular-nums">
+          <div className="text-[16px] font-semibold text-cult-text-primary tabular-nums">
             {formatG(calculatedBalance)}
           </div>
         </div>
-        <div className="bg-cult-charcoal/40 rounded p-3 text-center">
+        <div className="bg-cult-surface-raised/40 rounded p-3 text-center">
           <div className="text-[10px] text-cult-text-muted uppercase tracking-wider mb-1">Physical</div>
-          <div className="text-[16px] font-semibold text-cult-white tabular-nums">
+          <div className="text-[16px] font-semibold text-cult-text-primary tabular-nums">
             {formatG(physicalCount)}
           </div>
         </div>
@@ -239,7 +239,7 @@ function StepVarianceReview({
               onChange={e => onExplanationChange(e.target.value)}
               rows={3}
               placeholder="Explain the cause of the inventory variance..."
-              className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded resize-none"
+              className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded resize-none"
             />
           </div>
 
@@ -252,7 +252,7 @@ function StepVarianceReview({
               onChange={e => onCorrectiveActionChange(e.target.value)}
               rows={3}
               placeholder="Describe steps taken or planned to prevent future variance..."
-              className="w-full bg-cult-charcoal border border-cult-medium-gray text-cult-white px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded resize-none"
+              className="w-full bg-cult-surface-raised border border-cult-border text-cult-text-primary px-3 py-2 text-[13px] focus:outline-none focus:border-cult-accent rounded resize-none"
             />
           </div>
         </>
@@ -280,7 +280,7 @@ function StepConfirm({
 }) {
   return (
     <div className="space-y-4">
-      <div className="bg-cult-charcoal/40 rounded p-4 space-y-2">
+      <div className="bg-cult-surface-raised/40 rounded p-4 space-y-2">
         <SummaryRow label="Audit Period" value={`${periodStart} — ${periodEnd}`} />
         <SummaryRow label="Physical Inventory" value={formatG(physicalCount)} />
         <SummaryRow
@@ -313,7 +313,7 @@ function StepConfirm({
       )}
 
       {submitting && (
-        <div className="text-center text-[13px] text-cult-lighter-gray animate-pulse">
+        <div className="text-center text-[13px] text-cult-text-muted animate-pulse">
           Saving audit record...
         </div>
       )}
@@ -449,7 +449,7 @@ export function AuditWorkflowModal({
                 ? 'bg-cult-accent/20 text-cult-accent border border-cult-accent/40'
                 : s < step
                 ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
-                : 'bg-cult-charcoal text-cult-text-muted border border-cult-medium-gray/40'
+                : 'bg-cult-surface-raised text-cult-text-muted border border-cult-border/40'
             }`}>
               <span className="font-bold">{s}</span>
               <span className="hidden sm:inline">{STEP_LABELS[s]}</span>
@@ -505,11 +505,11 @@ export function AuditWorkflowModal({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t border-cult-medium-gray">
+      <div className="flex items-center justify-between mt-6 pt-4 border-t border-cult-border">
         <button
           onClick={handleBack}
           disabled={step === 1}
-          className="flex items-center gap-2 px-4 py-2 text-[13px] border border-cult-medium-gray text-cult-white rounded hover:bg-cult-charcoal disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-[13px] border border-cult-border text-cult-text-primary rounded hover:bg-cult-surface-raised disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
           Back

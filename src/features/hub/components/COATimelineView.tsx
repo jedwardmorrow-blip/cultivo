@@ -20,7 +20,7 @@ function BatchCard({ batch }: BatchCardProps) {
     : null;
 
   return (
-    <div className="bg-cult-dark-gray rounded-lg p-3 border border-cult-mid-gray hover:border-cult-accent transition-colors">
+    <div className="bg-cult-surface rounded-lg p-3 border border-cult-mid-gray hover:border-cult-accent transition-colors">
       <div className="flex items-start justify-between gap-2 mb-1">
         <div>
           <p className="text-sm font-semibold text-cult-text-primary leading-tight">{batch.strain}</p>

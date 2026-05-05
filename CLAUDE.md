@@ -101,6 +101,26 @@ Against Praxis World Model project `uayyhluztelnfxfvdhyt` (`cult-ops-claude-cont
 
 The brain returns active rules, persona contracts, recent decisions, open tasks, and semantically-relevant business_context for the focus.
 
+## Banned patterns (working-instrument)
+
+These patterns are AI-generated reflexes that betray the aesthetic. Operator tools should feel **made**, not **generated**. Lint and the Tailwind config block most of them at build time. Do not re-introduce them by hand.
+
+- **No `backdrop-blur-*`.** Modal scrims are `bg-black/60`, opaque. The Tailwind config zeroes every `backdropBlur` value including standard names.
+- **No `box-shadow` (any variant).** No `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`, `shadow-2xl`, no glow shadows, no inner glows. Elevation is hairlines (`border-cult-border`, `border-cult-border-strong`). The Tailwind config zeroes all of these at the source.
+- **No `rounded-xl`, `rounded-2xl`, `rounded-3xl`.** Cap at `rounded-cult` (12px) for panels, `rounded` (4px) for chips. Soft radii are an AI reflex toward "friendly" — the kit reads as instrument, not toy.
+- **No stage colors as fills, tinted backgrounds, or borders.** Stage colors are 6px dot markers next to a label, never decoration. `bg-cult-stage-flower/10`, `border-cult-stage-clone/50`, `text-cult-stage-harvest` on a chip body are all violations. The single allowed use of a stage color is a `<span class="w-1.5 h-1.5 rounded-full bg-cult-stage-X" />` next to text.
+- **No `bg-white`, `text-white`, `bg-gray-*`, `bg-slate-*`.** Use semantic tokens: `bg-cult-surface`, `text-cult-text-primary`, `bg-cult-surface-raised`, etc. Pure white is not in the operator palette.
+- **No noise textures.** No inline SVG `<feTurbulence>` `fractalNoise` applied as `backgroundImage`. Surfaces are flat. If you see `NOISE_BG` referenced anywhere, delete it.
+- **No glow constants.** No `INNER_GLOW`, `SELECTED_TOP_GLOW`, or any equivalent map of inset/outer box-shadows per stage or room type. Cards don't glow.
+- **No urgency pulse animations.** No `animate-[pulseUrgentRed]`, no `animate-[pulseUrgentAmber]`, no animated shadows that breathe. Urgency is data: render as a static 6px dot + mono text label like `OVERDUE 4d`.
+- **No `hover:-translate-y-*` on cards.** Cards in an instrument don't float on hover. Use `hover:bg-cult-surface-raised hover:border-cult-border-strong`.
+- **No raw Tailwind palette colors (`bg-blue-500`, `text-emerald-400`, `border-amber-600`, etc.) in nav/chrome/CTAs.** They're permitted only inside chart libraries and feature-specific data visualizations where they encode functional meaning.
+- **No editorial copy in operator surfaces.** No sentences ending with periods in the dashboard / floor plan / room board / alerts / env rail. That tone belongs in The Seed (the chat surface) only. The Performance Loop is a deliberate exception, owned by Claude Design.
+- **No serif in operator code.** IBM Plex Sans + IBM Plex Mono only. Marketing/public surfaces may use IBM Plex Serif; operator code never. Italic Plex Sans (400/600) is allowed.
+- **No decorative icons in data tiles.** Icons are wayfinding only — top nav, sub-nav, primary action buttons. Inside KPI tiles, status pills, table rows, and section headers: no icons.
+
+When in doubt, look at `src/features/auth/components/Login.tsx`, `/dashboard`, and `/executive-hub` Overview. Those are the canonical references.
+
 ## Bridge contracts (Claude Design vs Claude Code)
 
 - **`src/brand-tokens.css`** is the typed contract for tokens. Claude Design ships updates; Claude Code copies into this repo in a single commit.

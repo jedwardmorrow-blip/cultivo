@@ -180,7 +180,7 @@ export function FloorView({
                 {isEmpty && (
                   <div className="flex-1 flex items-center justify-center" style={{ minHeight: '400px' }}>
                     <div className="text-center">
-                      <div className="w-20 h-20 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-5">
+                      <div className="w-20 h-20 rounded-cult bg-cult-surface-inset border border-cult-border-subtle flex items-center justify-center mx-auto mb-5">
                         <Scissors className="w-8 h-8 text-white/10" />
                       </div>
                       <p className="text-base font-semibold text-white/25 mb-1">All caught up</p>

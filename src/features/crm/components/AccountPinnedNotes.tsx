@@ -23,7 +23,7 @@ const activityColors: Record<string, string> = {
   email: 'text-cult-info bg-cult-info-muted',
   visit: 'text-cult-success bg-cult-success-muted',
   sample: 'text-cult-warning bg-cult-warning-muted',
-  note: 'text-cult-silver bg-cult-dark-gray',
+  note: 'text-cult-text-secondary bg-cult-surface',
   follow_up: 'text-cult-danger bg-cult-danger-muted',
 };
 
@@ -52,13 +52,13 @@ export function AccountPinnedNotes({ customerId, onUnpin }: AccountPinnedNotesPr
   if (pinnedNotes.length === 0) return null;
 
   return (
-    <div className="bg-cult-near-black border border-cult-warning/20 rounded-lg overflow-hidden">
-      <div className="px-5 py-3 border-b border-cult-charcoal flex items-center gap-2">
+    <div className="bg-cult-surface border border-cult-warning/20 rounded-lg overflow-hidden">
+      <div className="px-5 py-3 border-b border-cult-surface-raised flex items-center gap-2">
         <Pin className="w-3.5 h-3.5 text-cult-warning" />
-        <h3 className="text-xs font-semibold text-cult-white uppercase tracking-wider">Pinned Notes</h3>
+        <h3 className="text-xs font-semibold text-cult-text-primary uppercase tracking-wider">Pinned Notes</h3>
         <span className="text-xs text-cult-warning font-semibold ml-auto">{pinnedNotes.length}</span>
       </div>
-      <div className="divide-y divide-cult-charcoal/50">
+      <div className="divide-y divide-cult-surface-raised/50">
         {pinnedNotes.map((note) => {
           const IconComp = activityIcons[note.activity_type] || StickyNote;
           const colorClass = activityColors[note.activity_type] || activityColors.note;
@@ -68,18 +68,18 @@ export function AccountPinnedNotes({ customerId, onUnpin }: AccountPinnedNotesPr
                 <IconComp className="w-3.5 h-3.5" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-cult-white">{note.subject}</p>
+                <p className="text-sm font-medium text-cult-text-primary">{note.subject}</p>
                 {note.body && (
-                  <p className="text-xs text-cult-light-gray mt-1 line-clamp-2">{note.body}</p>
+                  <p className="text-xs text-cult-text-muted mt-1 line-clamp-2">{note.body}</p>
                 )}
-                <div className="flex items-center gap-3 mt-1.5 text-xs text-cult-silver">
+                <div className="flex items-center gap-3 mt-1.5 text-xs text-cult-text-secondary">
                   <span>{formatDate(note.created_at)}</span>
                   {note.user_name && <span>by {note.user_name}</span>}
                 </div>
               </div>
               <button
                 onClick={() => handleUnpin(note.id)}
-                className="p-1.5 rounded opacity-0 group-hover:opacity-100 hover:bg-cult-dark-gray text-cult-medium-gray hover:text-cult-warning transition-all flex-shrink-0"
+                className="p-1.5 rounded opacity-0 group-hover:opacity-100 hover:bg-cult-surface text-cult-border hover:text-cult-warning transition-all flex-shrink-0"
                 title="Unpin note"
               >
                 <PinOff className="w-3.5 h-3.5" />

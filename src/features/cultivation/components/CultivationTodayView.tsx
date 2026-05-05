@@ -98,7 +98,7 @@ const ATTENTION_CONFIG: Record<AttentionItem['type'], {
     labelFn: () => 'Overdue',
   },
   unassigned_task: {
-    icon: ClipboardList, bg: 'bg-cult-charcoal border-cult-medium-gray/40', urgency: 'text-cult-text-muted',
+    icon: ClipboardList, bg: 'bg-cult-surface-raised border-cult-border/40', urgency: 'text-cult-text-muted',
     labelFn: () => 'Unassigned',
   },
 };
@@ -119,12 +119,12 @@ function GroupedAttentionCard({ group }: { group: AttentionGroup }) {
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-start gap-3 p-3 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-start gap-3 p-3 text-left hover:bg-cult-surface-inset transition-colors"
       >
         <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${config.urgency}`} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[12px] font-semibold text-cult-white truncate">{group.room_name}</span>
+            <span className="text-[12px] font-semibold text-cult-text-primary truncate">{group.room_name}</span>
             <span className={`text-[10px] font-medium ${config.urgency}`}>{groupLabel}</span>
           </div>
           <div className="text-[11px] text-cult-text-muted mt-0.5">
@@ -133,17 +133,17 @@ function GroupedAttentionCard({ group }: { group: AttentionGroup }) {
           <div className="text-[10px] text-cult-text-faint mt-0.5 truncate">{strainSummary}</div>
         </div>
         {expanded
-          ? <ChevronDown className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-cult-medium-gray" />
-          : <ChevronRight className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-cult-medium-gray" />
+          ? <ChevronDown className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-cult-border" />
+          : <ChevronRight className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-cult-border" />
         }
       </button>
 
       {expanded && (
-        <div className="border-t border-white/[0.06] px-3 pb-3 pt-2 space-y-1.5">
+        <div className="border-t border-cult-border-subtle px-3 pb-3 pt-2 space-y-1.5">
           {group.strainBreakdown.map(({ strain, count, plants }) => (
-            <div key={strain} className="flex items-center justify-between gap-2 py-1.5 px-2 rounded bg-white/[0.02]">
+            <div key={strain} className="flex items-center justify-between gap-2 py-1.5 px-2 rounded bg-cult-surface-inset">
               <div className="min-w-0 flex-1">
-                <span className="text-[11px] text-cult-lighter-gray font-medium">{strain}</span>
+                <span className="text-[11px] text-cult-text-muted font-medium">{strain}</span>
                 <span className="text-[10px] text-cult-text-muted ml-1.5">
                   · {plants} plants · {count} {count === 1 ? 'group' : 'groups'}
                 </span>
@@ -166,14 +166,14 @@ function TaskRow({ task, roomCodeMap }: { task: DailyTaskInstance; roomCodeMap: 
   const statusStyles: Record<string, string> = {
     completed: 'bg-cult-success-muted text-cult-success border-cult-success/30',
     in_progress: 'bg-cult-warning-muted text-cult-warning border-cult-warning/30',
-    pending: 'bg-cult-charcoal text-cult-text-muted border-cult-medium-gray/40',
-    skipped: 'bg-cult-charcoal text-cult-text-faint border-cult-medium-gray/20',
+    pending: 'bg-cult-surface-raised text-cult-text-muted border-cult-border/40',
+    skipped: 'bg-cult-surface-raised text-cult-text-faint border-cult-border/20',
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2.5 border-b border-cult-charcoal/40 last:border-b-0">
+    <div className="flex items-center justify-between gap-3 py-2.5 border-b border-cult-surface-raised/40 last:border-b-0">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-[12px] font-medium text-cult-white">
+        <span className="text-[12px] font-medium text-cult-text-primary">
           {TASK_TYPE_LABELS[task.task_type] ?? task.task_type}
         </span>
         <span className="text-[11px] text-cult-text-muted truncate">{roomCode}</span>
@@ -194,10 +194,10 @@ function QuickAction({ icon: Icon, label, onClick }: { icon: typeof Plus; label:
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2.5 bg-cult-charcoal border border-cult-medium-gray/40 rounded hover:bg-cult-charcoal/80 hover:border-cult-accent/40 transition-colors min-h-[44px]"
+      className="flex items-center gap-2 px-4 py-2.5 bg-cult-surface-raised border border-cult-border/40 rounded hover:bg-cult-surface-raised/80 hover:border-cult-accent/40 transition-colors min-h-[44px]"
     >
       <Icon className="w-4 h-4 text-cult-accent" />
-      <span className="text-[12px] font-medium text-cult-white">{label}</span>
+      <span className="text-[12px] font-medium text-cult-text-primary">{label}</span>
     </button>
   );
 }
@@ -244,14 +244,14 @@ export function CultivationTodayView() {
         <div className="flex items-center gap-3">
           <Sprout className="w-6 h-6 text-cult-accent" />
           <div>
-            <h1 className="text-[18px] font-semibold text-cult-white font-montserrat">Cultivation Today</h1>
+            <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Cultivation Today</h1>
             <p className="text-[12px] text-cult-text-muted">{todayDisplay()}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-[12px]">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cult-charcoal rounded border border-cult-medium-gray/40">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cult-surface-raised rounded border border-cult-border/40">
             <ClipboardList className="w-3.5 h-3.5 text-cult-accent" />
-            <span className="text-cult-white font-medium">{taskStats.completed}/{taskStats.total}</span>
+            <span className="text-cult-text-primary font-medium">{taskStats.completed}/{taskStats.total}</span>
             <span className="text-cult-text-muted">tasks done</span>
           </div>
           {taskStats.active > 0 && (
@@ -281,7 +281,7 @@ export function CultivationTodayView() {
 
       {loading && (
         <div className="animate-pulse space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-12 bg-cult-charcoal rounded" />)}
+          {[1, 2, 3].map(i => <div key={i} className="h-12 bg-cult-surface-raised rounded" />)}
         </div>
       )}
 
@@ -302,7 +302,7 @@ export function CultivationTodayView() {
                 Full board <ChevronRight className="w-3 h-3" />
               </button>
             </div>
-            <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+            <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
               {todaysTasks.length === 0 ? (
                 <p className="text-[12px] text-cult-text-faint py-4 text-center">No tasks scheduled for today.</p>
               ) : (
@@ -321,13 +321,13 @@ export function CultivationTodayView() {
               <Calendar className="w-3.5 h-3.5" />
               This Week
             </h2>
-            <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4 space-y-3">
+            <div className="bg-cult-surface border border-cult-surface rounded-cult p-4 space-y-3">
               {/* Room overview */}
               <div>
                 <div className="text-[10px] text-cult-text-faint uppercase tracking-wider mb-1.5">Rooms</div>
                 <div className="flex items-center gap-2">
                   <Leaf className="w-3.5 h-3.5 text-cult-success" />
-                  <span className="text-[13px] font-semibold text-cult-white">{roomSummaries.length}</span>
+                  <span className="text-[13px] font-semibold text-cult-text-primary">{roomSummaries.length}</span>
                   <span className="text-[11px] text-cult-text-muted">active</span>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export function CultivationTodayView() {
                       .slice(0, 6)
                       .map(s => (
                         <div key={s.room_id} className="flex items-center justify-between text-[11px]">
-                          <span className="text-cult-lighter-gray truncate">{s.room_code}</span>
+                          <span className="text-cult-text-muted truncate">{s.room_code}</span>
                           <span className="text-cult-text-muted tabular-nums">{s.total_plant_count}</span>
                         </div>
                       ))}
@@ -364,7 +364,7 @@ export function CultivationTodayView() {
                       .slice(0, 4)
                       .map(s => (
                         <div key={s.room_id} className="flex items-center justify-between text-[11px]">
-                          <span className="text-cult-lighter-gray truncate">{s.room_code}</span>
+                          <span className="text-cult-text-muted truncate">{s.room_code}</span>
                           <span className={`tabular-nums ${daysUntil(s.earliest_projected_harvest!) <= 3 ? 'text-cult-warning' : 'text-cult-text-muted'}`}>
                             {daysUntil(s.earliest_projected_harvest!)}d
                           </span>
@@ -376,7 +376,7 @@ export function CultivationTodayView() {
 
               <button
                 onClick={() => navigate('/cultivation-taskboard')}
-                className="w-full flex items-center justify-center gap-1 text-[11px] text-cult-accent hover:text-cult-accent/80 pt-2 border-t border-cult-charcoal/40 transition-colors"
+                className="w-full flex items-center justify-center gap-1 text-[11px] text-cult-accent hover:text-cult-accent/80 pt-2 border-t border-cult-surface-raised/40 transition-colors"
               >
                 Week view <ChevronRight className="w-3 h-3" />
               </button>

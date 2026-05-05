@@ -78,7 +78,7 @@ export function RouteSummaryPanel({
                       onChange={(e) => {
                         if (selectedDate) onAssignDriver(selectedDate, e.target.value, z.zoneId);
                       }}
-                      className="w-full px-2 py-1 rounded-lg border border-white/[0.06] bg-white/[0.03] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12] mb-1"
+                      className="w-full px-2 py-1 rounded-lg border border-cult-border-subtle bg-cult-surface-inset text-[10px] text-white/50 focus:outline-none focus:border-cult-border-active mb-1"
                     >
                       <option value="">Assign driver...</option>
                       {driverList.map((d) => (
@@ -92,7 +92,7 @@ export function RouteSummaryPanel({
           </div>
 
           {/* Summary line */}
-          <div className="text-[10px] text-white/25 pt-1 border-t border-white/[0.06]">
+          <div className="text-[10px] text-white/25 pt-1 border-t border-cult-border-subtle">
             {totalDuration > 0 && <span>~{formatDuration(totalDuration)} · </span>}
             <span>{formatCurrency(totalRevenue)}</span>
           </div>

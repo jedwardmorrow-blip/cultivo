@@ -77,17 +77,24 @@ export function groupOrdersByMonthAndStatus(orders: Order[]): MonthGroup[] {
   return result;
 }
 
-export function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    submitted: 'bg-blue-900/30 text-blue-400 border-blue-600',
-    accepted: 'bg-cyan-900/30 text-cyan-400 border-cyan-600',
-    processing: 'bg-yellow-900/30 text-yellow-400 border-yellow-600',
-    ready_for_delivery: 'bg-green-900/30 text-green-400 border-green-600',
-    completed: 'bg-emerald-900/30 text-emerald-400 border-emerald-600',
-    delivered: 'bg-teal-900/30 text-teal-400 border-teal-600',
-    cancelled: 'bg-red-900/30 text-red-400 border-red-600',
+// Working-instrument: status pills share a single neutral surface; identity
+// comes from the label text (and from getStatusDotClass when a marker is needed).
+// Status colors stay desaturated and never function as decorative fills.
+export function getStatusColor(_status: string): string {
+  return 'bg-cult-surface-inset text-cult-text-secondary border-cult-border-subtle';
+}
+
+export function getStatusDotClass(status: string): string {
+  const dots: Record<string, string> = {
+    submitted: 'bg-cult-info',
+    accepted: 'bg-cult-info',
+    processing: 'bg-cult-warning',
+    ready_for_delivery: 'bg-cult-success',
+    completed: 'bg-cult-text-faint',
+    delivered: 'bg-cult-success',
+    cancelled: 'bg-cult-danger',
   };
-  return colors[status] || colors.submitted;
+  return dots[status] || dots.submitted;
 }
 
 export function getFulfillmentColor(percentage: number): string {
@@ -97,17 +104,9 @@ export function getFulfillmentColor(percentage: number): string {
   return 'bg-cult-success-muted text-cult-success border-cult-success';
 }
 
-export function getStatusColorMap(status: string): string {
-  const statusColorMap: Record<string, string> = {
-    submitted: 'border-blue-600 bg-blue-900/10',
-    accepted: 'border-cyan-600 bg-cyan-900/10',
-    processing: 'border-yellow-600 bg-yellow-900/10',
-    ready_for_delivery: 'border-green-600 bg-green-900/10',
-    completed: 'border-emerald-600 bg-emerald-900/10',
-    delivered: 'border-teal-600 bg-teal-900/10',
-    cancelled: 'border-red-600 bg-red-900/10'
-  };
-  return statusColorMap[status] || 'border-cult-medium-gray bg-cult-dark-gray';
+export function getStatusColorMap(_status: string): string {
+  // Lane backgrounds stay neutral. Status identity is conveyed via the dot.
+  return 'border-cult-border-subtle bg-cult-surface-inset';
 }
 
 export function calculateMonthRevenue(orders: Order[], targetMonth: string): { count: number; revenue: number } {

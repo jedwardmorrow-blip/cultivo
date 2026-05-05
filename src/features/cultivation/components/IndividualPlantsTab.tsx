@@ -115,28 +115,28 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
   const inactiveCount = plants.filter((p) => !p.is_active).length;
 
   if (loading) {
-    return <p className="text-cult-medium-gray text-xs py-2">Loading plant IDs...</p>;
+    return <p className="text-cult-border text-xs py-2">Loading plant IDs...</p>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-cult-light-gray">
-          <span className="text-cult-white font-semibold">{activeCount}</span> active
-          {inactiveCount > 0 && <span className="text-cult-medium-gray ml-1.5">/ {inactiveCount} inactive</span>}
-          <span className="text-cult-medium-gray ml-1.5">· group has {plantCount} plants</span>
+        <div className="text-xs text-cult-text-muted">
+          <span className="text-cult-text-primary font-semibold">{activeCount}</span> active
+          {inactiveCount > 0 && <span className="text-cult-border ml-1.5">/ {inactiveCount} inactive</span>}
+          <span className="text-cult-border ml-1.5">· group has {plantCount} plants</span>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => { setShowImport(!showImport); setImportResult(null); }}
-            className="flex items-center gap-1 text-xs border border-cult-medium-gray text-cult-light-gray px-2 py-1 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider"
+            className="flex items-center gap-1 text-xs border border-cult-border text-cult-text-muted px-2 py-1 hover:border-cult-text-muted hover:text-cult-text-primary transition-all uppercase tracking-wider"
           >
             <Upload className="w-3 h-3" />
             Import
           </button>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1 text-xs border border-cult-medium-gray text-cult-light-gray px-2 py-1 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider"
+            className="flex items-center gap-1 text-xs border border-cult-border text-cult-text-muted px-2 py-1 hover:border-cult-text-muted hover:text-cult-text-primary transition-all uppercase tracking-wider"
           >
             <Plus className="w-3 h-3" />
             Add
@@ -152,27 +152,27 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
       )}
 
       {showAddForm && (
-        <div className="bg-cult-black border border-cult-medium-gray p-3 space-y-2">
+        <div className="bg-cult-black border border-cult-border p-3 space-y-2">
           <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">State Plant ID (12 digits)</label>
+            <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">State Plant ID (12 digits)</label>
             <input
               type="text"
               value={addValue}
               onChange={(e) => { setAddValue(e.target.value); setAddError(null); }}
               placeholder="e.g. 202512196856"
               maxLength={12}
-              className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-cult-lighter-gray"
+              className="w-full bg-cult-surface border border-cult-border text-cult-text-primary px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-cult-text-muted"
             />
             {addError && <p className="text-cult-danger text-xs mt-1">{addError}</p>}
           </div>
           <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Notes (optional)</label>
+            <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Notes (optional)</label>
             <input
               type="text"
               value={addNotes}
               onChange={(e) => setAddNotes(e.target.value)}
               placeholder="Optional"
-              className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-sm focus:outline-none focus:border-cult-lighter-gray"
+              className="w-full bg-cult-surface border border-cult-border text-cult-text-primary px-3 py-1.5 text-sm focus:outline-none focus:border-cult-text-muted"
             />
           </div>
           <div className="flex gap-2 pt-1">
@@ -186,7 +186,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
             </Button>
             <button
               onClick={() => { setShowAddForm(false); setAddValue(''); setAddError(null); }}
-              className="text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 uppercase tracking-wider hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+              className="text-xs border border-cult-border text-cult-text-muted px-3 py-1.5 uppercase tracking-wider hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
             >
               Cancel
             </button>
@@ -195,14 +195,14 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
       )}
 
       {showImport && (
-        <div className="bg-cult-black border border-cult-medium-gray p-3 space-y-2">
-          <p className="text-xs text-cult-light-gray">Paste plant IDs (one per line, or comma/space separated), or upload a CSV/TXT file.</p>
+        <div className="bg-cult-black border border-cult-border p-3 space-y-2">
+          <p className="text-xs text-cult-text-muted">Paste plant IDs (one per line, or comma/space separated), or upload a CSV/TXT file.</p>
           <textarea
             value={importText}
             onChange={(e) => setImportText(e.target.value)}
             rows={5}
             placeholder="202512196856&#10;202512196857&#10;202512196858"
-            className="w-full bg-cult-near-black border border-cult-medium-gray text-cult-white px-3 py-2 text-xs font-mono focus:outline-none focus:border-cult-lighter-gray resize-y"
+            className="w-full bg-cult-surface border border-cult-border text-cult-text-primary px-3 py-2 text-xs font-mono focus:outline-none focus:border-cult-text-muted resize-y"
           />
           <div className="flex items-center gap-2">
             <Button
@@ -215,14 +215,14 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
             </Button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 uppercase tracking-wider hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+              className="text-xs border border-cult-border text-cult-text-muted px-3 py-1.5 uppercase tracking-wider hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
             >
               Upload File
             </button>
             <input ref={fileInputRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
             <button
               onClick={() => { setShowImport(false); setImportText(''); setImportResult(null); }}
-              className="text-xs text-cult-medium-gray hover:text-cult-white transition-colors ml-auto"
+              className="text-xs text-cult-border hover:text-cult-text-primary transition-colors ml-auto"
             >
               Close
             </button>
@@ -251,7 +251,7 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
       )}
 
       {plants.length === 0 ? (
-        <p className="text-cult-medium-gray text-xs">No plant IDs registered yet. Add them individually or import from your old system.</p>
+        <p className="text-cult-border text-xs">No plant IDs registered yet. Add them individually or import from your old system.</p>
       ) : (
         <div className="space-y-1 max-h-72 overflow-y-auto">
           {plants.map((p) => (
@@ -259,21 +259,21 @@ export function IndividualPlantsTab({ plantGroupId, plantCount }: IndividualPlan
               key={p.id}
               className={`flex items-center justify-between px-2 py-1.5 border text-xs transition-all ${
                 p.is_active
-                  ? 'border-cult-medium-gray bg-cult-near-black'
-                  : 'border-cult-near-black bg-black opacity-50'
+                  ? 'border-cult-border bg-cult-surface'
+                  : 'border-cult-surface bg-black opacity-50'
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className={`font-mono ${p.is_active ? 'text-cult-white' : 'text-cult-medium-gray line-through'}`}>
+                <span className={`font-mono ${p.is_active ? 'text-cult-text-primary' : 'text-cult-border line-through'}`}>
                   {p.state_plant_id}
                 </span>
-                {p.notes && <span className="text-cult-medium-gray truncate">{p.notes}</span>}
+                {p.notes && <span className="text-cult-border truncate">{p.notes}</span>}
               </div>
               {p.is_active && (
                 <button
                   onClick={() => handleDeactivate(p.id)}
                   title="Mark as removed/dead"
-                  className="p-1 text-cult-medium-gray hover:text-cult-danger transition-colors flex-shrink-0"
+                  className="p-1 text-cult-border hover:text-cult-danger transition-colors flex-shrink-0"
                 >
                   <CircleOff className="w-3 h-3" />
                 </button>

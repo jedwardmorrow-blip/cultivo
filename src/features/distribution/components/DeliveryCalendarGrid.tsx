@@ -86,17 +86,17 @@ function DayCell({
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, date)}
       onClick={orders.length > 0 ? onSelect : undefined}
-      className={`aspect-square p-1.5 flex flex-col transition-all duration-200 rounded-xl
+      className={`aspect-square p-1.5 flex flex-col transition-all duration-200 rounded-cult
         ${orders.length > 0 ? 'cursor-pointer' : ''}
         ${isSelected
-          ? 'bg-white/[0.09] border border-white/[0.20] shadow-[0_0_16px_rgba(232,224,212,0.1)]'
+          ? 'bg-cult-surface-overlay border border-cult-border-active'
           : isDragOver
           ? 'bg-emerald-500/10 border border-emerald-400/60 shadow-[0_0_16px_rgba(16,185,129,0.2)] scale-[1.03]'
           : isSuggested
           ? 'bg-emerald-500/5 border border-emerald-400/30 animate-pulse'
           : isTodayDate
           ? 'bg-amber-500/[0.06] border border-amber-400/30'
-          : 'border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]'
+          : 'border border-cult-border-subtle hover:border-cult-border-active hover:bg-cult-surface-subtle'
         }`}
       style={leftBorderColor && !isSelected ? { borderLeftColor: leftBorderColor, borderLeftWidth: '2px' } : undefined}
     >
@@ -176,7 +176,7 @@ export function DeliveryCalendarGrid({
       <div className="flex items-center justify-between mb-3">
         <button
           onClick={() => onMonthChange(new Date(year, month - 1, 1))}
-          className="p-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-cult-surface-overlay transition-colors"
         >
           <ChevronLeft className="w-4 h-4 text-white/50" />
         </button>
@@ -185,7 +185,7 @@ export function DeliveryCalendarGrid({
           <h2 className="text-sm font-semibold text-white uppercase tracking-wider">{monthName}</h2>
           <button
             onClick={onQuickDispatch}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-xl
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-cult
               bg-[#E8E0D4]/10 text-[#E8E0D4] border border-[#E8E0D4]/20
               hover:bg-[#E8E0D4]/15 hover:border-[#E8E0D4]/30 transition-all`}
           >
@@ -196,7 +196,7 @@ export function DeliveryCalendarGrid({
 
         <button
           onClick={() => onMonthChange(new Date(year, month + 1, 1))}
-          className="p-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-cult-surface-overlay transition-colors"
         >
           <ChevronRight className="w-4 h-4 text-white/50" />
         </button>

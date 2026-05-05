@@ -28,8 +28,8 @@ export class OrdersErrorBoundary extends Component<Props, State> {
       return (
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-cult-white">Orders & Fulfillment</h1>
-            <p className="text-cult-light-gray mt-2">Manage orders, allocate inventory, and track fulfillment</p>
+            <h1 className="text-3xl font-bold text-cult-text-primary">Orders & Fulfillment</h1>
+            <p className="text-cult-text-muted mt-2">Manage orders, allocate inventory, and track fulfillment</p>
           </div>
           <div className="bg-cult-danger-muted border-2 border-cult-danger p-8 text-center">
             <h2 className="text-2xl font-bold text-cult-danger mb-4">Something went wrong</h2>
@@ -39,7 +39,7 @@ export class OrdersErrorBoundary extends Component<Props, State> {
                 this.setState({ hasError: false, error: null });
                 window.location.reload();
               }}
-              className="px-6 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray hover:text-cult-white transition-all font-medium uppercase tracking-wider text-sm"
+              className="px-6 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover hover:text-cult-text-primary transition-all font-medium uppercase tracking-wider text-sm"
             >
               Reload Page
             </button>

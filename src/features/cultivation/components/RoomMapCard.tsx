@@ -6,7 +6,7 @@ import { useRoomSections } from '../hooks/useRoomSections';
 import { FlipRoomModal } from './FlipRoomModal';
 import { RoomCapacityBar } from './RoomCapacityBar';
 import { todayIso, daysBetween } from '../utils/dateUtils';
-import { ROOM_TYPE_COLORS, STAGE_BADGE, CHIP_STAGE_COLORS, INNER_GLOW, harvestCountdownColor } from '../constants/stageColors';
+import { ROOM_TYPE_COLORS, STAGE_BADGE, CHIP_STAGE_COLORS, harvestCountdownColor } from '../constants/stageColors';
 import type { GrowRoom, PlantGroup, RoomTable, RoomSection } from '../types';
 
 interface PlacedGroup {
@@ -35,8 +35,8 @@ interface GridCellProps {
 const GridCell = memo(function GridCell({ groups, onClick }: GridCellProps) {
   if (groups.length === 0) {
     return (
-      <div className="border border-cult-dark-gray bg-cult-black/30 h-14 flex items-center justify-center">
-        <span className="text-xs text-cult-dark-gray">—</span>
+      <div className="border border-cult-surface bg-cult-black/30 h-14 flex items-center justify-center">
+        <span className="text-xs text-cult-surface">—</span>
       </div>
     );
   }
@@ -55,7 +55,7 @@ const GridCell = memo(function GridCell({ groups, onClick }: GridCellProps) {
           <span className="text-xs font-bold text-rose-300 font-mono truncate">
             {g.strains?.abbreviation ?? '???'}
           </span>
-          <span className="text-xs text-cult-medium-gray">{g.plant_count}p</span>
+          <span className="text-xs text-cult-border">{g.plant_count}p</span>
         </div>
       ))}
     </button>
@@ -114,7 +114,7 @@ function BatchSummaryChips({ groups, roomType }: BatchSummaryChipsProps) {
         </span>
       ))}
       {overflow > 0 && (
-        <span className="text-sm text-cult-medium-gray self-center font-medium">+{overflow} more</span>
+        <span className="text-sm text-cult-border self-center font-medium">+{overflow} more</span>
       )}
     </div>
   );
@@ -133,10 +133,10 @@ function BatchLegend({ groups }: BatchLegendProps) {
       {batches.map((b) => (
         <div key={b.batchNumber} className="flex items-center gap-1.5 border border-rose-900 bg-rose-950/20 px-2 py-1">
           <span className="font-mono text-xs font-bold text-rose-300">{b.abbr ?? '???'}</span>
-          <span className="text-xs text-cult-light-gray">{b.strainName}</span>
-          <span className="text-xs text-cult-medium-gray">×{b.totalPlants}</span>
+          <span className="text-xs text-cult-text-muted">{b.strainName}</span>
+          <span className="text-xs text-cult-border">×{b.totalPlants}</span>
           {b.groupCount > 1 && (
-            <span className="text-xs text-cult-medium-gray opacity-60">({b.groupCount} grps)</span>
+            <span className="text-xs text-cult-border opacity-60">({b.groupCount} grps)</span>
           )}
         </div>
       ))}
@@ -155,7 +155,7 @@ function RoomMapGrid({ tables, groups, onGroupClick }: RoomMapGridProps) {
 
   if (tables.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-xs text-cult-medium-gray italic py-3 border border-cult-dark-gray px-3">
+      <div className="flex items-center gap-2 text-xs text-cult-border italic py-3 border border-cult-surface px-3">
         <Settings className="w-3.5 h-3.5" />
         No tables configured. Go to Settings → Grow Rooms to configure the room layout.
       </div>
@@ -170,11 +170,11 @@ function RoomMapGrid({ tables, groups, onGroupClick }: RoomMapGridProps) {
       <table className="w-full text-xs border-collapse">
         <thead>
           <tr>
-            <th className="text-left text-cult-medium-gray uppercase tracking-wider font-normal py-1 pr-3 w-16">Section</th>
+            <th className="text-left text-cult-border uppercase tracking-wider font-normal py-1 pr-3 w-16">Section</th>
             {tables.map((t) => (
-              <th key={t.id} className="text-center text-cult-medium-gray font-mono font-normal py-1 px-1 min-w-20">
+              <th key={t.id} className="text-center text-cult-border font-mono font-normal py-1 px-1 min-w-20">
                 T{t.table_number}
-                {t.table_name && <span className="block text-cult-dark-gray normal-case font-normal">{t.table_name}</span>}
+                {t.table_name && <span className="block text-cult-surface normal-case font-normal">{t.table_name}</span>}
               </th>
             ))}
           </tr>
@@ -183,14 +183,14 @@ function RoomMapGrid({ tables, groups, onGroupClick }: RoomMapGridProps) {
           {uniqueSectionLabels.map((label) => (
             <tr key={label}>
               <td className="pr-3 py-0.5">
-                <span className="font-mono text-cult-light-gray font-bold">{label}</span>
+                <span className="font-mono text-cult-text-muted font-bold">{label}</span>
               </td>
               {tables.map((t) => {
                 const section = t.sections.find((s) => s.section_label === label);
                 if (!section) {
                   return (
                     <td key={t.id} className="py-0.5 px-1">
-                      <div className="border border-cult-dark-gray/30 bg-cult-black/10 h-14" />
+                      <div className="border border-cult-surface/30 bg-cult-black/10 h-14" />
                     </td>
                   );
                 }
@@ -221,7 +221,7 @@ function UnplacedGroups({ groups, onGroupClick }: UnplacedGroupsProps) {
   if (groups.length === 0) return null;
   return (
     <div className="mt-3">
-      <p className="text-xs text-cult-medium-gray uppercase tracking-wider mb-2 flex items-center gap-1">
+      <p className="text-xs text-cult-border uppercase tracking-wider mb-2 flex items-center gap-1">
         <MapPin className="w-3 h-3" />
         {groups.length} group{groups.length !== 1 ? 's' : ''} not placed on map
       </p>
@@ -230,11 +230,11 @@ function UnplacedGroups({ groups, onGroupClick }: UnplacedGroupsProps) {
           <div
             key={g.id}
             onClick={() => onGroupClick(g)}
-            className="flex items-center gap-3 px-3 py-2 border border-cult-dark-gray hover:border-cult-medium-gray cursor-pointer transition-colors"
+            className="flex items-center gap-3 px-3 py-2 border border-cult-surface hover:border-cult-border cursor-pointer transition-colors"
           >
-            <span className="font-mono text-xs font-bold text-cult-light-gray">{g.batch_registry?.batch_number ?? '—'}</span>
-            <span className="text-xs text-cult-light-gray">{g.strains?.name ?? g.strain_id}</span>
-            <span className="text-xs text-cult-medium-gray">{g.plant_count} plants</span>
+            <span className="font-mono text-xs font-bold text-cult-text-muted">{g.batch_registry?.batch_number ?? '—'}</span>
+            <span className="text-xs text-cult-text-muted">{g.strains?.name ?? g.strain_id}</span>
+            <span className="text-xs text-cult-border">{g.plant_count} plants</span>
             <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ml-auto ${STAGE_BADGE[g.growth_stage] ?? STAGE_BADGE.clone}`}>
               {g.growth_stage}
             </span>
@@ -301,10 +301,10 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
   const unplacedGroups = groups.filter((g) => !g.room_table_id || !g.room_section_id);
 
   function countdownColor(): string {
-    if (daysToHarvest === null) return 'text-cult-medium-gray';
+    if (daysToHarvest === null) return 'text-cult-border';
     if (daysToHarvest < 0) return harvestCountdownColor(daysToHarvest);
     if (daysToHarvest <= 7) return harvestCountdownColor(daysToHarvest);
-    return 'text-cult-light-gray';
+    return 'text-cult-text-muted';
   }
 
   function countdownText(): string {
@@ -326,8 +326,7 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
   return (
     <>
       <div
-        className={`border ${isEmpty ? 'border-dashed border-cult-dark-gray opacity-50' : typeBorder}`}
-        style={!isEmpty ? { boxShadow: INNER_GLOW[room.room_type] ?? 'none' } : undefined}
+        className={`border ${isEmpty ? 'border-dashed border-cult-border opacity-50' : typeBorder}`}
       >
         <div
           className={`${isEmpty ? 'p-3' : 'p-5'} cursor-pointer select-none`}
@@ -336,18 +335,18 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1.5 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="font-mono text-base font-bold text-cult-white">{room.room_code}</span>
-                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[room.room_type] ?? 'text-cult-medium-gray border-cult-medium-gray'}`}>
+                <span className="font-mono text-base font-bold text-cult-text-primary">{room.room_code}</span>
+                <span className={`text-xs border px-1.5 py-0.5 uppercase tracking-wider ${STAGE_BADGE[room.room_type] ?? 'text-cult-border border-cult-border'}`}>
                   {room.room_type}
                 </span>
                 {groups.length > 0 && (
-                  <span className="text-xs text-cult-medium-gray">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-cult-border">{groups.length} group{groups.length !== 1 ? 's' : ''}</span>
                 )}
                 {isEmpty && (
-                  <span className="text-xs text-cult-dark-gray italic">Empty</span>
+                  <span className="text-xs text-cult-surface italic">Empty</span>
                 )}
               </div>
-              <span className={`text-sm font-semibold truncate ${isEmpty ? 'text-cult-medium-gray' : 'text-cult-white'}`}>{room.name}</span>
+              <span className={`text-sm font-semibold truncate ${isEmpty ? 'text-cult-border' : 'text-cult-text-primary'}`}>{room.name}</span>
 
               {!expanded && groups.length > 0 && (
                 <BatchSummaryChips groups={groups} roomType={room.room_type} />
@@ -368,7 +367,7 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
             <div className="flex items-center gap-3 flex-shrink-0">
               {totalPlants > 0 && (
                 <div className="text-right">
-                  <span className="text-2xl font-bold font-mono text-cult-white leading-none">{totalPlants}</span>
+                  <span className="text-2xl font-bold font-mono text-cult-text-primary leading-none">{totalPlants}</span>
                   {room.capacity_plants && (
                     <RoomCapacityBar
                       currentCount={totalPlants}
@@ -379,33 +378,33 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
                 </div>
               )}
               {expanded ? (
-                <ChevronDown className="w-4 h-4 text-cult-medium-gray" />
+                <ChevronDown className="w-4 h-4 text-cult-border" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-cult-medium-gray" />
+                <ChevronRight className="w-4 h-4 text-cult-border" />
               )}
             </div>
           </div>
         </div>
 
         {expanded && (
-          <div className="border-t border-cult-dark-gray px-4 pb-4 pt-3 space-y-4">
+          <div className="border-t border-cult-surface px-4 pb-4 pt-3 space-y-4">
             {isFlower && (
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-3 flex-wrap">
                   {earliestFlipDate ? (
-                    <div className="text-xs text-cult-light-gray">
-                      <span className="text-cult-medium-gray">Flip date: </span>
+                    <div className="text-xs text-cult-text-muted">
+                      <span className="text-cult-border">Flip date: </span>
                       {new Date(earliestFlipDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       {dayOfRun !== null && (
                         <span className="ml-2 font-bold text-rose-400">Day {dayOfRun}</span>
                       )}
                     </div>
                   ) : (
-                    <span className="text-xs text-cult-medium-gray italic">No flip date set</span>
+                    <span className="text-xs text-cult-border italic">No flip date set</span>
                   )}
                   {earliestHarvestDate && (
-                    <div className="text-xs text-cult-light-gray">
-                      <span className="text-cult-medium-gray">Harvest: </span>
+                    <div className="text-xs text-cult-text-muted">
+                      <span className="text-cult-border">Harvest: </span>
                       {new Date(earliestHarvestDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       <span className={`ml-2 font-bold ${countdownColor()}`}>{countdownText()}</span>
                     </div>
@@ -422,7 +421,7 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
             )}
 
             {(tablesLoading || loadingGroups) ? (
-              <p className="text-xs text-cult-medium-gray">Loading...</p>
+              <p className="text-xs text-cult-border">Loading...</p>
             ) : (
               <>
                 <RoomMapGrid
@@ -435,7 +434,7 @@ export function RoomMapCard({ room, onGroupSelect, preloadedGroups }: RoomMapCar
                   onGroupClick={onGroupSelect}
                 />
                 {groups.length === 0 && (
-                  <p className="text-xs text-cult-medium-gray italic">No active plant groups in this room.</p>
+                  <p className="text-xs text-cult-border italic">No active plant groups in this room.</p>
                 )}
               </>
             )}

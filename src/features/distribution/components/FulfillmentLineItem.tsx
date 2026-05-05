@@ -29,10 +29,10 @@ export function FulfillmentLineItem({ item, dispatchItems, onTap }: FulfillmentL
       type="button"
       onClick={!isFullyAssigned ? onTap : undefined}
       disabled={isFullyAssigned}
-      className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-150
+      className={`w-full text-left px-3 py-2.5 rounded-cult border transition-all duration-150
         ${isFullyAssigned
           ? 'border-emerald-500/15 bg-emerald-500/[0.03] cursor-default'
-          : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] cursor-pointer'
+          : 'border-cult-border-subtle bg-cult-surface-inset hover:bg-cult-surface-subtle hover:border-cult-border-active cursor-pointer'
         }`}
     >
       <div className="flex items-center justify-between gap-2">
@@ -42,7 +42,7 @@ export function FulfillmentLineItem({ item, dispatchItems, onTap }: FulfillmentL
             <span className="text-xs font-semibold text-white">{item.strain_name}</span>
             <span className="text-[10px] text-white/40">{item.format_label}</span>
             {item.batch_number && (
-              <span className="text-[9px] font-mono text-white/25 bg-white/[0.04] px-1 py-0.5 rounded">
+              <span className="text-[9px] font-mono text-white/25 bg-cult-surface-inset px-1 py-0.5 rounded">
                 {item.batch_number}
               </span>
             )}
@@ -111,10 +111,10 @@ export function FulfillmentLineItem({ item, dispatchItems, onTap }: FulfillmentL
       </div>
 
       {/* Progress bar */}
-      <div className="mt-2 h-0.5 rounded-full bg-white/[0.06] overflow-hidden">
+      <div className="mt-2 h-0.5 rounded-full bg-cult-surface-raised overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
-            isFullyAssigned ? 'bg-emerald-400' : fillPct > 0 ? 'bg-white/30' : 'bg-white/[0.04]'
+            isFullyAssigned ? 'bg-emerald-400' : fillPct > 0 ? 'bg-white/30' : 'bg-cult-surface-inset'
           }`}
           style={{ width: `${Math.max(fillPct, 2)}%` }}
         />

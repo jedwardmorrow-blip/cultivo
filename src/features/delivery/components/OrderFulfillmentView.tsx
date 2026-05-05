@@ -151,10 +151,10 @@ function LineItemRow({
     <button
       type="button"
       onClick={(e) => { e.stopPropagation(); onClickItem(); }}
-      className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all duration-200 group animate-[card-fade-up_0.3s_ease-out] ${
+      className={`w-full text-left px-4 py-3.5 rounded-cult border transition-all duration-200 group animate-[card-fade-up_0.3s_ease-out] ${
         isFullyAssigned
           ? 'border-cult-success/20 bg-gradient-to-r from-cult-success/[0.04] to-transparent'
-          : 'border-cult-dark-gray/60 bg-gradient-to-r from-cult-mid-gray/[0.04] to-transparent hover:border-cult-accent/30 hover:from-cult-accent/[0.03] cursor-pointer'
+          : 'border-cult-surface/60 bg-gradient-to-r from-cult-mid-gray/[0.04] to-transparent hover:border-cult-accent/30 hover:from-cult-accent/[0.03] cursor-pointer'
       }`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -164,7 +164,7 @@ function LineItemRow({
             <span className="text-sm font-bold text-cult-text-primary tracking-tight">{item.strain_name}</span>
             <span className="text-xs text-cult-text-muted font-medium">{item.format_label}</span>
             {item.batch_number && (
-              <span className="text-[11px] font-mono text-cult-text-faint bg-cult-mid-gray/20 px-1.5 py-0.5 rounded border border-cult-dark-gray/30">
+              <span className="text-[11px] font-mono text-cult-text-faint bg-cult-mid-gray/20 px-1.5 py-0.5 rounded border border-cult-surface/30">
                 {item.batch_number}
               </span>
             )}
@@ -231,14 +231,14 @@ function LineItemRow({
       </div>
 
       {/* Progress bar */}
-      <div className="mt-2.5 h-1 rounded-full bg-cult-dark-gray/40 overflow-hidden">
+      <div className="mt-2.5 h-1 rounded-full bg-cult-surface/40 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ease-out ${
             isFullyAssigned
               ? 'bg-cult-success'
               : fillPct > 0
               ? 'bg-gradient-to-r from-cult-accent to-cult-accent/60'
-              : 'bg-cult-dark-gray/60'
+              : 'bg-cult-surface/60'
           }`}
           style={{ width: `${Math.max(fillPct, 2)}%` }}
         />
@@ -280,12 +280,12 @@ function OrderCard({
 
   return (
     <div
-      className={`rounded-xl border overflow-hidden transition-all duration-200 ${urgencyStyle.glow} ${
+      className={`rounded-cult border overflow-hidden transition-all duration-200 ${urgencyStyle.glow} ${
         allAssigned
           ? 'border-cult-success/20 bg-gradient-to-r from-cult-success/[0.03] to-cult-black'
           : expanded
           ? 'border-cult-accent/25 bg-gradient-to-br from-cult-mid-gray/[0.06] to-cult-black'
-          : 'border-cult-dark-gray/60 bg-cult-black hover:border-cult-dark-gray'
+          : 'border-cult-surface/60 bg-cult-black hover:border-cult-surface'
       }`}
       style={{ animationDelay: `${index * 50}ms` }}
     >
@@ -311,15 +311,15 @@ function OrderCard({
           </div>
           <div className="flex items-center gap-2.5 mt-1.5 text-xs text-cult-text-muted">
             <span className="font-mono text-cult-text-faint">{order.order_number}</span>
-            <span className="w-px h-3 bg-cult-dark-gray/60" />
+            <span className="w-px h-3 bg-cult-surface/60" />
             {deliveryDate && (
               <span>{order.scheduled_delivery_date ? 'Deliver' : 'Requested'} {formatDate(deliveryDate)}</span>
             )}
-            <span className="w-px h-3 bg-cult-dark-gray/60" />
+            <span className="w-px h-3 bg-cult-surface/60" />
             <span>{order.total_items} item{order.total_items !== 1 ? 's' : ''}</span>
             {order.order_total > 0 && (
               <>
-                <span className="w-px h-3 bg-cult-dark-gray/60" />
+                <span className="w-px h-3 bg-cult-surface/60" />
                 <span className="font-semibold text-cult-success/80">{formatCurrency(order.order_total)}</span>
               </>
             )}
@@ -339,14 +339,14 @@ function OrderCard({
           <div className="relative w-11 h-11 shrink-0">
             <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
               <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2"
-                className="text-cult-dark-gray/40" />
+                className="text-cult-surface/40" />
               <circle cx="18" cy="18" r="14" fill="none" strokeWidth="2.5"
                 strokeDasharray={`${progressPct * 0.88} 88`}
                 strokeLinecap="round"
                 className={`transition-all duration-1000 ease-out ${
                   allAssigned ? 'text-cult-success drop-shadow-[0_0_4px_rgba(16,185,129,0.4)]'
                   : progressPct > 0 ? 'text-cult-accent drop-shadow-[0_0_4px_rgba(255,255,255,0.15)]'
-                  : 'text-cult-dark-gray/60'
+                  : 'text-cult-surface/60'
                 }`} />
             </svg>
             <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-cult-text-primary tabular-nums">
@@ -362,7 +362,7 @@ function OrderCard({
 
       {/* Expanded line items */}
       {expanded && (
-        <div className="px-5 pb-4 space-y-2 border-t border-cult-dark-gray/20 pt-3">
+        <div className="px-5 pb-4 space-y-2 border-t border-cult-surface/20 pt-3">
           {order.line_items.map((item, i) => (
             <LineItemRow
               key={item.order_item_id}
@@ -500,7 +500,7 @@ function PackageInventoryModal({
         maxWidth="4xl"
       >
         {/* Context bar */}
-        <div className="mb-5 p-4 rounded-xl border border-cult-dark-gray/40 bg-gradient-to-r from-cult-mid-gray/[0.06] to-transparent flex items-center justify-between gap-4">
+        <div className="mb-5 p-4 rounded-cult border border-cult-surface/40 bg-gradient-to-r from-cult-mid-gray/[0.06] to-transparent flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cult-accent/15 to-cult-accent/5 border border-cult-accent/20 flex items-center justify-center">
               <Tag className="w-4 h-4 text-cult-accent" />
@@ -531,7 +531,7 @@ function PackageInventoryModal({
             <p className="text-sm text-cult-text-muted">Loading inventory...</p>
           </div>
         ) : pkgError ? (
-          <div className="p-4 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-3">
+          <div className="p-4 rounded-cult border border-cult-danger/30 bg-cult-danger/[0.06] text-sm text-cult-danger flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <div className="flex-1">{pkgError}</div>
             <button onClick={loadPackages} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
@@ -556,9 +556,9 @@ function PackageInventoryModal({
               return (
                 <div key={batchId} className="animate-[card-fade-up_0.3s_ease-out]">
                   {/* Batch header */}
-                  <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-cult-dark-gray/25">
+                  <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-cult-surface/25">
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-md bg-cult-mid-gray/20 border border-cult-dark-gray/30 flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-md bg-cult-mid-gray/20 border border-cult-surface/30 flex items-center justify-center">
                         <Boxes className="w-3.5 h-3.5 text-cult-text-muted" />
                       </div>
                       <div>
@@ -703,7 +703,7 @@ export function OrderFulfillmentView() {
   return (
     <HubShell section="Order Fulfillment" icon={ClipboardList} kpis={kpis}>
       {error && (
-        <div className="mb-4 p-3.5 rounded-xl border border-cult-danger/30 bg-cult-danger/[0.06] flex items-center gap-3 text-sm text-cult-danger">
+        <div className="mb-4 p-3.5 rounded-cult border border-cult-danger/30 bg-cult-danger/[0.06] flex items-center gap-3 text-sm text-cult-danger">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={reload} className="shrink-0 px-3 py-1.5 rounded-lg border border-cult-danger/30 text-xs font-semibold hover:bg-cult-danger/10 transition-colors">Retry</button>
@@ -717,7 +717,7 @@ export function OrderFulfillmentView() {
         </p>
         <button
           onClick={reload}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cult-dark-gray/60 text-xs font-medium text-cult-text-muted hover:text-cult-accent hover:border-cult-accent/30 transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cult-surface/60 text-xs font-medium text-cult-text-muted hover:text-cult-accent hover:border-cult-accent/30 transition-all"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh
@@ -727,7 +727,7 @@ export function OrderFulfillmentView() {
       {/* Order list */}
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-cult-text-muted">
-          <div className="w-16 h-16 rounded-2xl bg-cult-success/10 border border-cult-success/20 flex items-center justify-center mb-5">
+          <div className="w-16 h-16 rounded-cult bg-cult-success/10 border border-cult-success/20 flex items-center justify-center mb-5">
             <CheckCircle2 className="w-8 h-8 text-cult-success/60" />
           </div>
           <p className="text-base font-bold text-cult-text-secondary">All caught up</p>

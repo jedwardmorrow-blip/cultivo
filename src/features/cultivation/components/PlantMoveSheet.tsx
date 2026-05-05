@@ -271,26 +271,26 @@ export function PlantMoveSheet({
       <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
 
       {/* Sheet */}
-      <div className="relative bg-cult-near-black border-t border-cult-medium-gray w-full max-h-[85vh] overflow-y-auto rounded-t-lg">
+      <div className="relative bg-cult-surface border-t border-cult-border w-full max-h-[85vh] overflow-y-auto rounded-t-lg">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 bg-cult-medium-gray rounded-full" />
+          <div className="w-10 h-1 bg-cult-border rounded-full" />
         </div>
 
         <div className="px-5 pb-8 pt-2">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider">
+              <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider">
                 {isMultiGroup ? 'Move Batch' : 'Move Plant Group'}
               </h3>
-              <p className="text-cult-light-gray text-sm mt-0.5">
-                <span className="text-cult-white font-mono font-bold">{groupLabel}</span>
-                {' '}from <span className="text-cult-white">{fromRoom}</span>
+              <p className="text-cult-text-muted text-sm mt-0.5">
+                <span className="text-cult-text-primary font-mono font-bold">{groupLabel}</span>
+                {' '}from <span className="text-cult-text-primary">{fromRoom}</span>
               </p>
-              <p className="text-cult-medium-gray text-xs">{totalPlants} plant{totalPlants !== 1 ? 's' : ''}</p>
+              <p className="text-cult-border text-xs">{totalPlants} plant{totalPlants !== 1 ? 's' : ''}</p>
             </div>
-            <button onClick={onCancel} className="p-2 text-cult-medium-gray hover:text-cult-white transition-colors">
+            <button onClick={onCancel} className="p-2 text-cult-border hover:text-cult-text-primary transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -299,11 +299,11 @@ export function PlantMoveSheet({
           <div className="flex items-center gap-1.5 mb-5">
             {(['room', 'confirm', ...(isFlowerRoom && hasSections ? ['placement'] : [])] as Step[]).map((s, i) => (
               <div key={s} className="flex items-center gap-1.5">
-                {i > 0 && <div className="w-4 h-px bg-cult-dark-gray" />}
+                {i > 0 && <div className="w-4 h-px bg-cult-surface" />}
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  step === s ? 'bg-cult-white text-cult-black' :
-                  (i < (['room', 'confirm', 'placement'] as Step[]).indexOf(step)) ? 'bg-cult-medium-gray text-cult-black' :
-                  'border border-cult-dark-gray text-cult-dark-gray'
+                  step === s ? 'bg-cult-accent text-cult-opaque-black' :
+                  (i < (['room', 'confirm', 'placement'] as Step[]).indexOf(step)) ? 'bg-cult-border text-cult-black' :
+                  'border border-cult-surface text-cult-surface'
                 }`}>
                   {i + 1}
                 </div>
@@ -322,7 +322,7 @@ export function PlantMoveSheet({
           {step === 'room' && (
             <>
               <div className="space-y-2 mb-5">
-                <p className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Select Destination Room</p>
+                <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Select Destination Room</p>
                 {availableRooms.length === 0 ? (
                   <p className="text-cult-warning text-sm">No other active rooms available.</p>
                 ) : (
@@ -336,18 +336,18 @@ export function PlantMoveSheet({
                         onClick={() => setToRoomId(r.id)}
                         className={`w-full text-left px-4 py-3 min-h-[56px] border transition-all ${
                           isSelected
-                            ? 'border-cult-white bg-cult-charcoal text-cult-white'
-                            : 'border-cult-dark-gray hover:border-cult-medium-gray text-cult-light-gray'
+                            ? 'border-cult-accent bg-cult-surface-raised text-cult-text-primary'
+                            : 'border-cult-surface hover:border-cult-border text-cult-text-muted'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-bold">{r.room_code}</span>
-                            <span className="text-xs text-cult-medium-gray">{r.room_type}</span>
+                            <span className="text-xs text-cult-border">{r.room_type}</span>
                           </div>
-                          {isSelected && <div className="w-2 h-2 rounded-full bg-cult-white" />}
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-cult-accent" />}
                         </div>
-                        <div className="text-xs text-cult-medium-gray mb-2">{r.name}</div>
+                        <div className="text-xs text-cult-border mb-2">{r.name}</div>
                         <RoomCapacityBar
                           currentCount={currentCount}
                           capacity={r.capacity_plants}
@@ -368,7 +368,7 @@ export function PlantMoveSheet({
                 </Button>
                 <button
                   onClick={onCancel}
-                  className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                  className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
                 >
                   Cancel
                 </button>
@@ -380,11 +380,11 @@ export function PlantMoveSheet({
           {step === 'confirm' && (
             <>
               <div className="mb-5">
-                <p className="text-sm text-cult-light-gray mb-3">
-                  Moving <span className="text-cult-white font-bold">{availablePlants}</span> plants to{' '}
-                  <span className="text-cult-white font-bold">{selectedRoom?.room_code}</span>
+                <p className="text-sm text-cult-text-muted mb-3">
+                  Moving <span className="text-cult-text-primary font-bold">{availablePlants}</span> plants to{' '}
+                  <span className="text-cult-text-primary font-bold">{selectedRoom?.room_code}</span>
                   {isFlowerRoom && hasSections && (
-                    <span className="text-cult-medium-gray"> — you&apos;ll assign sections next</span>
+                    <span className="text-cult-border"> — you&apos;ll assign sections next</span>
                   )}
                 </p>
 
@@ -430,7 +430,7 @@ export function PlantMoveSheet({
                 </div>
 
                 {killCount > 0 && (
-                  <p className="text-xs text-cult-medium-gray mt-2">
+                  <p className="text-xs text-cult-border mt-2">
                     {availablePlants} plant{availablePlants !== 1 ? 's' : ''} will be moved (after killing {killCount})
                   </p>
                 )}
@@ -448,7 +448,7 @@ export function PlantMoveSheet({
                 <button
                   onClick={() => { setStep('room'); setKillCount(0); setError(null); }}
                   disabled={saving}
-                  className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                  className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
                 >
                   Back
                 </button>
@@ -460,29 +460,29 @@ export function PlantMoveSheet({
           {step === 'placement' && (
             <>
               <div className="mb-3">
-                <p className="text-xs text-cult-medium-gray mb-2">
-                  Moving to <span className="text-cult-white font-bold">{selectedRoom?.room_code}</span> — {selectedRoom?.name}
+                <p className="text-xs text-cult-border mb-2">
+                  Moving to <span className="text-cult-text-primary font-bold">{selectedRoom?.room_code}</span> — {selectedRoom?.name}
                   {killCount > 0 && <span className="text-cult-danger ml-2">{killCount} killed</span>}
                 </p>
               </div>
 
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3 h-3 text-cult-light-gray" />
-                  <span className="text-[10px] text-cult-light-gray uppercase tracking-wider font-semibold">Tap sections to select</span>
+                  <MapPin className="w-3 h-3 text-cult-text-muted" />
+                  <span className="text-[10px] text-cult-text-muted uppercase tracking-wider font-semibold">Tap sections to select</span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={distributeEvenly}
                     disabled={selectedCells.length === 0}
-                    className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-emerald-700 hover:text-cult-success disabled:opacity-30 transition-all"
+                    className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-emerald-700 hover:text-cult-success disabled:opacity-30 transition-all"
                   >
                     Distribute evenly
                   </button>
                   <button
                     onClick={clearSelection}
                     disabled={selectedCells.length === 0}
-                    className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white disabled:opacity-30 transition-all"
+                    className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary disabled:opacity-30 transition-all"
                   >
                     Clear
                   </button>
@@ -491,16 +491,16 @@ export function PlantMoveSheet({
 
               <div className="flex items-center gap-4 mb-2">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 border border-dashed border-cult-medium-gray/50 bg-cult-black" />
-                  <span className="text-[9px] text-cult-medium-gray">Empty</span>
+                  <div className="w-3 h-3 border border-dashed border-cult-border/50 bg-cult-black" />
+                  <span className="text-[9px] text-cult-border">Empty</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 border border-cult-warning/40 bg-cult-warning-muted" />
-                  <span className="text-[9px] text-cult-medium-gray">Occupied</span>
+                  <span className="text-[9px] text-cult-border">Occupied</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 border border-cult-success/30 bg-cult-success-muted" />
-                  <span className="text-[9px] text-cult-medium-gray">Placing here</span>
+                  <span className="text-[9px] text-cult-border">Placing here</span>
                 </div>
               </div>
 
@@ -508,22 +508,22 @@ export function PlantMoveSheet({
                 className="grid gap-[3px] mb-3"
                 style={{ gridTemplateColumns: `36px repeat(${sectionLabels.length}, 1fr)` }}
               >
-                <div className="text-center text-[9px] font-mono font-bold text-cult-medium-gray py-1" />
+                <div className="text-center text-[9px] font-mono font-bold text-cult-border py-1" />
                 {sectionLabels.map((label) => (
-                  <div key={label} className="text-center text-[9px] font-mono font-bold text-cult-medium-gray py-1 tracking-wider">
+                  <div key={label} className="text-center text-[9px] font-mono font-bold text-cult-border py-1 tracking-wider">
                     {label}
                   </div>
                 ))}
 
                 {sortedTables.map((table) => (
                   <>
-                    <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono font-bold text-cult-medium-gray">
+                    <div key={`label-${table.table_number}`} className="flex items-center justify-center text-[9px] font-mono font-bold text-cult-border">
                       T{table.table_number}
                     </div>
                     {sectionLabels.map((sLabel) => {
                       const key = `${table.table_number}-${sLabel}`;
                       const cell = cells.get(key);
-                      if (!cell) return <div key={key} className="min-h-[52px] bg-cult-black/30 border border-cult-dark-gray/30" />;
+                      if (!cell) return <div key={key} className="min-h-[52px] bg-cult-black/30 border border-cult-surface/30" />;
 
                       const isOccupied = cell.occupiedCount > 0;
                       const isSelected = cell.selected;
@@ -583,7 +583,7 @@ export function PlantMoveSheet({
                         <button
                           key={key}
                           onClick={() => toggleCell(key)}
-                          className="min-h-[52px] bg-cult-black border border-dashed border-cult-medium-gray/40 hover:border-cult-success/40 hover:bg-cult-success-muted transition-colors cursor-pointer"
+                          className="min-h-[52px] bg-cult-black border border-dashed border-cult-border/40 hover:border-cult-success/40 hover:bg-cult-success-muted transition-colors cursor-pointer"
                         />
                       );
                     })}
@@ -591,22 +591,22 @@ export function PlantMoveSheet({
                 ))}
               </div>
 
-              <div className="flex items-center justify-between bg-cult-black border border-cult-dark-gray px-3 py-2 mb-3">
-                <div className="text-xs text-cult-medium-gray">
-                  <span className="text-cult-white font-mono font-bold">{assignedPlants}</span> assigned
+              <div className="flex items-center justify-between bg-cult-black border border-cult-surface px-3 py-2 mb-3">
+                <div className="text-xs text-cult-border">
+                  <span className="text-cult-text-primary font-mono font-bold">{assignedPlants}</span> assigned
                 </div>
-                <div className="text-xs text-cult-medium-gray">
+                <div className="text-xs text-cult-border">
                   <span className={`font-mono font-bold ${remainingPlants === 0 ? 'text-cult-success' : remainingPlants < 0 ? 'text-cult-danger' : 'text-cult-warning'}`}>
                     {remainingPlants}
                   </span> remaining
                 </div>
-                <div className="text-xs text-cult-medium-gray">
-                  of <span className="text-cult-white font-mono font-bold">{availablePlants}</span> avail
+                <div className="text-xs text-cult-border">
+                  of <span className="text-cult-text-primary font-mono font-bold">{availablePlants}</span> avail
                 </div>
               </div>
 
               {remainingPlants > 0 && filledCount > 0 && (
-                <p className="text-xs text-cult-medium-gray mb-3">
+                <p className="text-xs text-cult-border mb-3">
                   {remainingPlants} plant{remainingPlants !== 1 ? 's' : ''} will stay in {fromRoom}.
                 </p>
               )}
@@ -630,7 +630,7 @@ export function PlantMoveSheet({
                 <button
                   onClick={() => { setStep('confirm'); clearSelection(); setError(null); }}
                   disabled={saving}
-                  className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+                  className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
                 >
                   Back
                 </button>

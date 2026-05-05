@@ -152,7 +152,7 @@ export default function TriageTable({
 
                 {/* Ready % */}
                 <div className="flex flex-col justify-center">
-                  <div className={`text-base font-bold font-montserrat ${COVERAGE_COLORS[row.coverage.state]}`}>
+                  <div className={`text-base font-bold font-mono ${COVERAGE_COLORS[row.coverage.state]}`}>
                     {fmtPct(row.readyPct)}
                   </div>
                   <div className="flex h-1.5 rounded-sm bg-cult-border overflow-hidden mt-1 w-20">

@@ -138,7 +138,7 @@ export function RosinDashboard({ onNavigate }: RosinDashboardProps) {
 
       <div className="bg-cult-surface-raised border border-cult-border rounded-cult overflow-hidden">
         <div className="bg-cult-surface-overlay px-5 py-3 border-b border-cult-border">
-          <h3 className="text-[13px] font-semibold text-cult-white">Active Work</h3>
+          <h3 className="text-[13px] font-semibold text-cult-text-primary">Active Work</h3>
         </div>
 
         {loading ? (
@@ -198,7 +198,7 @@ export function RosinDashboard({ onNavigate }: RosinDashboardProps) {
                     className="border-b border-cult-border last:border-0 hover:bg-cult-surface-overlay/50 transition-colors"
                   >
                     <td
-                      className="px-5 py-3 text-[13px] font-medium text-cult-white"
+                      className="px-5 py-3 text-[13px] font-medium text-cult-text-primary"
                       style={{ boxShadow: `inset 3px 0 0 ${stageColor}` }}
                     >
                       {getStageLabel(item.stage)}

@@ -1,9 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
+import type { IconName } from '@/shared/icons';
 
 export interface MenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Cultivo kit icon name. When set, takes precedence over `icon` (lucide). */
+  iconName?: IconName;
   adminOnly?: boolean;
   badge?: number | string;
   badgeColor?: 'warning' | 'success' | 'error' | 'info' | 'default';
@@ -14,6 +17,8 @@ export interface MenuSection {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Cultivo kit icon name. When set, takes precedence over `icon` (lucide). */
+  iconName?: IconName;
   items: MenuItem[];
 }
 

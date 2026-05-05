@@ -174,7 +174,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
         maxWidth="3xl"
       >
         {/* Context bar */}
-        <div className="mb-4 p-3 rounded-xl border border-white/[0.06] bg-white/[0.03]">
+        <div className="mb-4 p-3 rounded-cult border border-cult-border-subtle bg-cult-surface-inset">
           <div className="flex items-center justify-between">
             <div className="text-xs text-white/50">
               <span className="font-semibold text-white/70">{lineItem.customer_name}</span>
@@ -189,7 +189,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl border border-red-500/20 bg-red-500/[0.06] text-xs text-red-400 flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-cult border border-red-500/20 bg-red-500/[0.06] text-xs text-red-400 flex items-center gap-2">
             <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
             {error}
           </div>
@@ -210,7 +210,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
             {Array.from(batchGroups.entries()).map(([batchId, batch]) => (
               <div key={batchId}>
                 {/* Batch header */}
-                <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-cult-border-subtle">
                   <span className="text-xs font-bold font-mono text-white/70">{batch.batch_number}</span>
                   {batch.coa_status && COA_STATUS_CONFIG[batch.coa_status] && (
                     <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium border ${COA_STATUS_CONFIG[batch.coa_status].color}`}>
@@ -245,7 +245,7 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
                       return (
                         <div
                           key={pkg.id}
-                          className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border ${theme.border} bg-gradient-to-r ${theme.gradient}`}
+                          className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-cult border ${theme.border} bg-gradient-to-r ${theme.gradient}`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <span className={`w-2 h-2 rounded-full flex-shrink-0 ${theme.dot}`} />
@@ -262,15 +262,15 @@ export function InventoryDrawer({ isOpen, onClose, lineItem, onReload }: Invento
                               type="button"
                               onClick={() => handleSendToProcessing(pkg)}
                               disabled={isSending || pkg.available_qty <= 0 || alreadyDispatched}
-                              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all
+                              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-cult text-[10px] font-bold transition-all
                                 ${justSent
                                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
                                   : alreadyDispatched
                                   ? 'bg-amber-500/10 text-amber-400/60 border border-amber-500/15 cursor-not-allowed'
                                   : isSending
-                                  ? 'bg-white/[0.04] text-white/30 cursor-wait'
+                                  ? 'bg-cult-surface-inset text-white/30 cursor-wait'
                                   : pkg.available_qty <= 0
-                                  ? 'bg-white/[0.02] text-white/15 cursor-not-allowed'
+                                  ? 'bg-cult-surface-inset text-white/15 cursor-not-allowed'
                                   : 'bg-[#E8E0D4]/8 text-[#E8E0D4] border border-[#E8E0D4]/20 hover:bg-[#E8E0D4]/15 hover:border-[#E8E0D4]/30'
                                 }`}
                             >

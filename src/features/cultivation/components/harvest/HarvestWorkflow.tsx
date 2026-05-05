@@ -22,8 +22,8 @@ import type { GrowRoom, PlantGroup, HarvestSession, HarvestType } from '../../ty
 
 // ─── Glass tokens ───────────────────────────────────────────────────
 
-const GLASS = 'rounded-2xl border border-white/[0.08] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]';
-const GLASS_NESTED = 'rounded-xl bg-white/[0.04] border border-white/[0.06]';
+const GLASS = 'rounded-cult border border-cult-border bg-cult-surface';
+const GLASS_NESTED = 'rounded border border-cult-border-subtle bg-cult-surface-inset';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -223,7 +223,7 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
       <div className="flex items-center gap-4">
         <button
           onClick={step === 'select-room' ? onCancel : () => setStep(step === 'review' ? 'record-weights' : 'select-room')}
-          className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/[0.1] text-white/40 hover:text-white/70 hover:border-white/[0.2] transition-all active:scale-95"
+          className="flex items-center justify-center w-9 h-9 rounded border border-cult-border text-cult-text-muted hover:text-cult-text-primary hover:border-cult-border-strong transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -279,8 +279,8 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
 
           {loadingSessions ? (
             <div className="text-white/30 text-sm py-8 text-center">
-              <div className="glass-skeleton h-24 rounded-2xl mb-3" />
-              <div className="glass-skeleton h-24 rounded-2xl" />
+              <div className="glass-skeleton h-24 rounded-cult mb-3" />
+              <div className="glass-skeleton h-24 rounded-cult" />
             </div>
           ) : (
             <div className="space-y-3">
@@ -304,7 +304,7 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
             {activeBatches > 0 && (
               <button
                 onClick={() => setStep('review')}
-                className="flex items-center gap-2 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 px-5 py-3 text-xs font-semibold uppercase tracking-wider active:scale-95 transition-all"
+                className="flex items-center gap-2 rounded-cult bg-amber-500/15 text-amber-300 border border-amber-500/20 px-5 py-3 text-xs font-semibold uppercase tracking-wider active:scale-95 transition-all"
               >
                 Review {activeBatches === totalBatches ? 'All' : `${activeBatches}`} Batch{activeBatches !== 1 ? 'es' : ''}
                 <ChevronRight className="w-4 h-4" />
@@ -312,7 +312,7 @@ export function HarvestWorkflow({ onComplete, onCancel, initialRoomId }: Harvest
             )}
             <button
               onClick={() => setStep('select-room')}
-              className="rounded-xl bg-white/[0.05] border border-white/[0.1] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/40 hover:bg-white/[0.08] hover:text-white/60 active:scale-95 transition-all"
+              className="rounded border border-cult-border bg-cult-surface-inset px-5 py-3 font-mono uppercase tracking-[0.16em] text-[11px] text-cult-text-muted hover:bg-cult-surface-subtle hover:text-cult-text-secondary transition-colors"
             >
               Back
             </button>
@@ -502,13 +502,13 @@ function BatchWeightCard({
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {isComplete && (
-            <span className="flex items-center gap-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1">
+            <span className="flex items-center gap-1.5 rounded-cult bg-emerald-500/15 border border-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1">
               <CheckCircle className="w-3.5 h-3.5" />
               Done
             </span>
           )}
           {!isComplete && entries.length > 0 && (
-            <span className="rounded-xl bg-amber-500/15 border border-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1">
+            <span className="rounded-cult bg-amber-500/15 border border-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1">
               Partial
             </span>
           )}
@@ -527,7 +527,7 @@ function BatchWeightCard({
             </span>
             <span className="text-[10px] text-white/30 font-mono font-semibold">{progress}%</span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="w-full h-1.5 rounded-full bg-cult-surface-inset border border-cult-border-faint overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ease-out ${isComplete ? 'bg-emerald-500/60' : 'bg-amber-500/60'}`}
               style={{ width: `${progress}%` }}
@@ -540,7 +540,7 @@ function BatchWeightCard({
       {!formOpen && !isComplete && (
         <div className="mt-4">
           {error && (
-            <div className="flex items-start gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs p-3 mb-3">
+            <div className="flex items-start gap-2 rounded-cult bg-red-500/10 border border-red-500/20 text-red-300 text-xs p-3 mb-3">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
               {error}
             </div>
@@ -548,7 +548,7 @@ function BatchWeightCard({
           <button
             onClick={handleStart}
             disabled={creating}
-            className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white/40 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:bg-white/[0.08] hover:text-white/60 active:scale-95 transition-all"
+            className="flex items-center gap-2 rounded border border-cult-border bg-cult-surface-inset text-cult-text-muted px-4 py-2.5 font-mono uppercase tracking-[0.16em] text-[11px] hover:bg-cult-surface-subtle hover:text-cult-text-secondary transition-colors"
           >
             <Scale className="w-4 h-4" />
             Start Weighing
@@ -595,7 +595,7 @@ function BatchWeightCard({
                 <div
                   key={entry.id}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs group ${
-                    idx % 2 === 0 ? 'bg-white/[0.02]' : 'bg-white/[0.04]'
+                    idx % 2 === 0 ? 'bg-cult-surface-inset' : 'bg-cult-surface-subtle'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -628,7 +628,7 @@ function BatchWeightCard({
       {formOpen && remaining > 0 && (
         <div className={`mt-4 ${GLASS_NESTED} p-3`}>
           {entryError && (
-            <div className="flex items-start gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs p-3 mb-3">
+            <div className="flex items-start gap-2 rounded-cult bg-red-500/10 border border-red-500/20 text-red-300 text-xs p-3 mb-3">
               <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
               {entryError}
             </div>
@@ -637,17 +637,17 @@ function BatchWeightCard({
             <div className="flex-1">
               <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Weight (g)</label>
               <input type="number" min="0.1" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="e.g. 1200"
-                className="w-full glass-input rounded-xl px-3 py-2.5 text-sm text-white font-mono placeholder:text-white/15" />
+                className="w-full glass-input rounded-cult px-3 py-2.5 text-sm text-white font-mono placeholder:text-white/15" />
             </div>
             <div className="w-24">
               <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Plants</label>
               <input type="number" min="1" max={remaining} step="1" value={plantCount} onChange={(e) => setPlantCount(e.target.value)} placeholder={String(Math.min(5, remaining))}
-                className="w-full glass-input rounded-xl px-3 py-2.5 text-sm text-white font-mono placeholder:text-white/15" />
+                className="w-full glass-input rounded-cult px-3 py-2.5 text-sm text-white font-mono placeholder:text-white/15" />
             </div>
             <div className="w-28">
               <label className="block text-[9px] text-white/25 uppercase tracking-wider mb-1">Dest</label>
               <select value={destination} onChange={(e) => setDestination(e.target.value as HarvestType)}
-                className="w-full glass-input rounded-xl px-2.5 py-2.5 text-[10px] text-white uppercase tracking-wider">
+                className="w-full glass-input rounded-cult px-2.5 py-2.5 text-[10px] text-white uppercase tracking-wider">
                 <option value="flower">Flower</option>
                 <option value="fresh_frozen">Frozen</option>
               </select>
@@ -655,7 +655,7 @@ function BatchWeightCard({
             <button
               onClick={handleAddEntry}
               disabled={!canAdd}
-              className="flex items-center gap-1.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 px-4 py-2.5 text-xs font-semibold active:scale-95 transition-all disabled:opacity-20"
+              className="flex items-center gap-1.5 rounded-cult bg-amber-500/15 text-amber-300 border border-amber-500/20 px-4 py-2.5 text-xs font-semibold active:scale-95 transition-all disabled:opacity-20"
             >
               <Plus className="w-3.5 h-3.5" />
               {saving ? '...' : 'Add'}
@@ -678,7 +678,7 @@ function BatchWeightCard({
                   Waste (g) <span className="normal-case text-white/15">— stems, leaves, etc.</span>
                 </label>
                 <input type="number" min="0" step="0.1" value={wasteGrams || ''} onChange={(e) => onWasteChange(batch.batchRegistryId, parseFloat(e.target.value) || 0)} placeholder="0"
-                  className="w-36 glass-input rounded-xl px-3 py-2 text-sm text-white font-mono placeholder:text-white/15" />
+                  className="w-36 glass-input rounded-cult px-3 py-2 text-sm text-white font-mono placeholder:text-white/15" />
               </div>
               {wasteGrams === 0 && (
                 <button onClick={() => setShowWaste(false)} className="text-white/15 hover:text-white/30 transition-colors p-2"><Minus className="w-3.5 h-3.5" /></button>

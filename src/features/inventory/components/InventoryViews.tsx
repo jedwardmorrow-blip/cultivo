@@ -50,7 +50,7 @@ function SelectionSummary({ count, onClear, onPrintLabels }: { count: number; on
         )}
         <button
           onClick={onClear}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cult-silver hover:text-cult-white bg-cult-medium-gray/40 hover:bg-cult-medium-gray/60 rounded-md transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cult-text-secondary hover:text-cult-text-primary bg-cult-border/40 hover:bg-cult-border/60 rounded-md transition-colors"
         >
           <X className="w-3 h-3" />
           Clear
@@ -117,12 +117,12 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-cult-success/40" />
         <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-cult-info/40" />
-        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
+        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-border" />
         <StatsCard
           label="Oldest Package"
           value={`${stats.oldestPackage || 0}d`}
           icon={<Clock className="w-5 h-5" />}
-          accentColor={(stats.oldestPackage || 0) > 14 ? 'border-cult-warning/60' : 'border-cult-medium-gray'}
+          accentColor={(stats.oldestPackage || 0) > 14 ? 'border-cult-warning/60' : 'border-cult-border'}
           subtitle={(stats.oldestPackage || 0) > 14 ? 'Aging - consider processing' : undefined}
         />
       </div>
@@ -147,10 +147,10 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-text-primary">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-text-primary">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-text-secondary">{val || '-'}</span> },
+          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-text-primary tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
             header: 'Age',
             accessor: (item) => Math.floor((Date.now() - new Date(item.last_updated).getTime()) / (1000 * 60 * 60 * 24)),
@@ -159,7 +159,7 @@ export function BinnedInventoryView({ items, stats, onDataRefresh }: BinnedViewP
             format: (days) => {
               const isAging = days > 14;
               return (
-                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${isAging ? 'bg-cult-warning-muted text-cult-warning' : 'text-cult-silver'}`}>
+                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${isAging ? 'bg-cult-warning-muted text-cult-warning' : 'text-cult-text-secondary'}`}>
                   {days}d
                 </span>
               );
@@ -217,7 +217,7 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <StatsCard label="Packages" value={stats.totalPackages} icon={<Package className="w-5 h-5" />} accentColor="border-cult-info/40" />
         <StatsCard label="Total Weight" value={formatWeight(stats.totalWeight)} icon={<Scale className="w-5 h-5" />} accentColor="border-cult-info/40" />
-        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-medium-gray" />
+        <StatsCard label="Unique Strains" value={stats.strainCount || 0} icon={<Leaf className="w-5 h-5" />} accentColor="border-cult-border" />
       </div>
 
       <SelectionSummary count={selectedIds.size} onClear={() => setSelectedIds(new Set())} onPrintLabels={handlePrintLabelsClick} />
@@ -231,10 +231,10 @@ export function BuckedInventoryView({ items, stats, onDataRefresh }: BuckedViewP
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-text-primary">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-text-primary">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-text-secondary">{val || '-'}</span> },
+          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-text-primary tabular-nums">{(val || 0).toFixed(0)}</span> },
           {
             header: 'Status',
             accessor: 'status',
@@ -320,7 +320,7 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
         <StatsCard label="Trim" value={formatWeight(stats.trim)} icon={<Scissors className="w-5 h-5" />} accentColor="border-cult-warning/40" />
       </div>
 
-      <div className="mb-6 flex gap-1 p-1 bg-cult-dark-gray rounded-lg w-fit">
+      <div className="mb-6 flex gap-1 p-1 bg-cult-surface rounded-lg w-fit">
         {bulkTabs.map(({ key, label, icon: Icon }) => {
           const count = getBulkTabCount(items, key);
           return (
@@ -329,14 +329,14 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
               onClick={() => onSubTabChange(key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 subTab === key
-                  ? 'bg-cult-medium-gray text-cult-white shadow-sm'
-                  : 'text-cult-silver hover:text-cult-white'
+                  ? 'bg-cult-border text-cult-text-primary shadow-sm'
+                  : 'text-cult-text-secondary hover:text-cult-text-primary'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               {label}
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                subTab === key ? 'bg-cult-lighter-gray/30 text-cult-white' : 'bg-cult-medium-gray/50 text-cult-lighter-gray'
+                subTab === key ? 'bg-cult-text-muted/30 text-cult-text-primary' : 'bg-cult-border/50 text-cult-text-muted'
               }`}>
                 {count}
               </span>
@@ -356,11 +356,11 @@ export function BulkInventoryView({ items, stats, subTab, onSubTabChange, onData
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
-          { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(1)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-text-primary">{val}</span> },
+          { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-text-primary">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-text-primary">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-text-secondary">{val || '-'}</span> },
+          { header: 'Available (g)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-text-primary tabular-nums">{(val || 0).toFixed(1)}</span> },
           GradeColumn(onDataRefresh),
         ]}
         renderRowActions={renderRowActions}
@@ -423,11 +423,11 @@ export function PackagedInventoryView({ items, stats, onDataRefresh }: PackagedV
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         columns={[
-          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-white">{val}</span> },
-          { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-white">{val}</span> },
-          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-white">{val}</span> },
-          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-silver">{val || '-'}</span> },
-          { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-white tabular-nums">{(val || 0).toFixed(0)}</span> },
+          { header: 'Package ID', accessor: 'package_id', format: (val) => <span className="font-medium text-cult-text-primary">{val}</span> },
+          { header: 'Product', accessor: 'product_name', format: (val) => <span className="text-cult-text-primary">{val}</span> },
+          { header: 'Strain', accessor: 'strain', format: (val) => <span className="text-cult-text-primary">{val}</span> },
+          { header: 'Batch', accessor: 'batch_number', format: (val) => <span className="text-cult-text-secondary">{val || '-'}</span> },
+          { header: 'Available (qty)', accessor: 'available_qty', align: 'right', format: (val) => <span className="font-medium text-cult-text-primary tabular-nums">{(val || 0).toFixed(0)}</span> },
           GradeColumn(onDataRefresh),
         ]}
         renderRowActions={renderRowActions}

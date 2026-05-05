@@ -32,14 +32,14 @@ export function DeliveryCalendarMini({
       <div className="flex items-center justify-between mb-2">
         <button
           onClick={(e) => { e.stopPropagation(); onMonthChange(new Date(year, month - 1, 1)); }}
-          className="p-0.5 rounded hover:bg-white/[0.08]"
+          className="p-0.5 rounded hover:bg-cult-surface-overlay"
         >
           <ChevronLeft className="w-3 h-3 text-white/40" />
         </button>
         <span className="text-[10px] font-semibold text-white/50 uppercase tracking-wider">{monthLabel}</span>
         <button
           onClick={(e) => { e.stopPropagation(); onMonthChange(new Date(year, month + 1, 1)); }}
-          className="p-0.5 rounded hover:bg-white/[0.08]"
+          className="p-0.5 rounded hover:bg-cult-surface-overlay"
         >
           <ChevronRight className="w-3 h-3 text-white/40" />
         </button>
@@ -66,7 +66,7 @@ export function DeliveryCalendarMini({
               key={dateStr}
               onClick={(e) => { e.stopPropagation(); onSelectDate(isSel ? null : dateStr); }}
               className={`w-full aspect-square flex items-center justify-center rounded text-[9px] transition-all
-                ${isSel ? 'bg-white/[0.15] text-white font-bold' : isTod ? 'text-amber-400 font-bold' : 'text-white/40 hover:text-white/60'}
+                ${isSel ? 'bg-cult-surface-active text-white font-bold' : isTod ? 'text-amber-400 font-bold' : 'text-white/40 hover:text-white/60'}
               `}
             >
               <div className="relative">

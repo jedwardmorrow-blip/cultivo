@@ -109,7 +109,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2">
               Dispensary Identity
             </h3>
 
@@ -121,14 +121,14 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <div className="flex items-center gap-2 text-xs text-cult-light-gray">
-              <span className="font-mono bg-cult-dark-gray px-2 py-1 rounded text-cult-silver">
+            <div className="flex items-center gap-2 text-xs text-cult-text-muted">
+              <span className="font-mono bg-cult-surface px-2 py-1 rounded text-cult-text-secondary">
                 {account.dispensary_code}
               </span>
               <span>Dispensary code (read-only)</span>
             </div>
 
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2 mt-6">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2 mt-6">
               Contact Information
             </h3>
 
@@ -158,7 +158,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2 mt-6">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2 mt-6">
               Account Settings
             </h3>
 
@@ -166,7 +166,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               <select
                 value={formData.default_payment_terms || 'Net 30'}
                 onChange={(e) => update('default_payment_terms', e.target.value)}
-                className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-4 py-2 focus:outline-none focus:border-cult-white transition-colors"
+                className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-4 py-2 focus:outline-none focus:border-cult-accent transition-colors"
               >
                 {PAYMENT_TERMS_OPTIONS.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
@@ -178,7 +178,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               <select
                 value={formData.preferred_delivery_day || ''}
                 onChange={(e) => update('preferred_delivery_day', e.target.value)}
-                className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-4 py-2 focus:outline-none focus:border-cult-white transition-colors"
+                className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-4 py-2 focus:outline-none focus:border-cult-accent transition-colors"
               >
                 <option value="">No preference</option>
                 {DELIVERY_DAY_OPTIONS.map((day) => (
@@ -189,7 +189,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2">
               Delivery Address
             </h3>
 
@@ -229,7 +229,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2 mt-6">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2 mt-6">
               License & Compliance
             </h3>
 
@@ -257,7 +257,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               />
             </FormField>
 
-            <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider border-b border-cult-medium-gray pb-2 mt-6">
+            <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider border-b border-cult-border pb-2 mt-6">
               Notes
             </h3>
 
@@ -266,7 +266,7 @@ export function AccountInfoEditModal({ account, isOpen, onClose, onSave }: Accou
               onChange={(e) => update('notes', e.target.value)}
               rows={3}
               placeholder="Internal notes about this account..."
-              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-4 py-2 focus:outline-none focus:border-cult-white transition-colors placeholder-cult-lighter-gray resize-none"
+              className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-4 py-2 focus:outline-none focus:border-cult-accent transition-colors placeholder-cult-text-muted resize-none"
             />
           </div>
         </div>

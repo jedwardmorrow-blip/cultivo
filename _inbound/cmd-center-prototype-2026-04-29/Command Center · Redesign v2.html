@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cultivation Command · Redesign v2</title>
+<link rel="stylesheet" href="tokens/brand-tokens.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Cultivation Command Center — v2
+   Home surface language + visual rhythm, hierarchy, life.
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--op-canvas);
+  color: var(--op-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.cmd { padding: 18px 24px 48px; display: flex; flex-direction: column; gap: 14px; max-width: 1600px; margin: 0 auto; }
+
+/* ── Header ─────────────────────────────────────────────── */
+.hdr { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--op-line); padding-bottom: 12px; }
+.hdr-l { display: flex; align-items: baseline; gap: 16px; }
+.hdr-title { font-size: 14px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+.hdr-meta { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink-2); }
+.hdr-meta strong { color: var(--op-ink); font-weight: 500; }
+.hdr-r { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── Dot ────────────────────────────────────────────────── */
+.d { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.d-clone { background: var(--stage-clone); }
+.d-veg { background: var(--stage-veg); }
+.d-flower { background: var(--stage-flower); }
+.d-mother { background: var(--stage-mother); }
+.d-ok { background: var(--status-ok); }
+.d-warn { background: var(--status-warn); }
+.d-bad { background: var(--status-bad); }
+.d-muted { background: var(--op-ink-4); }
+
+/* ── Mono label ─────────────────────────────────────────── */
+.ml { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--op-ink-3); }
+.ml-sm { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); }
+
+/* ── Section ────────────────────────────────────────────── */
+.sec { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.sec-hd { display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); }
+.sec-hd .ml-r { margin-left: auto; }
+.sec-ft { display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--op-line); background: var(--op-canvas); font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); letter-spacing: 0.06em; }
+
+/* ── Attention strip ────────────────────────────────────── */
+.attn { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); padding: 10px 16px; display: flex; align-items: center; gap: 20px; overflow-x: auto; }
+.attn-item { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; white-space: nowrap; cursor: pointer; background: none; border: 0; color: inherit; padding: 0; transition: color 80ms; }
+.attn-item:hover { color: var(--op-ink); }
+.attn-code { font-weight: 600; color: var(--op-ink); }
+
+/* ── Cell (Home pattern) ────────────────────────────────── */
+.cells { display: grid; background: var(--op-canvas); }
+.cells > .cell:not(:last-child) { border-right: 1px solid var(--op-line); }
+.cell { padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background 120ms; background: transparent; border: 0; text-align: left; font-family: inherit; color: inherit; }
+.cell:hover { background: var(--op-surface); }
+.cell-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--op-ink-3); display: flex; align-items: center; gap: 6px; }
+.cell-val { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--op-ink); line-height: 1.1; letter-spacing: -0.01em; }
+.cell-val.proj { font-style: italic; }
+.cell-sub { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-2); letter-spacing: 0.02em; }
+.cell-spark { display: flex; align-items: flex-end; gap: 1px; height: 20px; margin-top: 4px; }
+.cell-spark-bar { width: 3px; border-radius: 1px; background: var(--op-ink-4); min-height: 2px; transition: height 200ms; }
+
+/* ── Room grid ──────────────────────────────────────────── */
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: var(--op-line); }
+.rm { background: var(--op-canvas); padding: 14px 16px; cursor: pointer; border: 0; border-left: 4px solid transparent; text-align: left; font-family: inherit; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: background 120ms; min-height: 130px; }
+.rm:hover { background: var(--op-surface); }
+.rm.empty { opacity: 0.3; cursor: default; border-left-color: transparent; }
+.rm.empty:hover { background: var(--op-canvas); }
+/* Left accent: the ONE allowed stage-color use (4px vertical stripe) */
+.rm.urgent { border-left-color: var(--status-bad); }
+.rm.warning { border-left-color: var(--status-warn); }
+.rm-top { display: flex; align-items: center; gap: 8px; }
+.rm-code { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--op-ink); }
+.rm-type { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--op-ink-3); }
+.rm-urg { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.rm-big { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--op-ink); line-height: 1.1; }
+.rm-stats { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-2); display: flex; gap: 12px; }
+.rm-strains { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.rm-strain { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); border: 1px solid var(--op-line); padding: 1px 6px; letter-spacing: 0.04em; }
+.rm-ft { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--op-line); }
+.rm-harv { font-family: var(--font-mono); font-size: 11px; }
+.rm-tasks { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); }
+.tbar { display: flex; gap: 2px; height: 4px; }
+.tseg { height: 4px; border-radius: 1px; }
+.tseg.done { background: var(--status-ok); }
+.tseg.act { background: var(--status-warn); }
+.tseg.pend { background: var(--op-ink-4); }
+
+/* ── Expanded view ──────────────────────────────────────── */
+.exp { display: flex; flex-direction: column; gap: 14px; }
+.exp-hdr { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.exp-hdr-top { display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); flex-wrap: wrap; }
+.back-btn { background: none; border: 1px solid var(--op-line-strong); color: var(--op-ink-2); padding: 6px 12px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; transition: all 120ms; }
+.back-btn:hover { color: var(--op-ink); border-color: var(--op-ink-3); }
+.exp-code { font-family: var(--font-mono); font-size: 18px; font-weight: 600; }
+.exp-meta { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); display: flex; gap: 12px; }
+.act-btn { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px 16px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; cursor: pointer; transition: all 120ms; }
+.act-btn:hover { background: var(--accent); color: var(--op-canvas); }
+
+/* ── Phase hero ─────────────────────────────────────────── */
+.phase-hero { padding: 16px; background: var(--op-canvas); }
+.phase-track { position: relative; height: 8px; background: var(--op-surface-2); border-radius: 4px; overflow: visible; }
+.phase-fill { height: 100%; border-radius: 4px; background: var(--op-ink-3); position: relative; }
+.phase-now { position: absolute; right: -1px; top: -4px; width: 2px; height: 16px; background: var(--accent); border-radius: 1px; }
+.phase-labels { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); }
+.phase-markers { position: relative; height: 0; }
+.phase-marker { position: absolute; top: -20px; font-family: var(--font-mono); font-size: 9px; color: var(--op-ink-3); transform: translateX(-50%); white-space: nowrap; }
+.phase-marker::after { content: ''; position: absolute; bottom: -4px; left: 50%; width: 1px; height: 4px; background: var(--op-ink-4); }
+
+/* ── Expanded body ──────────────────────────────────────── */
+.exp-body { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; }
+@media (max-width: 1024px) { .exp-body { grid-template-columns: 1fr; } }
+
+/* ── Task list ──────────────────────────────────────────── */
+.tl { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.tl-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--op-line); transition: background 120ms; cursor: pointer; }
+.tl-row:last-child { border-bottom: 0; }
+.tl-row:hover { background: var(--op-surface-2); }
+.tl-chk { width: 18px; height: 18px; border: 1px solid var(--op-line-strong); border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.tl-chk.done { background: var(--status-ok); border-color: var(--status-ok); color: var(--op-canvas); }
+.tl-chk.done::after { content: '✓'; font-weight: 700; }
+.tl-chk.act { border-color: var(--status-warn); }
+.tl-chk.act::after { content: ''; width: 8px; height: 8px; border-radius: 1px; background: var(--status-warn); }
+.tl-name { font-size: 13px; color: var(--op-ink); flex: 1; }
+.tl-name.struck { color: var(--op-ink-3); text-decoration: line-through; text-decoration-color: var(--op-ink-4); }
+.tl-who { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-3); letter-spacing: 0.06em; }
+.tl-time { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); }
+
+/* ── Sidebar cards ──────────────────────────────────────── */
+.sc { background: var(--op-surface); border: 1px solid var(--op-line); border-radius: var(--r-md); overflow: hidden; }
+.sc-hd { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--op-line); background: var(--op-canvas); }
+.sc-bd { padding: 12px 16px; }
+.sc-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.sc-row:not(:last-child) { border-bottom: 1px solid var(--op-line); }
+.sc-key { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--op-ink-4); width: 72px; flex-shrink: 0; }
+.sc-val { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink); }
+
+/* ── Schedule lookahead ─────────────────────────────────── */
+.sched-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-family: var(--font-mono); font-size: 11px; }
+.sched-day { width: 60px; color: var(--op-ink-4); flex-shrink: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.sched-tasks { color: var(--op-ink-2); }
+
+/* ── Room layout grid ───────────────────────────────────── */
+.lay-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.lay-cell { aspect-ratio: 1.2; border: 1px solid var(--op-line); border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); gap: 2px; transition: background 120ms; cursor: pointer; }
+.lay-cell.occ { background: var(--op-surface-2); color: var(--op-ink-3); }
+.lay-cell:hover { background: var(--op-surface-2); border-color: var(--op-line-strong); }
+.lay-cell-ct { font-size: 16px; font-weight: 500; color: var(--op-ink-2); }
+
+/* ── Feed recipe (collapsed) ────────────────────────────── */
+.feed-summary { font-family: var(--font-mono); font-size: 12px; color: var(--op-ink-2); }
+.feed-summary strong { color: var(--accent); font-weight: 500; }
+.feed-full { display: none; }
+.feed-full.open { display: block; }
+.feed-row { display: grid; grid-template-columns: 1fr 56px 48px; gap: 8px; padding: 5px 0; font-family: var(--font-mono); font-size: 11px; align-items: center; }
+.feed-row:not(:last-child) { border-bottom: 1px solid var(--op-line); }
+.feed-nm { color: var(--op-ink-2); }
+.feed-v { color: var(--op-ink); text-align: right; }
+
+/* ── Sparkline (inline SVG) ─────────────────────────────── */
+.spark { display: inline-block; vertical-align: middle; opacity: 0.7; }
+
+/* ── Footer timestamp ───────────────────────────────────── */
+.ft-ts { font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); letter-spacing: 0.06em; padding: 8px 16px; border-top: 1px solid var(--op-line); background: var(--op-canvas); }
+</style>
+</head>
+<body>
+
+<div class="cmd" id="app">
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCREEN 1: Grid View
+       ═══════════════════════════════════════════════════════ -->
+  <div id="grid-view">
+
+    <div class="hdr">
+      <div class="hdr-l">
+        <span class="hdr-title">Cultivation Command</span>
+        <span class="hdr-meta">Mon, Apr 28, 2026</span>
+        <span class="hdr-meta">tasks <strong>14 / 23</strong> today</span>
+      </div>
+      <div class="hdr-r">live</div>
+    </div>
+
+    <!-- Attention -->
+    <div class="attn">
+      <span class="ml" style="flex-shrink: 0;">Attention</span>
+      <button class="attn-item" onclick="showRoom('F-03')">
+        <span class="d d-bad"></span>
+        <span class="attn-code">F-03</span>
+        <span style="color: var(--status-bad);">4d overdue</span>
+      </button>
+      <button class="attn-item" onclick="showRoom('F-01')">
+        <span class="d d-warn"></span>
+        <span class="attn-code">F-01</span>
+        <span style="color: var(--status-warn);">Harvest in 3d</span>
+      </button>
+      <button class="attn-item" onclick="showRoom('V-02')">
+        <span class="d d-warn"></span>
+        <span class="attn-code">V-02</span>
+        <span style="color: var(--status-warn);">38d in veg</span>
+      </button>
+    </div>
+
+    <!-- Labor -->
+    <div class="sec">
+      <div class="sec-hd">
+        <span class="ml">Labor</span>
+        <span class="ml-sm ml-r">Mon · 5 staff on</span>
+      </div>
+      <div class="cells" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="cell">
+          <span class="cell-label">Total Tasks</span>
+          <span class="cell-val">23</span>
+          <span class="cell-sub">across 8 rooms</span>
+          <div class="cell-spark">
+            <span class="cell-spark-bar" style="height: 6px;"></span>
+            <span class="cell-spark-bar" style="height: 10px;"></span>
+            <span class="cell-spark-bar" style="height: 14px;"></span>
+            <span class="cell-spark-bar" style="height: 8px;"></span>
+            <span class="cell-spark-bar" style="height: 18px;"></span>
+            <span class="cell-spark-bar" style="height: 16px;"></span>
+            <span class="cell-spark-bar" style="height: 20px; background: var(--op-ink-2);"></span>
+          </div>
+        </div>
+        <div class="cell">
+          <span class="cell-label"><span class="d d-ok"></span> Done</span>
+          <span class="cell-val">14</span>
+          <span class="cell-sub">61% complete</span>
+          <div class="cell-spark">
+            <span class="cell-spark-bar" style="height: 4px;"></span>
+            <span class="cell-spark-bar" style="height: 8px;"></span>
+            <span class="cell-spark-bar" style="height: 10px;"></span>
+            <span class="cell-spark-bar" style="height: 12px;"></span>
+            <span class="cell-spark-bar" style="height: 16px;"></span>
+            <span class="cell-spark-bar" style="height: 14px;"></span>
+            <span class="cell-spark-bar" style="height: 18px; background: var(--status-ok);"></span>
+          </div>
+        </div>
+        <div class="cell">
+          <span class="cell-label"><span class="d d-warn"></span> Active</span>
+          <span class="cell-val">3</span>
+          <span class="cell-sub">2 assigned</span>
+        </div>
+        <div class="cell">
+          <span class="cell-label">Pending</span>
+          <span class="cell-val">6</span>
+          <span class="cell-sub">4 unassigned</span>
+        </div>
+        <div class="cell">
+          <span class="cell-label">Top Type</span>
+          <span class="cell-val">Feed</span>
+          <span class="cell-sub">8 tank mix · 4 scout · 3 spray</span>
+        </div>
+      </div>
+      <div class="ft-ts">updated 11:42:08 · next refresh 11:47</div>
+    </div>
+
+    <!-- Rooms -->
+    <div class="sec">
+      <div class="sec-hd">
+        <span class="ml">Rooms</span>
+        <span class="ml-sm ml-r">10 active · 2 empty</span>
+      </div>
+      <div class="rooms">
+
+        <button class="rm urgent" onclick="showRoom('F-03')">
+          <div class="rm-top">
+            <span class="d d-flower"></span>
+            <span class="rm-code">F-03</span>
+            <span class="rm-type">Flower</span>
+            <span class="rm-urg" style="color: var(--status-bad);">Overdue 4d</span>
+          </div>
+          <span class="rm-big">312</span>
+          <span class="rm-stats"><span>3 strains</span><span>Day 56</span></span>
+          <div class="rm-strains">
+            <span class="rm-strain">GMO</span>
+            <span class="rm-strain">ZSH</span>
+            <span class="rm-strain">RNZ</span>
+          </div>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--status-bad);">projected 24 Apr</span>
+            <div class="rm-tasks">
+              <div class="tbar">
+                <span class="tseg done" style="width: 12px;"></span>
+                <span class="tseg act" style="width: 4px;"></span>
+                <span class="tseg pend" style="width: 8px;"></span>
+              </div>
+              2/4
+            </div>
+          </div>
+        </button>
+
+        <button class="rm warning" onclick="showRoom('F-01')">
+          <div class="rm-top">
+            <span class="d d-flower"></span>
+            <span class="rm-code">F-01</span>
+            <span class="rm-type">Flower</span>
+            <span class="rm-urg" style="color: var(--status-warn);">3d to harvest</span>
+          </div>
+          <span class="rm-big">248</span>
+          <span class="rm-stats"><span>3 strains</span><span>Day 42</span></span>
+          <div class="rm-strains">
+            <span class="rm-strain">GMO</span>
+            <span class="rm-strain">RNZ</span>
+            <span class="rm-strain">ZSH</span>
+          </div>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--status-warn);">projected 1 May · 3 groups ready</span>
+            <div class="rm-tasks">
+              <div class="tbar">
+                <span class="tseg done" style="width: 16px;"></span>
+                <span class="tseg pend" style="width: 4px;"></span>
+              </div>
+              4/5
+            </div>
+          </div>
+        </button>
+
+        <button class="rm" onclick="showRoom('F-02')">
+          <div class="rm-top">
+            <span class="d d-flower"></span>
+            <span class="rm-code">F-02</span>
+            <span class="rm-type">Flower</span>
+          </div>
+          <span class="rm-big">180</span>
+          <span class="rm-stats"><span>2 strains</span><span>Day 21</span></span>
+          <div class="rm-strains">
+            <span class="rm-strain">PPZ</span>
+            <span class="rm-strain">GLC</span>
+          </div>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--op-ink-3);">35d · projected 2 Jun</span>
+            <div class="rm-tasks">
+              <div class="tbar">
+                <span class="tseg done" style="width: 8px;"></span>
+                <span class="tseg pend" style="width: 8px;"></span>
+              </div>
+              1/3
+            </div>
+          </div>
+        </button>
+
+        <button class="rm" onclick="showRoom('V-01')">
+          <div class="rm-top">
+            <span class="d d-veg"></span>
+            <span class="rm-code">V-01</span>
+            <span class="rm-type">Veg</span>
+          </div>
+          <span class="rm-big">420</span>
+          <span class="rm-stats"><span>4 strains</span><span>Day 28</span></span>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--op-ink-3);">~14d to flip</span>
+            <div class="rm-tasks">
+              <div class="tbar"><span class="tseg done" style="width: 12px;"></span></div>
+              3/3
+            </div>
+          </div>
+        </button>
+
+        <button class="rm warning" onclick="showRoom('V-02')">
+          <div class="rm-top">
+            <span class="d d-veg"></span>
+            <span class="rm-code">V-02</span>
+            <span class="rm-type">Veg</span>
+            <span class="rm-urg" style="color: var(--status-warn);">38d</span>
+          </div>
+          <span class="rm-big">360</span>
+          <span class="rm-stats"><span>3 strains</span><span>Day 38</span></span>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--status-warn);">overdue for flip</span>
+            <div class="rm-tasks">
+              <div class="tbar">
+                <span class="tseg done" style="width: 8px;"></span>
+                <span class="tseg pend" style="width: 4px;"></span>
+              </div>
+              2/3
+            </div>
+          </div>
+        </button>
+
+        <button class="rm" onclick="showRoom('C-01')">
+          <div class="rm-top">
+            <span class="d d-clone"></span>
+            <span class="rm-code">C-01</span>
+            <span class="rm-type">Clone</span>
+          </div>
+          <span class="rm-big">500</span>
+          <span class="rm-stats"><span>5 strains</span><span>Day 12</span></span>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--op-ink-3);">9d to transplant</span>
+            <div class="rm-tasks">
+              <div class="tbar"><span class="tseg done" style="width: 8px;"></span></div>
+              2/2
+            </div>
+          </div>
+        </button>
+
+        <button class="rm" onclick="showRoom('M-01')">
+          <div class="rm-top">
+            <span class="d d-mother"></span>
+            <span class="rm-code">M-01</span>
+            <span class="rm-type">Mother</span>
+          </div>
+          <span class="rm-big">24</span>
+          <span class="rm-stats"><span>8 strains</span></span>
+          <div class="rm-ft">
+            <span class="rm-harv" style="color: var(--op-ink-3);">perpetual</span>
+            <div class="rm-tasks">
+              <div class="tbar"><span class="tseg done" style="width: 8px;"></span></div>
+              1/1
+            </div>
+          </div>
+        </button>
+
+        <button class="rm empty">
+          <div class="rm-top"><span class="d d-muted"></span><span class="rm-code">F-04</span><span class="rm-type">Flower</span></div>
+          <span class="rm-stats" style="margin-top: auto; color: var(--op-ink-4);">Empty</span>
+        </button>
+
+        <button class="rm empty">
+          <div class="rm-top"><span class="d d-muted"></span><span class="rm-code">V-03</span><span class="rm-type">Veg</span></div>
+          <span class="rm-stats" style="margin-top: auto; color: var(--op-ink-4);">Empty</span>
+        </button>
+
+      </div>
+      <div class="ft-ts">updated 11:42:08</div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SCREEN 2: Expanded Room (F-01)
+       ═══════════════════════════════════════════════════════ -->
+  <div id="room-view" style="display: none;">
+
+    <div class="hdr">
+      <div class="hdr-l">
+        <span class="hdr-title">Cultivation Command</span>
+        <span class="hdr-meta">Mon, Apr 28, 2026</span>
+      </div>
+      <div class="hdr-r">live</div>
+    </div>
+
+    <div class="exp">
+
+      <!-- Room header -->
+      <div class="exp-hdr">
+        <div class="exp-hdr-top">
+          <button class="back-btn" onclick="showGrid()">← Rooms</button>
+          <span class="d d-flower"></span>
+          <span class="exp-code" id="rm-code">F-01</span>
+          <span class="exp-meta">
+            <span>Flower</span>
+            <span>Day 42</span>
+            <span>248 plants</span>
+            <span>3 strains</span>
+          </span>
+          <span style="margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--status-warn);">Harvest in 3d</span>
+          <button class="act-btn" style="margin-left: 16px;">Harvest</button>
+        </div>
+
+        <!-- Phase hero bar -->
+        <div class="phase-hero">
+          <div class="phase-track">
+            <div class="phase-fill" style="width: 67%;">
+              <div class="phase-now"></div>
+            </div>
+            <div class="phase-markers">
+              <span class="phase-marker" style="left: 33%;">Stretch</span>
+              <span class="phase-marker" style="left: 57%;">Bulk</span>
+              <span class="phase-marker" style="left: 71%;">Flush</span>
+              <span class="phase-marker" style="left: 90%;">Ripen</span>
+            </div>
+          </div>
+          <div class="phase-labels">
+            <span>Flip 17 Mar · Day 1</span>
+            <span style="color: var(--accent);">Day 42 — today</span>
+            <span>Harvest ~1 May · Day 63</span>
+          </div>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="cells" style="grid-template-columns: repeat(6, 1fr);">
+          <div class="cell">
+            <span class="cell-label">Plants</span>
+            <span class="cell-val">248</span>
+            <span class="cell-sub">3 groups</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Day</span>
+            <span class="cell-val">42</span>
+            <span class="cell-sub">of 63 cycle</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Harvest</span>
+            <span class="cell-val proj">3d</span>
+            <span class="cell-sub">1 May · 3 groups ready</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label"><span class="d d-ok"></span> Tasks</span>
+            <span class="cell-val">4/5</span>
+            <span class="cell-sub">1 pending</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Flipped</span>
+            <span class="cell-val">17 Mar</span>
+            <span class="cell-sub">42 days ago</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Strains</span>
+            <span class="cell-val">3</span>
+            <span class="cell-sub">GMO · RNZ · ZSH</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="exp-body">
+
+        <!-- Left: Tasks -->
+        <div class="tl">
+          <div class="sec-hd">
+            <span class="ml">Today's Tasks</span>
+            <span class="ml-sm ml-r">4/5 done</span>
+          </div>
+          <div class="tl-row">
+            <div class="tl-chk done"></div>
+            <span class="tl-name struck">Batch Tank Mix</span>
+            <span class="tl-who">MARIA</span>
+            <span class="tl-time">08:14</span>
+          </div>
+          <div class="tl-row">
+            <div class="tl-chk done"></div>
+            <span class="tl-name struck">Scouting</span>
+            <span class="tl-who">CARLOS</span>
+            <span class="tl-time">09:22</span>
+          </div>
+          <div class="tl-row">
+            <div class="tl-chk done"></div>
+            <span class="tl-name struck">IPM Spray</span>
+            <span class="tl-who">MARIA</span>
+            <span class="tl-time">10:05</span>
+          </div>
+          <div class="tl-row">
+            <div class="tl-chk done"></div>
+            <span class="tl-name struck">Defoliation</span>
+            <span class="tl-who">CARLOS</span>
+            <span class="tl-time">11:30</span>
+          </div>
+          <div class="tl-row">
+            <div class="tl-chk act"></div>
+            <span class="tl-name">Environmental Check</span>
+            <span class="tl-who" style="color: var(--status-warn);">UNASSIGNED</span>
+            <span class="tl-time">—</span>
+          </div>
+          <div class="ft-ts">updated 11:42:08</div>
+        </div>
+
+        <!-- Right: Sidebar -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+
+          <!-- Schedule -->
+          <div class="sc">
+            <div class="sc-hd">
+              <span class="ml">Schedule</span>
+              <span class="ml-sm">3-day lookahead</span>
+            </div>
+            <div class="sc-bd">
+              <div class="sched-row">
+                <span class="sched-day" style="color: var(--accent);">Today</span>
+                <span class="sched-tasks">Env check</span>
+              </div>
+              <div class="sched-row">
+                <span class="sched-day">Tomorrow</span>
+                <span class="sched-tasks">Feed · Scouting</span>
+              </div>
+              <div class="sched-row">
+                <span class="sched-day">Wed</span>
+                <span class="sched-tasks">Defoliation</span>
+              </div>
+              <div style="border-top: 1px solid var(--op-line); margin-top: 6px; padding-top: 6px;">
+                <div class="sched-row">
+                  <span class="sched-day" style="color: var(--status-warn);">Day 45</span>
+                  <span class="sched-tasks">Flush start · 1 May</span>
+                </div>
+                <div class="sched-row">
+                  <span class="sched-day">Day 63</span>
+                  <span class="sched-tasks">Harvest window · 19 May</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plants -->
+          <div class="sc">
+            <div class="sc-hd">
+              <span class="ml">Plants</span>
+              <span class="ml-sm">248 total · 3 groups</span>
+            </div>
+            <div class="sc-bd">
+              <div class="sc-row">
+                <span class="sc-key">GMO</span>
+                <span class="sc-val">96</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-left: auto;">S1-A · S1-B</span>
+              </div>
+              <div class="sc-row">
+                <span class="sc-key">RNZ</span>
+                <span class="sc-val">84</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-left: auto;">S2-A</span>
+              </div>
+              <div class="sc-row">
+                <span class="sc-key">ZSH</span>
+                <span class="sc-val">68</span>
+                <span style="font-family: var(--font-mono); font-size: 10px; color: var(--op-ink-4); margin-left: auto;">S3-A</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout -->
+          <div class="sc">
+            <div class="sc-hd">
+              <span class="ml">Layout</span>
+              <span class="ml-sm">4 sections</span>
+            </div>
+            <div class="sc-bd">
+              <div class="lay-grid">
+                <div class="lay-cell occ">S1-A<div class="lay-cell-ct">48</div></div>
+                <div class="lay-cell occ">S1-B<div class="lay-cell-ct">48</div></div>
+                <div class="lay-cell occ">S2-A<div class="lay-cell-ct">84</div></div>
+                <div class="lay-cell occ">S3-A<div class="lay-cell-ct">68</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feed (collapsed by default) -->
+          <div class="sc">
+            <div class="sc-hd" style="cursor: pointer;" onclick="this.closest('.sc').querySelector('.feed-full').classList.toggle('open'); this.closest('.sc').querySelector('.feed-summary').classList.toggle('open');">
+              <span class="ml">Feed Recipe</span>
+              <span class="ml-sm">Week 6 · tap to expand</span>
+            </div>
+            <div class="sc-bd">
+              <div class="feed-summary">Canna A/B · PK 13/14 · target EC <strong>2.4</strong></div>
+              <div class="feed-full">
+                <div class="feed-row" style="color: var(--op-ink-3); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;">
+                  <span>Nutrient</span>
+                  <span style="text-align: right;">mL/gal</span>
+                  <span style="text-align: right;">EC</span>
+                </div>
+                <div class="feed-row">
+                  <span class="feed-nm">Canna A</span>
+                  <span class="feed-v">4.0</span>
+                  <span class="feed-v">—</span>
+                </div>
+                <div class="feed-row">
+                  <span class="feed-nm">Canna B</span>
+                  <span class="feed-v">4.0</span>
+                  <span class="feed-v">—</span>
+                </div>
+                <div class="feed-row">
+                  <span class="feed-nm">PK 13/14</span>
+                  <span class="feed-v">1.5</span>
+                  <span class="feed-v">—</span>
+                </div>
+                <div class="feed-row" style="border-top: 1px solid var(--op-line-strong); padding-top: 8px; margin-top: 4px;">
+                  <span class="feed-nm" style="font-weight: 500; color: var(--op-ink);">Target</span>
+                  <span class="feed-v">—</span>
+                  <span class="feed-v" style="color: var(--accent);">2.4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showRoom(code) {
+  document.getElementById('grid-view').style.display = 'none';
+  document.getElementById('room-view').style.display = 'block';
+  document.getElementById('rm-code').textContent = code;
+}
+function showGrid() {
+  document.getElementById('room-view').style.display = 'none';
+  document.getElementById('grid-view').style.display = 'block';
+}
+</script>
+</body>
+</html>

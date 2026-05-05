@@ -81,26 +81,26 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
       aria-modal="true"
     >
       <div
-        className="bg-cult-near-black border-2 border-cult-light-gray shadow-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-cult-surface border-2 border-cult-text-muted max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b-2 border-cult-medium-gray bg-cult-black flex-shrink-0">
+        <div className="p-5 border-b-2 border-cult-border bg-cult-black flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Layers className="w-5 h-5 text-cult-warning" />
               <div>
-                <h2 className="text-base font-semibold text-cult-white uppercase tracking-wide">
+                <h2 className="text-base font-semibold text-cult-text-primary uppercase tracking-wide">
                   Bulk Apply Template
                 </h2>
-                <p className="text-[11px] text-cult-light-gray mt-0.5">
+                <p className="text-[11px] text-cult-text-muted mt-0.5">
                   Apply one template to multiple rooms at once
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 text-cult-light-gray hover:text-cult-white transition-colors rounded-sm hover:bg-cult-charcoal"
+              className="p-1.5 text-cult-text-muted hover:text-cult-text-primary transition-colors rounded-sm hover:bg-cult-surface-raised"
             >
               <X className="w-5 h-5" />
             </button>
@@ -108,7 +108,7 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
         </div>
 
         {/* Body: split left (template pick) / right (rooms) */}
-        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2 divide-x divide-cult-medium-gray/40">
+        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2 divide-x divide-cult-border/40">
           {/* ── Template selection ─────────────────────────────── */}
           <div className="overflow-y-auto p-4">
             <div className="text-[10px] text-cult-text-muted uppercase tracking-wider font-semibold mb-2">
@@ -129,12 +129,12 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
                       className={`w-full text-left p-2.5 border transition-all ${
                         isSelected
                           ? 'bg-cult-warning-muted border-cult-warning/60'
-                          : 'bg-cult-charcoal/30 border-cult-dark-gray/60 hover:border-cult-medium-gray'
+                          : 'bg-cult-surface-raised/30 border-cult-surface/60 hover:border-cult-border'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-[12px] font-semibold text-cult-white truncate">{tmpl.name}</span>
+                          <span className="text-[12px] font-semibold text-cult-text-primary truncate">{tmpl.name}</span>
                           {tmpl.is_default && (
                             <span className="text-[9px] text-cult-warning uppercase font-bold px-1 py-0.5 bg-cult-warning-muted border border-cult-warning/30 rounded-sm">Default</span>
                           )}
@@ -183,7 +183,7 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
                 {selectedRoomIds.size > 0 && (
                   <button
                     onClick={clearSelection}
-                    className="text-[10px] text-cult-text-muted hover:text-cult-white"
+                    className="text-[10px] text-cult-text-muted hover:text-cult-text-primary"
                   >
                     Clear
                   </button>
@@ -211,18 +211,18 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
                       className={`w-full text-left p-2 border flex items-center justify-between transition-all ${
                         isSelected
                           ? 'bg-cult-success-muted border-cult-success/60'
-                          : 'bg-cult-charcoal/30 border-cult-dark-gray/60 hover:border-cult-medium-gray'
+                          : 'bg-cult-surface-raised/30 border-cult-surface/60 hover:border-cult-border'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <div
                           className={`w-4 h-4 rounded-sm border flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? 'bg-cult-success border-cult-success' : 'border-cult-medium-gray'
+                            isSelected ? 'bg-cult-success border-cult-success' : 'border-cult-border'
                           }`}
                         >
                           {isSelected && <Check className="w-3 h-3 text-cult-black" />}
                         </div>
-                        <span className="text-[12px] font-medium text-cult-white truncate">{room.room_code}</span>
+                        <span className="text-[12px] font-medium text-cult-text-primary truncate">{room.room_code}</span>
                         <span className="text-[10px] text-cult-text-muted truncate">{room.name}</span>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -242,7 +242,7 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
         </div>
 
         {/* Footer: start date + apply */}
-        <div className="p-4 border-t-2 border-cult-medium-gray bg-cult-black flex-shrink-0 space-y-3">
+        <div className="p-4 border-t-2 border-cult-border bg-cult-black flex-shrink-0 space-y-3">
           {error && (
             <div className="flex items-center gap-2 p-2 bg-cult-danger-muted border border-cult-danger/30 rounded">
               <AlertTriangle className="w-3.5 h-3.5 text-cult-danger" />
@@ -263,7 +263,7 @@ export function BulkTemplateApplyModal({ templates, rooms, onApply, onClose }: B
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="bg-cult-charcoal border border-cult-medium-gray text-cult-white text-[11px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
+                className="bg-cult-surface-raised border border-cult-border text-cult-text-primary text-[11px] px-2 py-1 rounded focus:outline-none focus:border-cult-accent"
               />
             </div>
             <div className="flex items-center gap-3">

@@ -38,7 +38,7 @@ export function MyTasksView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <p className="text-cult-medium-gray text-sm uppercase tracking-wider">Loading tasks...</p>
+        <p className="text-cult-border text-sm uppercase tracking-wider">Loading tasks...</p>
       </div>
     );
   }
@@ -57,19 +57,19 @@ export function MyTasksView() {
   return (
     <div className="flex flex-col h-full">
       {/* Progress header */}
-      <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-cult-dark-gray bg-cult-near-black">
+      <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-cult-surface bg-cult-surface">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-cult-white text-sm font-semibold uppercase tracking-wider">
+          <span className="text-cult-text-primary text-sm font-semibold uppercase tracking-wider">
             Today's Tasks
           </span>
-          <span className="text-cult-medium-gray text-xs">
+          <span className="text-cult-border text-xs">
             {doneCount} of {totalCount} done
           </span>
         </div>
         <div className="w-full h-2 bg-cult-black rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              progress === 100 ? 'bg-cult-success' : 'bg-cult-white'
+              progress === 100 ? 'bg-cult-success' : 'bg-cult-accent'
             }`}
             style={{ width: `${progress}%` }}
           />
@@ -85,12 +85,12 @@ export function MyTasksView() {
       <div className="flex-1 overflow-y-auto">
         {totalCount === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <Circle className="w-12 h-12 text-cult-dark-gray mb-3" />
-            <p className="text-cult-medium-gray text-sm">No tasks assigned to you today.</p>
-            <p className="text-cult-dark-gray text-xs mt-1">Check with your manager for assignments.</p>
+            <Circle className="w-12 h-12 text-cult-surface mb-3" />
+            <p className="text-cult-border text-sm">No tasks assigned to you today.</p>
+            <p className="text-cult-surface text-xs mt-1">Check with your manager for assignments.</p>
           </div>
         ) : (
-          <div className="divide-y divide-cult-dark-gray">
+          <div className="divide-y divide-cult-surface">
             {/* Pending / in-progress tasks first */}
             {pendingTasks.map((task) => (
               <WorkerTaskRow key={task.id} task={task} onTap={() => handleTaskTap(task)} />
@@ -107,7 +107,7 @@ export function MyTasksView() {
       {/* Task completion bottom sheet */}
       {selectedTask && (
         <BottomSheet onDismiss={() => setSelectedTask(null)}>
-          <div className="px-4 py-3 border-b border-cult-dark-gray flex items-center justify-between sticky top-0 bg-cult-black z-10">
+          <div className="px-4 py-3 border-b border-cult-surface flex items-center justify-between sticky top-0 bg-cult-black z-10">
             <div>
               <span
                 className="inline-flex px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-sm"
@@ -121,7 +121,7 @@ export function MyTasksView() {
             </div>
             <button
               onClick={() => setSelectedTask(null)}
-              className="text-cult-medium-gray hover:text-cult-white text-sm uppercase tracking-wider min-h-[44px] px-2"
+              className="text-cult-border hover:text-cult-text-primary text-sm uppercase tracking-wider min-h-[44px] px-2"
             >
               Close
             </button>
@@ -183,7 +183,7 @@ function BottomSheet({ children, onDismiss }: { children: React.ReactNode; onDis
       {/* Sheet */}
       <div
         {...swipeHandlers}
-        className="flex-1 bg-cult-black border-t border-cult-medium-gray overflow-y-auto safe-bottom"
+        className="flex-1 bg-cult-black border-t border-cult-border overflow-y-auto safe-bottom"
         style={{
           transform: dragging ? `translateY(${dragY}px)` : 'translateY(0)',
           transition: dragging ? 'none' : 'transform 0.2s ease-out',
@@ -191,7 +191,7 @@ function BottomSheet({ children, onDismiss }: { children: React.ReactNode; onDis
       >
         {/* Drag handle */}
         <div className="flex justify-center py-2">
-          <div className="w-10 h-1 bg-cult-medium-gray rounded-full" />
+          <div className="w-10 h-1 bg-cult-border rounded-full" />
         </div>
         {children}
       </div>
@@ -222,8 +222,8 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
         isDone
           ? 'opacity-50'
           : isCarried
-            ? 'border-l-2 border-l-cult-warning active:bg-cult-near-black'
-            : 'active:bg-cult-near-black'
+            ? 'border-l-2 border-l-cult-warning active:bg-cult-surface'
+            : 'active:bg-cult-surface'
       }`}
     >
       {/* Status icon */}
@@ -233,7 +233,7 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
         ) : task.status === 'in_progress' ? (
           <Clock className="w-6 h-6 text-sky-400" />
         ) : (
-          <Circle className="w-6 h-6 text-cult-medium-gray" />
+          <Circle className="w-6 h-6 text-cult-border" />
         )}
       </div>
 
@@ -247,12 +247,12 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
             {config.label}
           </span>
           {task.notes && (
-            <span className="text-cult-light-gray text-xs truncate">{task.notes}</span>
+            <span className="text-cult-text-muted text-xs truncate">{task.notes}</span>
           )}
         </div>
         <div className="flex items-center gap-2 mt-1">
           {task.estimated_duration && (
-            <span className="text-cult-medium-gray text-xs flex items-center gap-1">
+            <span className="text-cult-border text-xs flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {task.estimated_duration}
             </span>
@@ -267,7 +267,7 @@ function WorkerTaskRow({ task, onTap }: WorkerTaskRowProps) {
 
       {/* Tap arrow for pending tasks */}
       {!isDone && (
-        <div className="flex-shrink-0 text-cult-dark-gray">
+        <div className="flex-shrink-0 text-cult-surface">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

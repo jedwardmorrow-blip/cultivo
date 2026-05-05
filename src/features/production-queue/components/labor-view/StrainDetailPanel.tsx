@@ -140,7 +140,7 @@ export default function StrainDetailPanel({
       <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-surface border-l border-cult-border z-50 flex flex-col animate-slide-in-right shadow-2xl">
+      <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-cult-surface border-l border-cult-border z-50 flex flex-col animate-slide-in-right">
 
         {/* ─── Header ─────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-cult-border/50 flex-shrink-0">

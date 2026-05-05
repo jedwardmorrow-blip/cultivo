@@ -67,7 +67,7 @@ export function COALibrary() {
   if (loading) {
     return (
       <div className="min-h-screen bg-cult-black flex items-center justify-center">
-        <div className="text-cult-white text-xl uppercase tracking-wider">Loading...</div>
+        <div className="text-cult-text-primary text-xl uppercase tracking-wider">Loading...</div>
       </div>
     );
   }
@@ -80,13 +80,13 @@ export function COALibrary() {
   return (
     <div className="min-h-screen bg-cult-black">
       {/* Hero Section */}
-      <div className="bg-cult-near-black border-b border-cult-medium-gray">
+      <div className="bg-cult-surface border-b border-cult-border">
         <div className="max-w-7xl mx-auto px-4 py-16">
           {fromCoversheet && coversheetToken && (
             <div className="mb-6">
               <a
                 href={getCoversheetPublicUrl(coversheetToken!)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-off-white transition-all font-bold uppercase tracking-wider text-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-bold uppercase tracking-wider text-sm"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Coversheet
@@ -94,10 +94,10 @@ export function COALibrary() {
             </div>
           )}
           <div className="text-center mb-8">
-            <h1 className="text-6xl font-bold text-cult-white uppercase tracking-wider mb-4">
+            <h1 className="text-6xl font-bold text-cult-text-primary uppercase tracking-wider mb-4">
               Testing Results
             </h1>
-            <p className="text-xl text-cult-light-gray max-w-3xl mx-auto">
+            <p className="text-xl text-cult-text-muted max-w-3xl mx-auto">
               Complete transparency. Every batch tested. Every result verified.
             </p>
           </div>
@@ -105,13 +105,13 @@ export function COALibrary() {
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-4 top-4 w-5 h-5 text-cult-light-gray" />
+              <Search className="absolute left-4 top-4 w-5 h-5 text-cult-text-muted" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by strain or batch number..."
-                className="w-full pl-12 pr-4 py-4 bg-cult-black border-2 border-cult-medium-gray text-cult-white text-lg focus:outline-none focus:border-cult-white transition-all uppercase tracking-wider placeholder-cult-lighter-gray"
+                className="w-full pl-12 pr-4 py-4 bg-cult-black border-2 border-cult-border text-cult-text-primary text-lg focus:outline-none focus:border-cult-accent transition-all uppercase tracking-wider placeholder-cult-text-muted"
               />
             </div>
           </div>
@@ -122,8 +122,8 @@ export function COALibrary() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         {groupedCoas.length === 0 ? (
           <div className="text-center py-20">
-            <FileText className="w-20 h-20 text-cult-medium-gray mx-auto mb-4" />
-            <p className="text-cult-light-gray text-xl uppercase tracking-wider">
+            <FileText className="w-20 h-20 text-cult-border mx-auto mb-4" />
+            <p className="text-cult-text-muted text-xl uppercase tracking-wider">
               {searchTerm ? 'No results found' : 'No test results available'}
             </p>
           </div>
@@ -131,7 +131,7 @@ export function COALibrary() {
           groupedCoas.map(([monthYear, monthCoas]) => (
             <div key={monthYear} className="mb-12">
               <div className="flex items-center gap-3 mb-6">
-                <Calendar className="w-6 h-6 text-cult-white" />
+                <Calendar className="w-6 h-6 text-cult-text-primary" />
                 <h2 className="text-3xl font-bold text-cult-whiter">
                   {monthYear}
                 </h2>
@@ -142,66 +142,66 @@ export function COALibrary() {
                   <div
                     key={coa.id}
                     onClick={() => setSelectedCoa(coa)}
-                    className="bg-cult-near-black border-2 border-cult-medium-gray hover:border-cult-white transition-all cursor-pointer group"
+                    className="bg-cult-surface border-2 border-cult-border hover:border-cult-accent transition-all cursor-pointer group"
                   >
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <Leaf className="w-8 h-8 text-cult-white" />
-                        <FileText className="w-6 h-6 text-cult-light-gray group-hover:text-cult-white transition-colors" />
+                        <Leaf className="w-8 h-8 text-cult-text-primary" />
+                        <FileText className="w-6 h-6 text-cult-text-muted group-hover:text-cult-text-primary transition-colors" />
                       </div>
 
-                      <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wide mb-2">
+                      <h3 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide mb-2">
                         {coa.strain_name}
                       </h3>
 
-                      <p className="text-sm text-cult-lighter-gray font-mono mb-4">
+                      <p className="text-sm text-cult-text-muted font-mono mb-4">
                         {coa.batch_number}
                       </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div className="bg-cult-black p-3 border border-cult-medium-gray">
-                          <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">Total THC</div>
-                          <div className="text-2xl font-bold text-cult-white">
+                        <div className="bg-cult-black p-3 border border-cult-border">
+                          <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Total THC</div>
+                          <div className="text-2xl font-bold text-cult-text-primary">
                             {coa.thc_percentage !== null && coa.thc_percentage !== undefined ? (calculateTotalTHC(coa)?.toFixed(2) ?? coa.thc_percentage.toFixed(2)) : 'N/A'}%
                           </div>
                         </div>
-                        <div className="bg-cult-black p-3 border border-cult-medium-gray">
-                          <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">CBD</div>
-                          <div className="text-2xl font-bold text-cult-white">
+                        <div className="bg-cult-black p-3 border border-cult-border">
+                          <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">CBD</div>
+                          <div className="text-2xl font-bold text-cult-text-primary">
                             {coa.cbd_percentage !== null && coa.cbd_percentage !== undefined ? coa.cbd_percentage.toFixed(2) : '0.00'}%
                           </div>
                         </div>
                       </div>
 
                       {coa.total_terpenes_mg_g && (
-                        <div className="bg-cult-black p-3 border border-cult-medium-gray mb-4">
-                          <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-1">
+                        <div className="bg-cult-black p-3 border border-cult-border mb-4">
+                          <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">
                             Total Terpenes
                           </div>
-                          <div className="text-lg font-bold text-cult-white">
+                          <div className="text-lg font-bold text-cult-text-primary">
                             {coa.total_terpenes_mg_g.toFixed(2)} mg/g
                           </div>
                         </div>
                       )}
 
                       {(coa.terpene_1_name || coa.terpene_2_name || coa.terpene_3_name) && (
-                        <div className="pt-4 border-t border-cult-medium-gray">
-                          <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">
+                        <div className="pt-4 border-t border-cult-border">
+                          <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">
                             Top Terpenes
                           </div>
                           <div className="space-y-1 text-sm">
                             {coa.terpene_1_name && (
-                              <div className="text-cult-lighter-gray">
+                              <div className="text-cult-text-muted">
                                 • {coa.terpene_1_name} ({coa.terpene_1_percentage?.toFixed(3)}%)
                               </div>
                             )}
                             {coa.terpene_2_name && (
-                              <div className="text-cult-lighter-gray">
+                              <div className="text-cult-text-muted">
                                 • {coa.terpene_2_name} ({coa.terpene_2_percentage?.toFixed(3)}%)
                               </div>
                             )}
                             {coa.terpene_3_name && (
-                              <div className="text-cult-lighter-gray">
+                              <div className="text-cult-text-muted">
                                 • {coa.terpene_3_name} ({coa.terpene_3_percentage?.toFixed(3)}%)
                               </div>
                             )}
@@ -209,15 +209,15 @@ export function COALibrary() {
                         </div>
                       )}
 
-                      <div className="mt-4 pt-4 border-t border-cult-medium-gray">
-                        <div className="text-xs text-cult-lighter-gray">
+                      <div className="mt-4 pt-4 border-t border-cult-border">
+                        <div className="text-xs text-cult-text-muted">
                           Harvest: {coa.harvest_date ? new Date(coa.harvest_date).toLocaleDateString() : 'N/A'}
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-cult-black border-t border-cult-medium-gray px-6 py-3">
-                      <div className="text-xs text-cult-light-gray uppercase tracking-wider group-hover:text-cult-white transition-colors">
+                    <div className="bg-cult-black border-t border-cult-border px-6 py-3">
+                      <div className="text-xs text-cult-text-muted uppercase tracking-wider group-hover:text-cult-text-primary transition-colors">
                         View Certificate →
                       </div>
                     </div>
@@ -236,16 +236,16 @@ export function COALibrary() {
           onClick={() => setSelectedCoa(null)}
         >
           <div
-            className="bg-cult-near-black border-2 border-cult-white max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-cult-surface border-2 border-cult-accent max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-cult-near-black border-b-2 border-cult-white p-6 flex items-center justify-between z-10">
-              <h3 className="text-2xl font-bold text-cult-white uppercase tracking-wider">
+            <div className="sticky top-0 bg-cult-surface border-b-2 border-cult-accent p-6 flex items-center justify-between z-10">
+              <h3 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wider">
                 Certificate of Analysis
               </h3>
               <button
                 onClick={() => setSelectedCoa(null)}
-                className="text-cult-white hover:bg-cult-white hover:text-cult-black transition-all px-3 py-1 text-2xl font-bold"
+                className="text-cult-text-primary hover:bg-cult-accent hover:text-cult-opaque-black transition-all px-3 py-1 text-2xl font-bold"
               >
                 ✕
               </button>
@@ -254,57 +254,57 @@ export function COALibrary() {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Strain</div>
-                  <div className="text-2xl font-bold text-cult-white uppercase">{selectedCoa.strain_name}</div>
+                  <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Strain</div>
+                  <div className="text-2xl font-bold text-cult-text-primary uppercase">{selectedCoa.strain_name}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Batch Number</div>
-                  <div className="text-xl font-mono text-cult-white">{selectedCoa.batch_number}</div>
+                  <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Batch Number</div>
+                  <div className="text-xl font-mono text-cult-text-primary">{selectedCoa.batch_number}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Harvest Date</div>
-                  <div className="text-lg text-cult-white">
+                  <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Harvest Date</div>
+                  <div className="text-lg text-cult-text-primary">
                     {selectedCoa.harvest_date ? new Date(selectedCoa.harvest_date).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Sample Date</div>
-                  <div className="text-lg text-cult-white">
+                  <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Sample Date</div>
+                  <div className="text-lg text-cult-text-primary">
                     {selectedCoa.sample_date ? new Date(selectedCoa.sample_date).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
               </div>
 
-              <div className="border-t-2 border-cult-medium-gray pt-6">
+              <div className="border-t-2 border-cult-border pt-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <Beaker className="w-6 h-6 text-cult-white" />
-                  <h4 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+                  <Beaker className="w-6 h-6 text-cult-text-primary" />
+                  <h4 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
                     Cannabinoid Profile
                   </h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-cult-black border-2 border-cult-medium-gray p-6 text-center">
-                    <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Total THC</div>
-                    <div className="text-4xl font-bold text-cult-white">
+                  <div className="bg-cult-black border-2 border-cult-border p-6 text-center">
+                    <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Total THC</div>
+                    <div className="text-4xl font-bold text-cult-text-primary">
                       {selectedCoa.thc_percentage !== null && selectedCoa.thc_percentage !== undefined ? (calculateTotalTHC(selectedCoa)?.toFixed(2) ?? selectedCoa.thc_percentage.toFixed(2)) : 'N/A'}%
                     </div>
                     {selectedCoa.thca_percentage != null && (
-                      <div className="text-xs text-cult-light-gray mt-2">
+                      <div className="text-xs text-cult-text-muted mt-2">
                         Δ9: {selectedCoa.thc_percentage?.toFixed(2)}% · THCa: {selectedCoa.thca_percentage.toFixed(2)}%
                         {selectedCoa.delta8_thc_percentage ? ` · Δ8: ${selectedCoa.delta8_thc_percentage.toFixed(2)}%` : ''}
                         {selectedCoa.delta10_thc_percentage ? ` · Δ10: ${selectedCoa.delta10_thc_percentage.toFixed(2)}%` : ''}
                       </div>
                     )}
                   </div>
-                  <div className="bg-cult-black border-2 border-cult-medium-gray p-6 text-center">
-                    <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">CBD</div>
-                    <div className="text-4xl font-bold text-cult-white">
+                  <div className="bg-cult-black border-2 border-cult-border p-6 text-center">
+                    <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">CBD</div>
+                    <div className="text-4xl font-bold text-cult-text-primary">
                       {selectedCoa.cbd_percentage !== null && selectedCoa.cbd_percentage !== undefined ? selectedCoa.cbd_percentage.toFixed(2) : '0.00'}%
                     </div>
                   </div>
-                  <div className="bg-cult-black border-2 border-cult-medium-gray p-6 text-center">
-                    <div className="text-xs text-cult-light-gray uppercase tracking-wider mb-2">Total</div>
-                    <div className="text-4xl font-bold text-cult-white">
+                  <div className="bg-cult-black border-2 border-cult-border p-6 text-center">
+                    <div className="text-xs text-cult-text-muted uppercase tracking-wider mb-2">Total</div>
+                    <div className="text-4xl font-bold text-cult-text-primary">
                       {selectedCoa.total_cannabinoids_percentage !== null && selectedCoa.total_cannabinoids_percentage !== undefined ? selectedCoa.total_cannabinoids_percentage.toFixed(2) : 'N/A'}%
                     </div>
                   </div>
@@ -312,19 +312,19 @@ export function COALibrary() {
               </div>
 
               {selectedCoa.total_terpenes_mg_g && (
-                <div className="border-t-2 border-cult-medium-gray pt-6">
+                <div className="border-t-2 border-cult-border pt-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <Leaf className="w-6 h-6 text-cult-white" />
-                    <h4 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+                    <Leaf className="w-6 h-6 text-cult-text-primary" />
+                    <h4 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
                       Terpene Profile
                     </h4>
                   </div>
 
-                  <div className="bg-cult-black border-2 border-cult-medium-gray p-6 mb-4">
-                    <div className="text-sm text-cult-light-gray uppercase tracking-wider mb-2">
+                  <div className="bg-cult-black border-2 border-cult-border p-6 mb-4">
+                    <div className="text-sm text-cult-text-muted uppercase tracking-wider mb-2">
                       Total Terpenes
                     </div>
-                    <div className="text-3xl font-bold text-cult-white">
+                    <div className="text-3xl font-bold text-cult-text-primary">
                       {selectedCoa.total_terpenes_mg_g.toFixed(2)} mg/g
                     </div>
                   </div>
@@ -332,54 +332,54 @@ export function COALibrary() {
                   {(selectedCoa.terpene_1_name || selectedCoa.terpene_2_name || selectedCoa.terpene_3_name) && (
                     <div className="space-y-3">
                       {selectedCoa.terpene_1_name && (
-                        <div className="bg-cult-black border border-cult-medium-gray p-4 flex items-center justify-between">
+                        <div className="bg-cult-black border border-cult-border p-4 flex items-center justify-between">
                           <div>
-                            <div className="text-sm text-cult-light-gray uppercase tracking-wider">
+                            <div className="text-sm text-cult-text-muted uppercase tracking-wider">
                               Primary Terpene
                             </div>
-                            <div className="text-xl font-bold text-cult-white">{selectedCoa.terpene_1_name}</div>
+                            <div className="text-xl font-bold text-cult-text-primary">{selectedCoa.terpene_1_name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-cult-white">
+                            <div className="text-2xl font-bold text-cult-text-primary">
                               {selectedCoa.terpene_1_percentage?.toFixed(3)}%
                             </div>
-                            <div className="text-sm text-cult-lighter-gray">
+                            <div className="text-sm text-cult-text-muted">
                               {selectedCoa.terpene_1_value?.toFixed(2)} mg/g
                             </div>
                           </div>
                         </div>
                       )}
                       {selectedCoa.terpene_2_name && (
-                        <div className="bg-cult-black border border-cult-medium-gray p-4 flex items-center justify-between">
+                        <div className="bg-cult-black border border-cult-border p-4 flex items-center justify-between">
                           <div>
-                            <div className="text-sm text-cult-light-gray uppercase tracking-wider">
+                            <div className="text-sm text-cult-text-muted uppercase tracking-wider">
                               Secondary Terpene
                             </div>
-                            <div className="text-xl font-bold text-cult-white">{selectedCoa.terpene_2_name}</div>
+                            <div className="text-xl font-bold text-cult-text-primary">{selectedCoa.terpene_2_name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-cult-white">
+                            <div className="text-2xl font-bold text-cult-text-primary">
                               {selectedCoa.terpene_2_percentage?.toFixed(3)}%
                             </div>
-                            <div className="text-sm text-cult-lighter-gray">
+                            <div className="text-sm text-cult-text-muted">
                               {selectedCoa.terpene_2_value?.toFixed(2)} mg/g
                             </div>
                           </div>
                         </div>
                       )}
                       {selectedCoa.terpene_3_name && (
-                        <div className="bg-cult-black border border-cult-medium-gray p-4 flex items-center justify-between">
+                        <div className="bg-cult-black border border-cult-border p-4 flex items-center justify-between">
                           <div>
-                            <div className="text-sm text-cult-light-gray uppercase tracking-wider">
+                            <div className="text-sm text-cult-text-muted uppercase tracking-wider">
                               Tertiary Terpene
                             </div>
-                            <div className="text-xl font-bold text-cult-white">{selectedCoa.terpene_3_name}</div>
+                            <div className="text-xl font-bold text-cult-text-primary">{selectedCoa.terpene_3_name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-cult-white">
+                            <div className="text-2xl font-bold text-cult-text-primary">
                               {selectedCoa.terpene_3_percentage?.toFixed(3)}%
                             </div>
-                            <div className="text-sm text-cult-lighter-gray">
+                            <div className="text-sm text-cult-text-muted">
                               {selectedCoa.terpene_3_value?.toFixed(2)} mg/g
                             </div>
                           </div>
@@ -391,12 +391,12 @@ export function COALibrary() {
               )}
 
               {selectedCoa.pdf_file_path && (
-                <div className="border-t-2 border-cult-medium-gray pt-6">
+                <div className="border-t-2 border-cult-border pt-6">
                   <a
                     href={getCOAPDFUrl(selectedCoa.pdf_file_path)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full px-8 py-4 bg-cult-white text-cult-black text-center font-bold uppercase tracking-wider hover:bg-cult-off-white transition-all text-lg"
+                    className="block w-full px-8 py-4 bg-cult-accent text-cult-opaque-black text-center font-bold uppercase tracking-wider hover:bg-cult-accent-hover transition-all text-lg"
                   >
                     View Full Certificate (PDF)
                   </a>

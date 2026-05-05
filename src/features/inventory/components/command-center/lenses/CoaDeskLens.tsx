@@ -114,7 +114,7 @@ function KanbanColumn({
 
       {/* Cards container */}
       <div
-        className="flex-1 space-y-2 p-2 rounded-xl bg-cult-surface-inset border border-cult-border-faint min-h-[200px] max-h-[500px] overflow-y-auto scrollbar-thin"
+        className="flex-1 space-y-2 p-2 rounded-cult bg-cult-surface-inset border border-cult-border-faint min-h-[200px] max-h-[500px] overflow-y-auto scrollbar-thin"
         role="list"
       >
         {items.length === 0 ? (
@@ -156,7 +156,7 @@ function CoaCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => onClick?.(batch.batch_id)}
-      className="w-full text-left bg-cult-near-black rounded-xl p-3 border border-cult-border-subtle hover:bg-cult-surface-overlay hover:border-cult-border transition-all active:scale-[0.98]"
+      className="w-full text-left bg-cult-surface rounded-cult p-3 border border-cult-border-subtle hover:bg-cult-surface-overlay hover:border-cult-border transition-all active:scale-[0.98]"
       role="listitem"
     >
       {/* Batch code + strain */}

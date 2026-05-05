@@ -365,9 +365,9 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
         className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
       >
         <div
-          className="bg-cult-opaque-near-black border-2 border-cult-medium-gray p-8"
+          className="bg-cult-surface border-2 border-cult-border p-8"
         >
-          <div className="text-cult-white">Loading...</div>
+          <div className="text-cult-text-primary">Loading...</div>
         </div>
       </div>
     );
@@ -379,20 +379,20 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
         className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
       >
         <div
-          className="bg-cult-opaque-near-black border-2 border-cult-medium-gray max-w-md w-full p-6"
+          className="bg-cult-surface border-2 border-cult-border max-w-md w-full p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+            <h3 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
               Cannot Generate Manifest
             </h3>
             <button
               onClick={onClose}
-              className="text-cult-light-gray hover:text-cult-white transition-colors"
+              className="text-cult-text-muted hover:text-cult-text-primary transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="text-cult-light-gray mb-4">
+          <div className="text-cult-text-muted mb-4">
             {drivers.length === 0 && vehicles.length === 0 && (
               <p>Please add at least one driver and one vehicle in Settings before generating a manifest.</p>
             )}
@@ -405,7 +405,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
           </div>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+            className="w-full px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 font-medium uppercase tracking-wider text-sm"
           >
             Close
           </button>
@@ -419,18 +419,18 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
       className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 overflow-y-auto"
     >
       <div
-        className="bg-cult-opaque-near-black border-2 border-cult-medium-gray max-w-6xl w-full my-8"
+        className="bg-cult-surface border-2 border-cult-border max-w-6xl w-full my-8"
       >
-        <div className="p-6 border-b border-cult-medium-gray flex items-center justify-between">
+        <div className="p-6 border-b border-cult-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6 text-cult-white" />
-            <h3 className="text-xl font-bold text-cult-white uppercase tracking-wider">
+            <FileText className="w-6 h-6 text-cult-text-primary" />
+            <h3 className="text-xl font-bold text-cult-text-primary uppercase tracking-wider">
               Generate Delivery Manifest
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-cult-light-gray hover:text-cult-white transition-colors"
+            className="text-cult-text-muted hover:text-cult-text-primary transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -438,9 +438,9 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
 
         {!manifestData ? (
           <div className="p-6">
-            <div className="mb-4 p-4 bg-cult-opaque-black border border-cult-medium-gray">
-              <div className="text-cult-white font-semibold mb-1">Order: {orderNumber}</div>
-              <div className="text-cult-light-gray text-sm">
+            <div className="mb-4 p-4 bg-cult-opaque-black border border-cult-border">
+              <div className="text-cult-text-primary font-semibold mb-1">Order: {orderNumber}</div>
+              <div className="text-cult-text-muted text-sm">
                 Configure route details and select a driver and vehicle for the delivery manifest
               </div>
             </div>
@@ -454,13 +454,13 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Origin Location *
                   </label>
                   <select
                     value={selectedOriginId}
                     onChange={(e) => setSelectedOriginId(e.target.value)}
-                    className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                     required
                   >
                     {locations.map((location) => (
@@ -469,36 +469,36 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                       </option>
                     ))}
                   </select>
-                  <div className="mt-1 text-xs text-cult-light-gray">
+                  <div className="mt-1 text-xs text-cult-text-muted">
                     Where this delivery route begins
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                  <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                     Stop Number *
                   </label>
                   <input
                     type="text"
                     value={stopNumber}
                     onChange={(e) => setStopNumber(e.target.value)}
-                    className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                    className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                     placeholder="1"
                     required
                   />
-                  <div className="mt-1 text-xs text-cult-light-gray">
+                  <div className="mt-1 text-xs text-cult-text-muted">
                     Position in the delivery sequence
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Driver *
                 </label>
                 <select
                   value={selectedDriverId}
                   onChange={(e) => setSelectedDriverId(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   required
                 >
                   {drivers.map((driver) => (
@@ -510,13 +510,13 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Vehicle *
                 </label>
                 <select
                   value={selectedVehicleId}
                   onChange={(e) => setSelectedVehicleId(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   required
                 >
                   {vehicles.map((vehicle) => (
@@ -528,29 +528,29 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Route Description (Optional)
                 </label>
-                <div className="mb-2 text-xs text-cult-light-gray">
+                <div className="mb-2 text-xs text-cult-text-muted">
                   Leave blank to automatically use cached turn-by-turn directions
                 </div>
                 <textarea
                   value={routeDescription}
                   onChange={(e) => setRouteDescription(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   rows={3}
                   placeholder="Auto-generated from cached route (or enter manually to override)..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2 uppercase tracking-wider">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2 uppercase tracking-wider">
                   Notes (Optional)
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-white transition-all"
+                  className="w-full px-4 py-3 bg-cult-opaque-black border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-accent transition-all"
                   rows={2}
                   placeholder="Any special notes or circumstances..."
                 />
@@ -560,7 +560,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={onClose}
-                className="px-6 py-3 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+                className="px-6 py-3 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all duration-200 font-medium uppercase tracking-wider text-sm"
               >
                 Cancel
               </button>
@@ -577,12 +577,12 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
         ) : (
           <div className="p-6">
             <div className="mb-4 flex items-center justify-between">
-              <div className="text-cult-white font-semibold">Manifest Preview</div>
+              <div className="text-cult-text-primary font-semibold">Manifest Preview</div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={handlePrint}
                   disabled={!imagesLoaded || loadingPrint}
-                  className="flex items-center gap-2 px-4 py-2 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Printer className="w-4 h-4" />
                   {loadingPrint ? 'Printing...' : imagesLoaded ? 'Print' : 'Loading...'}
@@ -590,7 +590,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
                 <button
                   onClick={handleDownloadPDF}
                   disabled={!imagesLoaded || loadingDownload}
-                  className="flex items-center gap-2 px-4 py-2 border-2 border-cult-white text-cult-white hover:bg-cult-white hover:text-cult-black transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-cult-accent text-cult-text-primary hover:bg-cult-accent hover:text-cult-opaque-black transition-all font-medium uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loadingDownload ? (
                     <>
@@ -617,7 +617,7 @@ export function ManifestModal({ orderId, orderNumber, onClose }: ManifestModalPr
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={onClose}
-                className="px-6 py-3 bg-cult-white text-cult-black hover:bg-cult-light-gray transition-all duration-200 font-medium uppercase tracking-wider text-sm"
+                className="px-6 py-3 bg-cult-accent text-cult-opaque-black hover:bg-cult-accent-hover transition-all duration-200 font-medium uppercase tracking-wider text-sm"
               >
                 Close
               </button>

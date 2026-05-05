@@ -28,7 +28,7 @@ function groupByZone(orders: CalendarOrder[]): Map<string, CalendarOrder[]> {
 }
 
 function loadLabel(routeCount: number): { label: string; dotClass: string } {
-  if (routeCount === 0) return { label: 'No routes', dotClass: 'bg-cult-medium-gray' };
+  if (routeCount === 0) return { label: 'No routes', dotClass: 'bg-cult-border' };
   if (routeCount === 1) return { label: 'Light', dotClass: 'bg-cult-success' };
   if (routeCount === 2) return { label: 'Moderate', dotClass: 'bg-cult-warning' };
   return { label: 'Heavy', dotClass: 'bg-cult-danger' };
@@ -75,7 +75,7 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
 
       {/* Panel — right-anchored on desktop, bottom-sheet on tablet */}
       <div
-        className="fixed z-40 bg-cult-near-black border-l-2 border-cult-medium-gray shadow-2xl
+        className="fixed z-40 bg-cult-surface border-l-2 border-cult-border
                    right-0 top-0 bottom-0 w-[420px] max-w-full
                    md:w-[420px]
                    flex flex-col
@@ -85,26 +85,26 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
         aria-label={`Route manifest for ${dayLabel}`}
       >
         {/* ── Header ───────────────────────────────────────────────── */}
-        <div className="p-4 border-b-2 border-cult-medium-gray bg-cult-black flex-shrink-0">
+        <div className="p-4 border-b-2 border-cult-border bg-cult-black flex-shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h2 className="text-[14px] font-semibold text-cult-white uppercase tracking-wider truncate">
+              <h2 className="text-[14px] font-semibold text-cult-text-primary uppercase tracking-wider truncate">
                 {dayLabel}
               </h2>
               <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
                 <div className="flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full ${load.dotClass}`} />
-                  <span className="text-[11px] text-cult-lighter-gray font-medium">
+                  <span className="text-[11px] text-cult-text-muted font-medium">
                     {load.label} · {orders.length} order{orders.length !== 1 ? 's' : ''}
                   </span>
                 </div>
               </div>
               <div className="flex items-center flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
-                <span className="text-[11px] text-cult-light-gray font-medium">
+                <span className="text-[11px] text-cult-text-muted font-medium">
                   {formatCurrency(totalRevenue)} total
                 </span>
                 {totalDuration > 0 && (
-                  <span className="text-[11px] text-cult-lighter-gray">
+                  <span className="text-[11px] text-cult-text-muted">
                     ~{formatDuration(totalDuration)} est. drive
                   </span>
                 )}
@@ -112,7 +112,7 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 text-cult-light-gray hover:text-cult-white transition-colors rounded-sm hover:bg-cult-charcoal flex-shrink-0"
+              className="p-1.5 text-cult-text-muted hover:text-cult-text-primary transition-colors rounded-sm hover:bg-cult-surface-raised flex-shrink-0"
               aria-label="Close panel"
             >
               <X className="w-5 h-5" />
@@ -123,7 +123,7 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
         {/* ── Route Manifest Body ──────────────────────────────────── */}
         <div className="overflow-y-auto flex-1">
           {zones.length === 0 ? (
-            <div className="p-8 text-center text-[12px] text-cult-light-gray">
+            <div className="p-8 text-center text-[12px] text-cult-text-muted">
               No orders scheduled.
             </div>
           ) : (
@@ -132,7 +132,7 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
               const zoneRevenue = zoneOrders.reduce((sum, o) => sum + o.total_amount, 0);
 
               return (
-                <div key={zone.id} className="border-b border-cult-charcoal/50">
+                <div key={zone.id} className="border-b border-cult-surface-raised/50">
                   {/* Route section header */}
                   <div className={`flex items-center justify-between px-4 py-2.5 ${zone.bgColor}`}>
                     <div className="flex items-center gap-2 min-w-0">
@@ -140,11 +140,11 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
                       <span className={`text-[11px] font-semibold uppercase tracking-wider ${zone.color} truncate`}>
                         Route {routeIndex + 1} — {zone.label}
                       </span>
-                      <span className="text-[10px] text-cult-lighter-gray flex-shrink-0">
+                      <span className="text-[10px] text-cult-text-muted flex-shrink-0">
                         ({zoneOrders.length})
                       </span>
                     </div>
-                    <span className="text-[11px] text-cult-light-gray font-semibold tabular-nums flex-shrink-0">
+                    <span className="text-[11px] text-cult-text-muted font-semibold tabular-nums flex-shrink-0">
                       {formatCurrencyShort(zoneRevenue)}
                     </span>
                   </div>
@@ -152,17 +152,17 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
                   {/* Stop rows */}
                   <div>
                     {zoneOrders.map(order => (
-                      <div key={order.id} className="px-4 py-2.5 border-t border-cult-charcoal/30 hover:bg-cult-black/40 transition-colors">
+                      <div key={order.id} className="px-4 py-2.5 border-t border-cult-surface-raised/30 hover:bg-cult-black/40 transition-colors">
                         <div className="flex items-start gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full ${zone.dotColor} flex-shrink-0 mt-1.5`} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[12px] font-medium text-cult-white truncate">
+                              <span className="text-[12px] font-medium text-cult-text-primary truncate">
                                 {order.customer_name}
                               </span>
                               <ReadinessBadge status={order.status} />
                             </div>
-                            <div className="text-[10px] text-cult-lighter-gray mt-0.5">
+                            <div className="text-[10px] text-cult-text-muted mt-0.5">
                               {order.order_number} · {formatCurrency(order.total_amount)}
                             </div>
                             <div className="mt-1">
@@ -189,17 +189,17 @@ export function RouteManifestPanel({ date, orders, onClose, onSelectOrder }: Rou
         </div>
 
         {/* ── Footer: Zone legend + total ──────────────────────────── */}
-        <div className="p-3 border-t-2 border-cult-medium-gray bg-cult-black flex-shrink-0">
+        <div className="p-3 border-t-2 border-cult-border bg-cult-black flex-shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap min-w-0">
               {zones.map(zone => (
                 <div key={zone.id} className="flex items-center gap-1">
                   <div className={`w-1.5 h-1.5 rounded-full ${zone.dotColor}`} />
-                  <span className="text-[10px] text-cult-lighter-gray truncate">{zone.label}</span>
+                  <span className="text-[10px] text-cult-text-muted truncate">{zone.label}</span>
                 </div>
               ))}
             </div>
-            <div className="text-[12px] text-cult-white font-semibold flex-shrink-0">
+            <div className="text-[12px] text-cult-text-primary font-semibold flex-shrink-0">
               Total: <span className="text-cult-success">{formatCurrency(totalRevenue)}</span>
             </div>
           </div>

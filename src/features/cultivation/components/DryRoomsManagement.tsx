@@ -64,18 +64,18 @@ function DryRoomForm({ initial = EMPTY_FORM, onSubmit, onCancel, submitLabel, is
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-cult-light-gray mb-1">Room Name *</label>
+          <label className="block text-xs font-medium text-cult-text-muted mb-1">Room Name *</label>
           <input
             type="text"
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
             placeholder="e.g. Dry Room A"
-            className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-2 focus:outline-none focus:border-cult-white"
+            className="w-full rounded-md bg-cult-surface border border-cult-border text-cult-text-primary text-sm px-3 py-2 focus:outline-none focus:border-cult-accent"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-cult-light-gray mb-1">
-            Room Code *{isCreate && <span className="text-cult-medium-gray ml-1">(immutable)</span>}
+          <label className="block text-xs font-medium text-cult-text-muted mb-1">
+            Room Code *{isCreate && <span className="text-cult-border ml-1">(immutable)</span>}
           </label>
           <input
             type="text"
@@ -83,13 +83,13 @@ function DryRoomForm({ initial = EMPTY_FORM, onSubmit, onCancel, submitLabel, is
             onChange={(e) => update('room_code', e.target.value)}
             placeholder="e.g. DR-A"
             disabled={!isCreate}
-            className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-2 focus:outline-none focus:border-cult-white disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+            className="w-full rounded-md bg-cult-surface border border-cult-border text-cult-text-primary text-sm px-3 py-2 focus:outline-none focus:border-cult-accent disabled:opacity-50 disabled:cursor-not-allowed uppercase"
           />
         </div>
       </div>
 
       <div className="max-w-xs">
-        <label className="block text-xs font-medium text-cult-light-gray mb-1">Capacity (lbs) <span className="text-cult-medium-gray">optional</span></label>
+        <label className="block text-xs font-medium text-cult-text-muted mb-1">Capacity (lbs) <span className="text-cult-border">optional</span></label>
         <input
           type="number"
           step="0.01"
@@ -97,23 +97,23 @@ function DryRoomForm({ initial = EMPTY_FORM, onSubmit, onCancel, submitLabel, is
           value={form.capacity_lbs}
           onChange={(e) => update('capacity_lbs', e.target.value)}
           placeholder="e.g. 50"
-          className="w-full rounded-md bg-cult-dark-gray border border-cult-medium-gray text-cult-white text-sm px-3 py-2 focus:outline-none focus:border-cult-white"
+          className="w-full rounded-md bg-cult-surface border border-cult-border text-cult-text-primary text-sm px-3 py-2 focus:outline-none focus:border-cult-accent"
         />
-        <p className="mt-1 text-xs text-cult-medium-gray">Informational only — not enforced against session weights.</p>
+        <p className="mt-1 text-xs text-cult-border">Informational only — not enforced against session weights.</p>
       </div>
 
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
           disabled={saving}
-          className="px-4 py-2 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors disabled:opacity-50"
+          className="px-4 py-2 rounded-md bg-cult-accent text-cult-opaque-black text-sm font-medium hover:bg-cult-text-muted transition-colors disabled:opacity-50"
         >
           {saving ? 'Saving…' : submitLabel}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 rounded-md border border-cult-medium-gray text-cult-light-gray text-sm hover:border-cult-white hover:text-cult-white transition-colors"
+          className="px-4 py-2 rounded-md border border-cult-border text-cult-text-muted text-sm hover:border-cult-accent hover:text-cult-text-primary transition-colors"
         >
           Cancel
         </button>
@@ -146,20 +146,20 @@ function DryRoomRow({ room, onEdit, onArchive, onRestore, showArchived }: DryRoo
   if (!showArchived && !room.is_active) return null;
 
   return (
-    <div className={`flex items-center justify-between rounded-md border px-4 py-3 transition-colors ${room.is_active ? 'bg-cult-dark-gray border-cult-medium-gray' : 'bg-cult-black border-cult-dark-gray opacity-60'}`}>
+    <div className={`flex items-center justify-between rounded-md border px-4 py-3 transition-colors ${room.is_active ? 'bg-cult-surface border-cult-border' : 'bg-cult-black border-cult-surface opacity-60'}`}>
       <div className="flex items-center gap-3 min-w-0">
         <Wind className="h-4 w-4 text-cult-info flex-shrink-0" />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-cult-white">{room.name}</span>
+            <span className="text-sm font-medium text-cult-text-primary">{room.name}</span>
             {!room.is_active && (
-              <span className="text-xs text-cult-medium-gray border border-cult-medium-gray rounded px-1.5 py-0.5">Archived</span>
+              <span className="text-xs text-cult-border border border-cult-border rounded px-1.5 py-0.5">Archived</span>
             )}
           </div>
           <div className="flex items-center gap-3 mt-0.5">
-            <span className="text-xs text-cult-medium-gray font-mono">{room.room_code}</span>
+            <span className="text-xs text-cult-border font-mono">{room.room_code}</span>
             {room.capacity_lbs && (
-              <span className="text-xs text-cult-medium-gray">Cap: {room.capacity_lbs} lbs</span>
+              <span className="text-xs text-cult-border">Cap: {room.capacity_lbs} lbs</span>
             )}
           </div>
         </div>
@@ -169,7 +169,7 @@ function DryRoomRow({ room, onEdit, onArchive, onRestore, showArchived }: DryRoo
         {room.is_active && (
           <button
             onClick={() => onEdit(room)}
-            className="p-1.5 rounded text-cult-medium-gray hover:text-cult-white hover:bg-cult-medium-gray/20 transition-colors"
+            className="p-1.5 rounded text-cult-border hover:text-cult-text-primary hover:bg-cult-border/20 transition-colors"
             title="Edit"
           >
             <Pencil className="h-4 w-4" />
@@ -178,7 +178,7 @@ function DryRoomRow({ room, onEdit, onArchive, onRestore, showArchived }: DryRoo
         <button
           onClick={handleToggle}
           disabled={acting}
-          className="p-1.5 rounded text-cult-medium-gray hover:text-cult-white hover:bg-cult-medium-gray/20 transition-colors disabled:opacity-50"
+          className="p-1.5 rounded text-cult-border hover:text-cult-text-primary hover:bg-cult-border/20 transition-colors disabled:opacity-50"
           title={room.is_active ? 'Archive' : 'Restore'}
         >
           {room.is_active ? <Archive className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
@@ -224,21 +224,21 @@ export function DryRoomsManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Dry Room Configuration</h1>
-          <p className="text-cult-light-gray mt-2">Add, edit, and archive dry rooms</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Dry Room Configuration</h1>
+          <p className="text-cult-text-muted mt-2">Add, edit, and archive dry rooms</p>
         </div>
         <div className="flex items-center gap-3">
           {archivedCount > 0 && (
             <button
               onClick={() => setShowArchived((v) => !v)}
-              className="text-xs text-cult-medium-gray hover:text-cult-white transition-colors"
+              className="text-xs text-cult-border hover:text-cult-text-primary transition-colors"
             >
               {showArchived ? 'Hide archived' : 'Show archived'}
             </button>
           )}
           <button
             onClick={() => { setShowCreateForm(true); setEditingRoom(null); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cult-white text-cult-black text-sm font-medium hover:bg-cult-light-gray transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-cult-accent text-cult-opaque-black text-sm font-medium hover:bg-cult-text-muted transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add Dry Room
@@ -247,8 +247,8 @@ export function DryRoomsManagement() {
       </div>
 
       {showCreateForm && (
-        <div className="rounded-lg border border-cult-medium-gray bg-cult-dark-gray p-4">
-          <h3 className="text-sm font-medium text-cult-white mb-4">New Dry Room</h3>
+        <div className="rounded-lg border border-cult-border bg-cult-surface p-4">
+          <h3 className="text-sm font-medium text-cult-text-primary mb-4">New Dry Room</h3>
           <DryRoomForm
             isCreate
             onSubmit={handleCreate}
@@ -259,8 +259,8 @@ export function DryRoomsManagement() {
       )}
 
       {editingRoom && (
-        <div className="rounded-lg border border-cult-medium-gray bg-cult-dark-gray p-4">
-          <h3 className="text-sm font-medium text-cult-white mb-4">Edit — {editingRoom.name}</h3>
+        <div className="rounded-lg border border-cult-border bg-cult-surface p-4">
+          <h3 className="text-sm font-medium text-cult-text-primary mb-4">Edit — {editingRoom.name}</h3>
           <DryRoomForm
             initial={{
               name: editingRoom.name,
@@ -283,12 +283,12 @@ export function DryRoomsManagement() {
       )}
 
       {loading ? (
-        <div className="text-sm text-cult-medium-gray py-8 text-center">Loading dry rooms…</div>
+        <div className="text-sm text-cult-border py-8 text-center">Loading dry rooms…</div>
       ) : rooms.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-cult-medium-gray p-8 text-center">
-          <Wind className="h-8 w-8 text-cult-medium-gray mx-auto mb-3" />
-          <p className="text-sm font-medium text-cult-white">No dry rooms yet</p>
-          <p className="text-xs text-cult-medium-gray mt-1">Add a dry room to start tracking binning sessions.</p>
+        <div className="rounded-lg border border-dashed border-cult-border p-8 text-center">
+          <Wind className="h-8 w-8 text-cult-border mx-auto mb-3" />
+          <p className="text-sm font-medium text-cult-text-primary">No dry rooms yet</p>
+          <p className="text-xs text-cult-border mt-1">Add a dry room to start tracking binning sessions.</p>
         </div>
       ) : (
         <div className="space-y-2">

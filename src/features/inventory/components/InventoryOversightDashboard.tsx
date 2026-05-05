@@ -60,12 +60,12 @@ export function InventoryOversightDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-cult-white uppercase tracking-wide">
+        <h2 className="text-2xl font-bold text-cult-text-primary uppercase tracking-wide">
           Inventory Oversight
         </h2>
         <button
           onClick={reload}
-          className="flex items-center gap-2 px-4 py-2 border border-cult-medium-gray text-cult-white hover:border-cult-white transition-all text-sm uppercase tracking-wider"
+          className="flex items-center gap-2 px-4 py-2 border border-cult-border text-cult-text-primary hover:border-cult-accent transition-all text-sm uppercase tracking-wider"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -73,22 +73,22 @@ export function InventoryOversightDashboard() {
       </div>
 
       {requirements.length === 0 ? (
-        <div className="bg-cult-black border border-cult-medium-gray p-8 text-center">
-          <p className="text-cult-light-gray">No active orders requiring inventory</p>
+        <div className="bg-cult-black border border-cult-border p-8 text-center">
+          <p className="text-cult-text-muted">No active orders requiring inventory</p>
         </div>
       ) : (
         <div className="space-y-6">
           {Object.entries(groupedByStrain).map(([strain, items]) => (
-            <div key={strain} className="bg-cult-black border border-cult-medium-gray">
-              <div className="bg-cult-near-black border-b border-cult-medium-gray px-4 py-3">
-                <h3 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+            <div key={strain} className="bg-cult-black border border-cult-border">
+              <div className="bg-cult-surface border-b border-cult-border px-4 py-3">
+                <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide">
                   {strain}
                 </h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-cult-near-black text-cult-light-gray text-xs uppercase tracking-wider">
+                    <tr className="bg-cult-surface text-cult-text-muted text-xs uppercase tracking-wider">
                       <th className="px-4 py-3 text-left">Status</th>
                       <th className="px-4 py-3 text-left">Product</th>
                       <th className="px-4 py-3 text-left">Type</th>
@@ -101,27 +101,27 @@ export function InventoryOversightDashboard() {
                       <th className="px-4 py-3 text-left">Earliest Delivery</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-cult-medium-gray">
+                  <tbody className="divide-y divide-cult-border">
                     {items.map((req, idx) => {
                       const statusColor = getStatusColor(req);
                       return (
-                        <tr key={idx} className="hover:bg-cult-near-black transition-colors">
+                        <tr key={idx} className="hover:bg-cult-surface transition-colors">
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-center">
                               {getStatusIcon(req)}
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-cult-white font-medium">
+                          <td className="px-4 py-3 text-sm text-cult-text-primary font-medium">
                             {req.product_name}
                           </td>
-                          <td className="px-4 py-3 text-sm text-cult-light-gray capitalize">
+                          <td className="px-4 py-3 text-sm text-cult-text-muted capitalize">
                             {req.product_category}
                           </td>
-                          <td className="px-4 py-3 text-sm text-cult-white text-right font-bold">
+                          <td className="px-4 py-3 text-sm text-cult-text-primary text-right font-bold">
                             {req.total_units_needed}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            req.packaged_units_available > 0 ? 'text-cult-success' : 'text-cult-light-gray'
+                            req.packaged_units_available > 0 ? 'text-cult-success' : 'text-cult-text-muted'
                           }`}>
                             {req.packaged_units_available}
                           </td>
@@ -133,19 +133,19 @@ export function InventoryOversightDashboard() {
                             {req.units_still_needed > 0 ? req.units_still_needed : 0}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            req.bulk_grams_available > 0 ? 'text-cult-info' : 'text-cult-light-gray'
+                            req.bulk_grams_available > 0 ? 'text-cult-info' : 'text-cult-text-muted'
                           }`}>
                             {req.bulk_grams_available.toFixed(1)}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            req.bucked_grams_needed > 0 ? 'text-cult-warning' : 'text-cult-light-gray'
+                            req.bucked_grams_needed > 0 ? 'text-cult-warning' : 'text-cult-text-muted'
                           }`}>
                             {req.bucked_grams_needed.toFixed(1)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-cult-light-gray text-right">
+                          <td className="px-4 py-3 text-sm text-cult-text-muted text-right">
                             {req.order_count}
                           </td>
-                          <td className="px-4 py-3 text-sm text-cult-light-gray">
+                          <td className="px-4 py-3 text-sm text-cult-text-muted">
                             {req.earliest_delivery_date
                               ? new Date(req.earliest_delivery_date).toLocaleDateString()
                               : 'N/A'}
@@ -161,22 +161,22 @@ export function InventoryOversightDashboard() {
         </div>
       )}
 
-      <div className="bg-cult-black border border-cult-medium-gray p-4">
-        <h3 className="text-sm font-bold text-cult-white uppercase tracking-wider mb-3">
+      <div className="bg-cult-black border border-cult-border p-4">
+        <h3 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider mb-3">
           Legend
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-cult-success" />
-            <span className="text-cult-light-gray">Fully Stocked - All inventory available</span>
+            <span className="text-cult-text-muted">Fully Stocked - All inventory available</span>
           </div>
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-cult-warning" />
-            <span className="text-cult-light-gray">Partial - Some processing needed</span>
+            <span className="text-cult-text-muted">Partial - Some processing needed</span>
           </div>
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-cult-danger" />
-            <span className="text-cult-light-gray">Shortage - Insufficient inventory</span>
+            <span className="text-cult-text-muted">Shortage - Insufficient inventory</span>
           </div>
         </div>
       </div>

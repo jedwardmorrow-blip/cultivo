@@ -100,9 +100,17 @@ export default {
         'cult': '12px',
       },
       boxShadow: {
-        // Glass/glow shadows neutralized for working-instrument aesthetic.
-        // Components still using these classes render flat. Migrate to
-        // hairline borders (cult-border, cult-border-strong) over time.
+        // Working-instrument aesthetic: hairline borders, no shadows.
+        // Standard Tailwind shadow names AND custom glow/glass names all
+        // collapse to 'none'. To add elevation, use border-cult-border-strong.
+        DEFAULT: 'none',
+        'sm': 'none',
+        'md': 'none',
+        'lg': 'none',
+        'xl': 'none',
+        '2xl': 'none',
+        '3xl': 'none',
+        'inner': 'none',
         'glow': 'none',
         'glow-strong': 'none',
         'glass': 'none',
@@ -118,7 +126,17 @@ export default {
         'glow-accent': 'none',
       },
       backdropBlur: {
-        // Backdrop blur neutralized; surfaces are opaque.
+        // Backdrop blur neutralized; surfaces are opaque. Standard names
+        // (sm, md, lg, xl, 2xl, 3xl) and custom (glass, glass-lg, glass-xl)
+        // all collapse to 0.
+        DEFAULT: '0',
+        'none': '0',
+        'sm': '0',
+        'md': '0',
+        'lg': '0',
+        'xl': '0',
+        '2xl': '0',
+        '3xl': '0',
         'glass': '0',
         'glass-lg': '0',
         'glass-xl': '0',
@@ -129,8 +147,8 @@ export default {
         'slide-in': 'slideIn 0.4s ease-in-out',
         'slide-in-right': 'slideInRight 0.3s ease-out',
         'flicker': 'flicker 0.3s ease-in-out',
-        'pulse-red': 'pulseUrgentRed 2s infinite',
-        'pulse-amber': 'pulseUrgentAmber 2s infinite',
+        // Removed: pulse-red / pulse-amber. Working-instrument doesn't
+        // pulse; urgency is rendered as a 6px status dot + mono text label.
         'card-fade-up': 'cardFadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both',
         'stat-emphasize': 'statEmphasize 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
         'stat-recede': 'statRecede 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -141,14 +159,6 @@ export default {
         'success-pulse': 'successPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
-        pulseUrgentRed: {
-          '0%, 100%': { boxShadow: '0 0 5px rgba(197, 106, 106, 0.3)' },
-          '50%': { boxShadow: '0 0 20px rgba(197, 106, 106, 0.6)' }
-        },
-        pulseUrgentAmber: {
-          '0%, 100%': { boxShadow: '0 0 5px rgba(200, 148, 58, 0.3)' },
-          '50%': { boxShadow: '0 0 20px rgba(200, 148, 58, 0.6)' }
-        },
         glitch: {
           '0%, 100%': { transform: 'translate(0)' },
           '33%': { transform: 'translate(-1px, 1px)', opacity: '0.95' },

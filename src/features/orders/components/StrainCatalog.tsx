@@ -305,7 +305,7 @@ function StrainFilterBar({
               onClick={() => onToggleFilter(filter)}
               className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-cult transition-all uppercase tracking-wider ${
                 isActive
-                  ? 'bg-cult-text-primary text-cult-surface'
+                  ? 'bg-cult-accent text-cult-opaque-black'
                   : 'bg-cult-surface-raised text-cult-text-muted border border-cult-border hover:border-cult-border-strong hover:text-cult-text-secondary'
               }`}
             >
@@ -686,7 +686,7 @@ function StrainDetailPanel({
                             onAddToCart(product, undefined, parsedQty);
                             setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                           }}
-                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
+                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-accent text-cult-opaque-black rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
                         >
                           Add
                         </button>
@@ -948,7 +948,7 @@ function StrainDetailPanel({
                             onAddToCart(product, undefined, parsedQty);
                             setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                           }}
-                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
+                          className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-accent text-cult-opaque-black rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
                         >
                           Add
                         </button>
@@ -1183,7 +1183,7 @@ function StrainDetailPanel({
                               onAddToCart(product, undefined, parsedQty);
                               setPendingQty(prev => { const n = { ...prev }; delete n[qtyKey]; return n; });
                             }}
-                            className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-text-primary text-cult-surface rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
+                            className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider bg-cult-accent text-cult-opaque-black rounded-cult hover:bg-cult-accent-hover active:scale-95 transition-all"
                           >
                             Add
                           </button>

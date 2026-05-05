@@ -70,9 +70,9 @@ export function AssignedPackagesDisplay({
 
   if (assignments.length === 0) {
     return (
-      <div className="p-4 bg-cult-dark-gray border border-cult-medium-gray text-center">
-        <Package className="w-8 h-8 text-cult-lighter-gray mx-auto mb-2" />
-        <p className="text-cult-lighter-gray text-sm">No packages assigned yet</p>
+      <div className="p-4 bg-cult-surface border border-cult-border text-center">
+        <Package className="w-8 h-8 text-cult-text-muted mx-auto mb-2" />
+        <p className="text-cult-text-muted text-sm">No packages assigned yet</p>
       </div>
     );
   }
@@ -83,11 +83,11 @@ export function AssignedPackagesDisplay({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-bold text-cult-white uppercase tracking-wider">
+        <h4 className="text-sm font-bold text-cult-text-primary uppercase tracking-wider">
           Assigned Packages ({assignments.length})
         </h4>
         <div className="text-sm">
-          <span className="text-cult-lighter-gray">Total: </span>
+          <span className="text-cult-text-muted">Total: </span>
           <span className="font-bold text-cult-success">
             {totalAssigned} {unit}
           </span>
@@ -104,17 +104,17 @@ export function AssignedPackagesDisplay({
           return (
             <div
               key={assignment.id}
-              className={`p-4 bg-cult-dark-gray border transition-colors ${
+              className={`p-4 bg-cult-surface border transition-colors ${
                 isFulfilled
                   ? 'border-cult-success/40'
-                  : 'border-cult-medium-gray hover:border-cult-lighter-gray'
+                  : 'border-cult-border hover:border-cult-text-muted'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <Package className={`w-5 h-5 ${isFulfilled ? 'text-cult-success' : 'text-cult-success'}`} />
-                    <span className="font-bold text-cult-white">
+                    <span className="font-bold text-cult-text-primary">
                       {assignment.package_id || 'Unknown Package'}
                     </span>
                     {isFulfilled ? (
@@ -132,22 +132,22 @@ export function AssignedPackagesDisplay({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-cult-lighter-gray">Strain</p>
-                      <p className="text-cult-white">{assignment.strain || 'N/A'}</p>
+                      <p className="text-cult-text-muted">Strain</p>
+                      <p className="text-cult-text-primary">{assignment.strain || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-cult-lighter-gray">Batch</p>
-                      <p className="text-cult-white">{assignment.batch || 'N/A'}</p>
+                      <p className="text-cult-text-muted">Batch</p>
+                      <p className="text-cult-text-primary">{assignment.batch || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-cult-lighter-gray">Quantity Assigned</p>
-                      <p className="text-cult-white font-bold">
+                      <p className="text-cult-text-muted">Quantity Assigned</p>
+                      <p className="text-cult-text-primary font-bold">
                         {assignment.quantity_assigned} {unit}
                       </p>
                     </div>
                     <div>
-                      <p className="text-cult-lighter-gray">Package Available</p>
-                      <p className="text-cult-white">
+                      <p className="text-cult-text-muted">Package Available</p>
+                      <p className="text-cult-text-primary">
                         {assignment.available_qty !== null ? `${assignment.available_qty} ${unit}` : 'N/A'}
                       </p>
                     </div>
@@ -155,13 +155,13 @@ export function AssignedPackagesDisplay({
 
                   {assignment.room && (
                     <div className="mt-2 text-sm">
-                      <span className="text-cult-lighter-gray">Location: </span>
-                      <span className="text-cult-white">{assignment.room}</span>
+                      <span className="text-cult-text-muted">Location: </span>
+                      <span className="text-cult-text-primary">{assignment.room}</span>
                     </div>
                   )}
 
                   {hasLabel && (
-                    <div className="mt-3 p-3 bg-cult-near-black border border-cult-success/50">
+                    <div className="mt-3 p-3 bg-cult-surface border border-cult-success/50">
                       <div className="flex items-center gap-2 mb-2">
                         <Tag className="w-4 h-4 text-cult-success" />
                         <span className="text-xs font-bold text-cult-success uppercase tracking-wider">
@@ -170,7 +170,7 @@ export function AssignedPackagesDisplay({
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-cult-white font-medium">
+                          <p className="text-cult-text-primary font-medium">
                             {assignment.label_number || 'Unknown Label'}
                           </p>
                           {labelVoided && (
@@ -217,12 +217,12 @@ export function AssignedPackagesDisplay({
 
                   {assignment.notes && (
                     <div className="mt-2 text-sm">
-                      <span className="text-cult-lighter-gray">Notes: </span>
-                      <span className="text-cult-white">{assignment.notes}</span>
+                      <span className="text-cult-text-muted">Notes: </span>
+                      <span className="text-cult-text-primary">{assignment.notes}</span>
                     </div>
                   )}
 
-                  <div className="mt-2 text-xs text-cult-lighter-gray">
+                  <div className="mt-2 text-xs text-cult-text-muted">
                     Assigned {new Date(assignment.assigned_at).toLocaleString()}
                   </div>
                 </div>

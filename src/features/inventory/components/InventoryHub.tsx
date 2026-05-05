@@ -84,7 +84,7 @@ function FlagReviewQueue({ items, loading }: { items: FlaggedItem[]; loading: bo
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3].map(i => <div key={i} className="h-8 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -96,13 +96,13 @@ function FlagReviewQueue({ items, loading }: { items: FlaggedItem[]; loading: bo
       {items.slice(0, 8).map(item => (
         <div
           key={item.id}
-          className="flex items-center justify-between gap-3 py-2 border-b border-cult-charcoal/50 last:border-b-0"
+          className="flex items-center justify-between gap-3 py-2 border-b border-cult-surface-raised/50 last:border-b-0"
         >
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-[10px] px-1.5 py-0.5 rounded border bg-cult-warning-muted text-cult-warning border-cult-warning/30 flex-shrink-0">
               {item.review_status ?? 'flagged'}
             </span>
-            <span className="text-[12px] text-cult-off-white truncate">
+            <span className="text-[12px] text-cult-text-primary truncate">
               {item.strain ?? 'Unknown strain'}
             </span>
             <span className="text-[11px] text-cult-text-faint truncate">
@@ -127,7 +127,7 @@ function MovementLogMini({ movements, loading }: { movements: MovementRow[]; loa
   if (loading) {
     return (
       <div className="animate-pulse space-y-2">
-        {[1, 2, 3].map(i => <div key={i} className="h-7 bg-cult-graphite rounded-cult" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-7 bg-cult-surface rounded-cult" />)}
       </div>
     );
   }
@@ -144,10 +144,10 @@ function MovementLogMini({ movements, loading }: { movements: MovementRow[]; loa
         return (
           <div
             key={m.id}
-            className="flex items-center justify-between gap-3 py-1.5 border-b border-cult-charcoal/40 last:border-b-0"
+            className="flex items-center justify-between gap-3 py-1.5 border-b border-cult-surface-raised/40 last:border-b-0"
           >
             <div className="min-w-0 flex-1">
-              <span className="text-[12px] text-cult-off-white truncate block">{itemName}</span>
+              <span className="text-[12px] text-cult-text-primary truncate block">{itemName}</span>
               {cat && <span className="text-[11px] text-cult-text-faint">{cat}</span>}
             </div>
             <span className={`text-[11px] font-mono flex-shrink-0 ${isIn ? 'text-cult-success' : 'text-cult-danger'}`}>
@@ -167,7 +167,7 @@ function QRScanLogMini({ movements, loading }: { movements: MovementRow[]; loadi
   const scans = movements.filter(m => m.reason_code === 'qr_scan');
 
   if (loading) {
-    return <div className="animate-pulse h-12 bg-cult-graphite rounded-cult" />;
+    return <div className="animate-pulse h-12 bg-cult-surface rounded-cult" />;
   }
   if (!scans.length) {
     return <p className="text-[12px] text-cult-text-faint py-2">No QR scans in the last 24h.</p>;
@@ -177,9 +177,9 @@ function QRScanLogMini({ movements, loading }: { movements: MovementRow[]; loadi
       {scans.slice(0, 6).map(m => (
         <div
           key={m.id}
-          className="flex items-center justify-between gap-3 py-1.5 border-b border-cult-charcoal/40 last:border-b-0"
+          className="flex items-center justify-between gap-3 py-1.5 border-b border-cult-surface-raised/40 last:border-b-0"
         >
-          <span className="text-[12px] text-cult-off-white truncate">
+          <span className="text-[12px] text-cult-text-primary truncate">
             {m.source_item?.strain ?? m.dest_item?.strain ?? '—'}
           </span>
           <span className="text-[11px] text-cult-text-faint flex-shrink-0">
@@ -294,7 +294,7 @@ export function InventoryHub() {
         </div>
 
         {/* Flag Review Queue */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Flag className="w-4 h-4 text-cult-warning" />
             Flag Review Queue
@@ -310,7 +310,7 @@ export function InventoryHub() {
 
         {/* Logs row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+          <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
             <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
               <Activity className="w-4 h-4" />
               Movement Log (24h)
@@ -318,7 +318,7 @@ export function InventoryHub() {
             <MovementLogMini movements={movements} loading={movementsLoading} />
           </div>
 
-          <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+          <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
             <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
               <QrCode className="w-4 h-4" />
               QR Scan Log (24h)

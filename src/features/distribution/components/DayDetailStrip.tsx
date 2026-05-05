@@ -134,7 +134,7 @@ export function DayDetailStrip({
                 {onGenerateTripPlan && (
                   <button
                     onClick={onGenerateTripPlan}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-[10px] font-bold text-white/60 uppercase tracking-wider hover:bg-white/[0.10] hover:border-white/[0.15] transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-cult bg-cult-surface-raised border border-cult-border text-[10px] font-bold text-white/60 uppercase tracking-wider hover:bg-cult-surface-active hover:border-cult-border-strong transition-all"
                   >
                     <FileText className="w-3 h-3" />
                     Trip Plan
@@ -144,7 +144,7 @@ export function DayDetailStrip({
 
               {/* Per-zone driver assignments */}
               {zoneBreakdown.length > 0 && (
-                <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-white/[0.06]">
+                <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-cult-border-subtle">
                   <label className="text-[10px] text-white/30 uppercase tracking-wider font-medium">Drivers</label>
                   {zoneBreakdown.map((z) => {
                     const zoneDriver = driversForDate.find((d) => d.zoneId === z.zoneId);
@@ -157,7 +157,7 @@ export function DayDetailStrip({
                           onChange={(e) => {
                             if (date) onAssignDriver(date, e.target.value, z.zoneId);
                           }}
-                          className="px-1.5 py-0.5 rounded-lg border border-white/[0.06] bg-white/[0.04] text-[10px] text-white/50 focus:outline-none focus:border-white/[0.12]"
+                          className="px-1.5 py-0.5 rounded-lg border border-cult-border-subtle bg-cult-surface-inset text-[10px] text-white/50 focus:outline-none focus:border-cult-border-active"
                         >
                           <option value="">—</option>
                           {driverList.map((d) => (

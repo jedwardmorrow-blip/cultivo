@@ -161,7 +161,7 @@ export function UserManagement() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-white uppercase tracking-wide">User Management</h2>
-          <p className="text-cult-light-gray mt-1">Manage user accounts and permissions</p>
+          <p className="text-cult-text-muted mt-1">Manage user accounts and permissions</p>
         </div>
         <Button
           onClick={() => setShowAddForm(!showAddForm)}
@@ -182,7 +182,7 @@ export function UserManagement() {
       )}
 
       {showAddForm && (
-        <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6 mb-6">
+        <div className="bg-cult-surface border border-cult-border rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-white mb-4">Create New User</h2>
           <form onSubmit={handleAddUser} className="space-y-4">
             {error && (
@@ -194,7 +194,7 @@ export function UserManagement() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2">
                   Email
                 </label>
                 <input
@@ -202,26 +202,26 @@ export function UserManagement() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="w-full px-4 py-2 bg-cult-black border border-cult-medium-gray rounded text-white focus:outline-none focus:border-white transition"
+                  className="w-full px-4 py-2 bg-cult-black border border-cult-border rounded text-white focus:outline-none focus:border-white transition"
                   placeholder="user@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2">
                   Full Name
                 </label>
                 <input
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full px-4 py-2 bg-cult-black border border-cult-medium-gray rounded text-white focus:outline-none focus:border-white transition"
+                  className="w-full px-4 py-2 bg-cult-black border border-cult-border rounded text-white focus:outline-none focus:border-white transition"
                   placeholder="John Doe"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2">
                   Password
                 </label>
                 <input
@@ -230,19 +230,19 @@ export function UserManagement() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                   minLength={6}
-                  className="w-full px-4 py-2 bg-cult-black border border-cult-medium-gray rounded text-white focus:outline-none focus:border-white transition"
+                  className="w-full px-4 py-2 bg-cult-black border border-cult-border rounded text-white focus:outline-none focus:border-white transition"
                   placeholder="Min. 6 characters"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cult-light-gray mb-2">
+                <label className="block text-sm font-medium text-cult-text-muted mb-2">
                   Role
                 </label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'manager' | 'user' })}
-                  className="w-full px-4 py-2 bg-cult-black border border-cult-medium-gray rounded text-white focus:outline-none focus:border-white transition"
+                  className="w-full px-4 py-2 bg-cult-black border border-cult-border rounded text-white focus:outline-none focus:border-white transition"
                 >
                   <option value="user">User</option>
                   <option value="manager">Manager</option>
@@ -267,7 +267,7 @@ export function UserManagement() {
                   setError('');
                   setFormData({ email: '', password: '', fullName: '', role: 'user' });
                 }}
-                className="bg-cult-medium-gray text-white px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
+                className="bg-cult-border text-white px-6 py-2 font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition"
               >
                 Cancel
               </button>
@@ -276,10 +276,10 @@ export function UserManagement() {
         </div>
       )}
 
-      <div className="bg-cult-near-black rounded-lg shadow border border-cult-medium-gray">
+      <div className="bg-cult-surface rounded-lg shadow border border-cult-border">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cult-surface-sunken border-b border-cult-medium-gray">
+            <thead className="bg-cult-surface-sunken border-b border-cult-border">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-muted uppercase">Name</th>
@@ -293,13 +293,13 @@ export function UserManagement() {
               {users.map((user) => (
                 <tr key={user.id} className="hover:bg-cult-surface-overlay">
                   <td className="px-4 py-3 text-sm text-white">{user.email}</td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray">{user.full_name || '-'}</td>
+                  <td className="px-4 py-3 text-sm text-cult-text-muted">{user.full_name || '-'}</td>
                   <td className="px-4 py-3 text-sm">
                     <select
                       value={user.role}
                       onChange={(e) => handleUpdateRole(user.id, e.target.value as 'admin' | 'manager' | 'user')}
                       disabled={user.id === profile?.id}
-                      className="bg-cult-black border border-cult-medium-gray rounded px-2 py-1 text-white text-xs disabled:opacity-50"
+                      className="bg-cult-black border border-cult-border rounded px-2 py-1 text-white text-xs disabled:opacity-50"
                     >
                       <option value="user">User</option>
                       <option value="manager">Manager</option>
@@ -319,7 +319,7 @@ export function UserManagement() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-cult-light-gray">
+                  <td className="px-4 py-3 text-sm text-cult-text-muted">
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -349,20 +349,20 @@ export function UserManagement() {
         {users.length === 0 && (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-cult-text-muted mx-auto mb-3" />
-            <p className="text-cult-light-gray">No users found</p>
+            <p className="text-cult-text-muted">No users found</p>
           </div>
         )}
       </div>
 
       {resetPasswordUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg p-6 max-w-md w-full">
+          <div className="bg-cult-surface border border-cult-border rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold text-white mb-4">Reset Password</h3>
-            <p className="text-cult-light-gray mb-2">
+            <p className="text-cult-text-muted mb-2">
               Send a password reset email to:
             </p>
             <p className="text-white font-medium mb-4">{resetPasswordUser.email}</p>
-            <p className="text-cult-light-gray text-sm mb-6">
+            <p className="text-cult-text-muted text-sm mb-6">
               The user will receive an email with a secure link to reset their password.
               The link will expire after 24 hours.
             </p>
@@ -389,7 +389,7 @@ export function UserManagement() {
                   setError('');
                 }}
                 disabled={resettingPassword}
-                className="flex-1 bg-cult-medium-gray text-white px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition disabled:opacity-50"
+                className="flex-1 bg-cult-border text-white px-6 py-3 rounded font-bold uppercase tracking-wider hover:bg-cult-surface-overlay transition disabled:opacity-50"
               >
                 Cancel
               </button>

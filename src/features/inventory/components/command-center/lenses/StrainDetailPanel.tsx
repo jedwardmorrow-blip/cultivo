@@ -116,7 +116,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick 
 
       {/* KPI row */}
       <div className="grid grid-cols-4 gap-3">
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Sellable</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {gramsToLbs(totalSellable)} lbs
@@ -125,14 +125,14 @@ export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick 
             {totalSellable.toLocaleString('en-US', { maximumFractionDigits: 0 })}g
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Pipeline</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {gramsToLbs(totalPipeline)} lbs
           </p>
           <p className="text-[10px] text-white/30 tabular-nums">raw / in-process</p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Sold</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {formatUsd(totalSoldValue)}
@@ -141,7 +141,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick 
             {totalAllocatedOrders > 0 ? `${totalAllocatedOrders} orders` : 'no orders'}
           </p>
         </div>
-        <div className="bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle">
+        <div className="bg-cult-surface rounded-cult p-4 border border-cult-border-subtle">
           <span className="text-xs text-white/40 uppercase tracking-wider">Batches</span>
           <p className="text-xl font-bold text-white tabular-nums mt-1">
             {batches.length}
@@ -170,7 +170,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick 
                   style={{ backgroundColor: STAGE_COLORS[seg.code] ?? '#666', opacity: 0.85 }}
                 />
                 <span className="text-xs text-white/60 w-14">{seg.label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-cult-near-black overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-cult-surface overflow-hidden">
                   <div
                     className="h-full rounded-full"
                     style={{
@@ -199,11 +199,11 @@ export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick 
         {batchLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-cult-near-black animate-pulse" />
+              <div key={i} className="h-16 rounded-cult bg-cult-surface animate-pulse" />
             ))}
           </div>
         ) : batches.length === 0 ? (
-          <div className="rounded-xl bg-cult-surface-inset border border-cult-border-faint p-6 text-center">
+          <div className="rounded-cult bg-cult-surface-inset border border-cult-border-faint p-6 text-center">
             <p className="text-white/30 text-sm">No active batches</p>
           </div>
         ) : (
@@ -215,7 +215,7 @@ export function StrainDetailPanel({ strain, batches, batchLoading, onBatchClick 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 onClick={() => onBatchClick?.(b.batch_id)}
-                className="w-full text-left bg-cult-near-black rounded-xl p-4 border border-cult-border-subtle hover:bg-cult-surface-overlay hover:border-cult-border transition-all active:scale-[0.99] group"
+                className="w-full text-left bg-cult-surface rounded-cult p-4 border border-cult-border-subtle hover:bg-cult-surface-overlay hover:border-cult-border transition-all active:scale-[0.99] group"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">

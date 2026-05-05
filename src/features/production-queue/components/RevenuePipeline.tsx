@@ -26,7 +26,7 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
   const denominator = Math.max(target, total);
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-cult p-5">
+    <div className="bg-cult-surface border border-cult-border rounded-cult p-5">
       {/* Header row with week navigation */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -61,7 +61,7 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
             className={`p-1.5 rounded-cult border transition-colors ${
               weekOffset === 0
                 ? 'border-transparent text-gray-700 cursor-not-allowed'
-                : 'border-cult-medium-gray/50 text-gray-400 hover:text-white hover:bg-cult-dark-gray'
+                : 'border-cult-border/50 text-gray-400 hover:text-white hover:bg-cult-surface'
             }`}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -73,7 +73,7 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
             className={`p-1.5 rounded-cult border transition-colors ${
               weekOffset >= 2
                 ? 'border-transparent text-gray-700 cursor-not-allowed'
-                : 'border-cult-medium-gray/50 text-gray-400 hover:text-white hover:bg-cult-dark-gray'
+                : 'border-cult-border/50 text-gray-400 hover:text-white hover:bg-cult-surface'
             }`}
           >
             <ChevronRight className="w-4 h-4" />
@@ -141,7 +141,7 @@ export function RevenuePipeline({ data, weekOutlook, weekOffset, onWeekChange, w
                 className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-cult border transition-all ${
                   isSelected
                     ? 'border-white/20 bg-white/5'
-                    : 'border-transparent hover:border-cult-medium-gray/50 hover:bg-cult-dark-gray/50'
+                    : 'border-transparent hover:border-cult-border/50 hover:bg-cult-surface/50'
                 }`}
                 title={`${week.label}: ${formatCurrencyShort(week.totalRevenue)} (${week.orderCount} orders, ${week.routeCount} routes)`}
               >

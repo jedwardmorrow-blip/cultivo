@@ -124,6 +124,7 @@ export function CoversheetPublic({ token: tokenProp, onClose }: CoversheetPublic
 
   return (
     <div className="min-h-screen bg-white text-black">
+      <h1 className="sr-only">Coversheet</h1>
       <div className="print:hidden fixed top-4 right-4 z-50 flex items-center gap-3">
         {onClose && (
           <button

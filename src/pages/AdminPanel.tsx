@@ -55,7 +55,7 @@ function AdminContent() {
     <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="font-display text-2xl text-cult-white tracking-wider">ADMIN</h1>
+        <h1 className="font-display text-2xl text-cult-text-primary tracking-wider">ADMIN</h1>
         <p className="text-xs font-mono text-cult-text mt-1">
           Manage users, permissions, and system activity
         </p>
@@ -81,7 +81,7 @@ function AdminContent() {
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-mono uppercase tracking-wider border-b-2 transition-colors ${
                 active
                   ? 'border-cult-gold text-cult-gold'
-                  : 'border-transparent text-cult-text hover:text-cult-white'
+                  : 'border-transparent text-cult-text hover:text-cult-text-primary'
               }`}
             >
               <Icon size={13} />

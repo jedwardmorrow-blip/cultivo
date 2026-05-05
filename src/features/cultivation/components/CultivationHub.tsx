@@ -55,7 +55,7 @@ const ROOM_TYPE_COLORS: Record<string, string> = {
   veg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
   clone: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
   mother: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  mixed: 'bg-cult-charcoal text-cult-text-muted border-cult-border',
+  mixed: 'bg-cult-surface-raised text-cult-text-muted border-cult-border',
 };
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -80,9 +80,9 @@ function RoomSummaryMini({ summary }: { summary: RoomSummary }) {
   const chipClass = ROOM_TYPE_COLORS[dominantStage] ?? ROOM_TYPE_COLORS.mixed;
 
   return (
-    <div className="bg-cult-graphite border border-cult-charcoal rounded-cult p-3 flex flex-col gap-1.5">
+    <div className="bg-cult-surface border border-cult-surface-raised rounded-cult p-3 flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[13px] font-semibold text-cult-off-white font-montserrat truncate">
+        <span className="text-[13px] font-semibold text-cult-text-primary font-mono truncate">
           {summary.room_code}
         </span>
         <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${chipClass}`}>
@@ -108,13 +108,13 @@ function HarvestCountdownRow({ roomCode, strain, projectedDate }: { roomCode: st
   const days = daysUntil(projectedDate);
   const chipColor = days <= 7 ? 'bg-cult-warning-muted text-cult-warning border-cult-warning/30'
     : days <= 14 ? 'bg-cult-info-muted text-cult-info border-cult-info/30'
-    : 'bg-cult-charcoal text-cult-text-muted border-cult-border';
+    : 'bg-cult-surface-raised text-cult-text-muted border-cult-border';
   const formattedDate = new Date(projectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-cult-charcoal/50 last:border-b-0">
+    <div className="flex items-center justify-between gap-3 py-2 border-b border-cult-surface-raised/50 last:border-b-0">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-[12px] font-medium text-cult-off-white font-montserrat">{roomCode}</span>
+        <span className="text-[12px] font-medium text-cult-text-primary font-mono">{roomCode}</span>
         <span className="text-[11px] text-cult-text-muted truncate">{strain}</span>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
@@ -143,11 +143,11 @@ function TaskQueueMini({ tasks, roomCodeMap }: { tasks: DailyTaskInstance[]; roo
       {active.map(t => {
         const roomCode = roomCodeMap.get(t.room_id) ?? t.room_id.slice(0, 8);
         const statusColor = t.status === 'in_progress' ? 'bg-cult-warning-muted text-cult-warning border-cult-warning/30'
-          : 'bg-cult-charcoal text-cult-text-muted border-cult-border';
+          : 'bg-cult-surface-raised text-cult-text-muted border-cult-border';
         return (
-          <div key={t.id} className="flex items-center justify-between gap-3 py-2 border-b border-cult-charcoal/50 last:border-b-0">
+          <div key={t.id} className="flex items-center justify-between gap-3 py-2 border-b border-cult-surface-raised/50 last:border-b-0">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[12px] font-medium text-cult-off-white">
+              <span className="text-[12px] font-medium text-cult-text-primary">
                 {TASK_TYPE_LABELS[t.task_type] ?? t.task_type}
               </span>
               <span className="text-[11px] text-cult-text-muted">{roomCode}</span>
@@ -212,11 +212,11 @@ export function CultivationHub() {
     <HubShell section="Cultivation" icon={Sprout} kpis={kpis}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Room Grid */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">Active Rooms</h2>
           {roomsLoading ? (
             <div className="animate-pulse space-y-2">
-              {[1,2,3].map(i => <div key={i} className="h-14 bg-cult-graphite rounded-cult" />)}
+              {[1,2,3].map(i => <div key={i} className="h-14 bg-cult-surface rounded-cult" />)}
             </div>
           ) : summaries.length === 0 ? (
             <p className="text-[12px] text-cult-text-faint py-2">No active rooms.</p>
@@ -228,7 +228,7 @@ export function CultivationHub() {
         </div>
 
         {/* Upcoming Harvests */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Upcoming Harvests
@@ -250,14 +250,14 @@ export function CultivationHub() {
         </div>
 
         {/* Today Task Queue */}
-        <div className="bg-cult-near-black border border-cult-dark-gray rounded-cult p-4 lg:col-span-2">
+        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4 lg:col-span-2">
           <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
             <Clock className="w-4 h-4" />
             Today's Task Queue
           </h2>
           {tasksLoading ? (
             <div className="animate-pulse space-y-2">
-              {[1,2,3].map(i => <div key={i} className="h-8 bg-cult-graphite rounded-cult" />)}
+              {[1,2,3].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
             </div>
           ) : (
             <TaskQueueMini tasks={tasks} roomCodeMap={roomCodeMap} />

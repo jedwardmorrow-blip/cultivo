@@ -166,7 +166,7 @@ export function PlantAuditCountScreen({
   return (
     <div className="space-y-4">
       {/* Header bar — audit context + global progress + advance button */}
-      <div className="glass-card rounded-cult p-4 border border-white/[0.10] sticky top-0 z-10 backdrop-blur-glass-xl">
+      <div className="bg-cult-surface rounded-cult p-4 border border-cult-border sticky top-0 z-10">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div className="text-xs text-cult-text-secondary uppercase tracking-wider">
@@ -184,7 +184,7 @@ export function PlantAuditCountScreen({
                 {totalProgress.done} / {totalProgress.total}
               </span>
             </div>
-            <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="h-2 bg-cult-surface-inset rounded-full overflow-hidden border border-cult-border-faint">
               <div
                 className="h-full bg-cult-accent transition-all"
                 style={{
@@ -202,19 +202,19 @@ export function PlantAuditCountScreen({
             <button
               type="button"
               onClick={onAbandon}
-              className="px-4 py-2 rounded-xl border border-white/[0.15] text-cult-text-secondary hover:bg-white/[0.06] hover:text-cult-danger transition text-sm flex items-center gap-1.5"
+              className="px-4 py-2 rounded border border-cult-border text-cult-text-muted hover:bg-cult-surface-subtle hover:text-cult-danger hover:border-cult-danger/40 transition-colors flex items-center gap-1.5 font-mono uppercase tracking-[0.16em] text-[11px]"
             >
-              <XCircle className="w-4 h-4" />
+              <XCircle className="w-3.5 h-3.5" />
               Abandon
             </button>
             <button
               type="button"
               onClick={handleAdvance}
               disabled={!canAdvance}
-              className="px-4 py-2 rounded-xl bg-cult-accent text-cult-opaque-black font-bold text-sm flex items-center gap-1.5 hover:bg-cult-accent-hover transition disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded border border-cult-accent text-cult-accent flex items-center gap-1.5 hover:bg-cult-accent hover:text-cult-opaque-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-mono uppercase tracking-[0.16em] text-[11px]"
             >
               Review
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -222,7 +222,7 @@ export function PlantAuditCountScreen({
 
       {/* Per-room panels */}
       {rooms.length === 0 ? (
-        <div className="glass-card rounded-cult p-8 border border-white/[0.10] text-center">
+        <div className="bg-cult-surface rounded-cult p-8 border border-cult-border text-center">
           <p className="text-cult-text-secondary">
             No plant groups in scope. Add orphan groups below if you find plants on the floor.
           </p>
@@ -234,9 +234,9 @@ export function PlantAuditCountScreen({
           return (
             <div
               key={room.roomId}
-              className="glass-card rounded-cult border border-white/[0.10] overflow-hidden"
+              className="bg-cult-surface rounded-cult border border-cult-border overflow-hidden"
             >
-              <div className="px-4 py-3 border-b border-white/[0.08] bg-white/[0.02] flex items-center justify-between gap-3 flex-wrap">
+              <div className="px-4 py-3 border-b border-cult-border-subtle bg-cult-surface-inset flex items-center justify-between gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={() => toggleRoom(room.roomId)}
@@ -261,7 +261,7 @@ export function PlantAuditCountScreen({
                   onClick={() =>
                     setOrphanModalRoom({ id: room.roomId, label: room.roomLabel })
                   }
-                  className="px-3 py-1.5 rounded-xl bg-white/[0.06] border border-white/[0.12] text-xs text-cult-text-primary hover:bg-white/[0.10] transition flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded border border-cult-border bg-cult-surface-raised text-xs text-cult-text-primary hover:bg-cult-surface-overlay transition-colors flex items-center gap-1.5"
                 >
                   <Plus className="w-3 h-3" />
                   Orphan
@@ -278,7 +278,7 @@ export function PlantAuditCountScreen({
                       {table.sections.map((section) => (
                         <div
                           key={section.sectionId}
-                          className="pl-3 border-l-2 border-white/[0.08] space-y-2"
+                          className="pl-3 border-l-2 border-cult-border-subtle space-y-2"
                         >
                           <div className="text-xs text-cult-text-muted uppercase tracking-wider">
                             Section {section.sectionLabel}
@@ -300,7 +300,7 @@ export function PlantAuditCountScreen({
                         </div>
                       ))}
                       {table.unsectioned.length > 0 && (
-                        <div className="pl-3 border-l-2 border-white/[0.08] space-y-2">
+                        <div className="pl-3 border-l-2 border-cult-border-subtle space-y-2">
                           <div className="text-xs text-cult-text-muted uppercase tracking-wider">
                             Unsectioned
                           </div>

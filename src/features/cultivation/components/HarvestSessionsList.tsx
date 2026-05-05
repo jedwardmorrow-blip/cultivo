@@ -48,10 +48,10 @@ function AdjustWeightModal({ session, onSuccess, onCancel, onAdjust }: AdjustWei
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-md p-6">
-        <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-1">Adjust Harvest Weight</h3>
-        <p className="text-cult-light-gray text-sm mb-4">
-          Original wet weight: <span className="text-cult-white">{formatWeight(session.wet_weight_grams)}</span>
+      <div className="bg-cult-surface border border-cult-border w-full max-w-md p-6">
+        <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider mb-1">Adjust Harvest Weight</h3>
+        <p className="text-cult-text-muted text-sm mb-4">
+          Original wet weight: <span className="text-cult-text-primary">{formatWeight(session.wet_weight_grams)}</span>
         </p>
 
         {error && (
@@ -63,24 +63,24 @@ function AdjustWeightModal({ session, onSuccess, onCancel, onAdjust }: AdjustWei
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Adjusted Weight (grams) *</label>
+            <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Adjusted Weight (grams) *</label>
             <input
               type="number"
               min="0"
               step="0.1"
               value={adjustedWeight}
               onChange={(e) => setAdjustedWeight(e.target.value)}
-              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+              className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
             />
           </div>
           <div>
-            <label className="block text-xs text-cult-light-gray uppercase tracking-wider mb-1">Reason *</label>
+            <label className="block text-xs text-cult-text-muted uppercase tracking-wider mb-1">Reason *</label>
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Moisture loss correction"
-              className="w-full bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-2 text-sm focus:outline-none focus:border-cult-lighter-gray"
+              className="w-full bg-cult-black border border-cult-border text-cult-text-primary px-3 py-2 text-sm focus:outline-none focus:border-cult-text-muted"
             />
           </div>
         </div>
@@ -96,7 +96,7 @@ function AdjustWeightModal({ session, onSuccess, onCancel, onAdjust }: AdjustWei
           </Button>
           <button
             onClick={onCancel}
-            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
           >
             Cancel
           </button>
@@ -128,26 +128,26 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
   )).sort();
 
   return (
-    <div className="border border-cult-medium-gray bg-cult-near-black hover:border-cult-lighter-gray transition-all">
+    <div className="border border-cult-border bg-cult-surface hover:border-cult-text-muted transition-all">
       <div className="flex items-center justify-between px-4 py-3 gap-4">
         <div className="flex items-center gap-4 min-w-0">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-cult-white font-mono text-sm font-semibold">{batchNumber ?? '—'}</span>
-              <ChevronRight className="w-3 h-3 text-cult-medium-gray flex-shrink-0" />
-              <span className="text-cult-white text-sm truncate">{strainName}</span>
+              <span className="text-cult-text-primary font-mono text-sm font-semibold">{batchNumber ?? '—'}</span>
+              <ChevronRight className="w-3 h-3 text-cult-border flex-shrink-0" />
+              <span className="text-cult-text-primary text-sm truncate">{strainName}</span>
             </div>
             <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-              <span className="text-cult-light-gray text-xs">{formatDate(session.harvest_date)}</span>
-              <span className="text-cult-medium-gray text-xs">·</span>
-              <span className="text-cult-light-gray text-xs">
+              <span className="text-cult-text-muted text-xs">{formatDate(session.harvest_date)}</span>
+              <span className="text-cult-border text-xs">·</span>
+              <span className="text-cult-text-muted text-xs">
                 {formatWeight(displayWeight)}
                 {isAdjusted && <span className="text-cult-warning ml-1">(adjusted)</span>}
               </span>
               {session.waste_grams != null && (
                 <>
-                  <span className="text-cult-medium-gray text-xs">·</span>
-                  <span className="text-cult-medium-gray text-xs">
+                  <span className="text-cult-border text-xs">·</span>
+                  <span className="text-cult-border text-xs">
                     waste: {formatWeight(session.waste_grams)}
                     {displayWeight > 0 && (
                       <span className="ml-1 opacity-70">({Math.round((session.waste_grams / displayWeight) * 100)}%)</span>
@@ -155,8 +155,8 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
                   </span>
                 </>
               )}
-              <span className="text-cult-medium-gray text-xs">·</span>
-              <span className="text-cult-light-gray text-xs">{session.plant_count_harvested} plants</span>
+              <span className="text-cult-border text-xs">·</span>
+              <span className="text-cult-text-muted text-xs">{session.plant_count_harvested} plants</span>
 
               {growRoomCode && (
                 <span className="flex items-center gap-1 text-xs bg-rose-950 border border-rose-800 text-rose-400 px-1.5 py-0.5 font-mono">
@@ -214,7 +214,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
           {session.session_status === 'completed' && (
             <button
               onClick={() => onAdjust(session)}
-              className="flex items-center gap-1.5 text-xs border border-cult-medium-gray text-cult-light-gray px-3 py-1.5 hover:border-cult-lighter-gray hover:text-cult-white transition-all uppercase tracking-wider font-semibold"
+              className="flex items-center gap-1.5 text-xs border border-cult-border text-cult-text-muted px-3 py-1.5 hover:border-cult-text-muted hover:text-cult-text-primary transition-all uppercase tracking-wider font-semibold"
             >
               <Scale className="w-3.5 h-3.5" />
               Adjust Weight
@@ -229,7 +229,7 @@ function SessionRow({ session, onComplete, onCancel, onAdjust, onViewBatch }: Se
 
       {session.notes && (
         <div className="px-4 pb-3">
-          <p className="text-cult-medium-gray text-xs italic">{session.notes}</p>
+          <p className="text-cult-border text-xs italic">{session.notes}</p>
         </div>
       )}
     </div>
@@ -249,9 +249,9 @@ interface ConfirmActionModalProps {
 function ConfirmActionModal({ title, message, confirmLabel, confirmClass, onConfirm, onCancel, loading }: ConfirmActionModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-cult-near-black border border-cult-medium-gray w-full max-w-sm p-6">
-        <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-2">{title}</h3>
-        <p className="text-cult-light-gray text-sm mb-5">{message}</p>
+      <div className="bg-cult-surface border border-cult-border w-full max-w-sm p-6">
+        <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider mb-2">{title}</h3>
+        <p className="text-cult-text-muted text-sm mb-5">{message}</p>
         <div className="flex gap-3">
           <button
             onClick={onConfirm}
@@ -262,7 +262,7 @@ function ConfirmActionModal({ title, message, confirmLabel, confirmClass, onConf
           </button>
           <button
             onClick={onCancel}
-            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-medium-gray text-cult-light-gray hover:border-cult-lighter-gray hover:text-cult-white transition-all"
+            className="px-5 py-2 text-sm font-bold uppercase tracking-wider border border-cult-border text-cult-text-muted hover:border-cult-text-muted hover:text-cult-text-primary transition-all"
           >
             Cancel
           </button>
@@ -408,7 +408,7 @@ export function HarvestSessionsList() {
   }
 
   if (loading) {
-    return <div className="p-6 text-cult-light-gray">Loading harvests...</div>;
+    return <div className="p-6 text-cult-text-muted">Loading harvests...</div>;
   }
 
   if (showWorkflow) {
@@ -429,8 +429,8 @@ export function HarvestSessionsList() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-cult-white">Harvests</h1>
-          <p className="text-cult-light-gray mt-2">Record harvests by room and create batches</p>
+          <h1 className="text-3xl font-bold text-cult-text-primary">Harvests</h1>
+          <p className="text-cult-text-muted mt-2">Record harvests by room and create batches</p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -458,15 +458,15 @@ export function HarvestSessionsList() {
       )}
 
       <div className="flex items-center justify-between gap-4">
-        <div className="flex gap-0 border-b border-cult-medium-gray">
+        <div className="flex gap-0 border-b border-cult-border">
           {(Object.keys(TAB_LABELS) as TabKey[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-5 py-2.5 text-sm font-semibold uppercase tracking-wider transition-all border-b-2 -mb-px ${
                 activeTab === tab
-                  ? 'border-cult-white text-cult-white'
-                  : 'border-transparent text-cult-medium-gray hover:text-cult-light-gray'
+                  ? 'border-cult-accent text-cult-text-primary'
+                  : 'border-transparent text-cult-border hover:text-cult-text-muted'
               }`}
             >
               {TAB_LABELS[tab]}
@@ -479,7 +479,7 @@ export function HarvestSessionsList() {
           <select
             value={roomFilter}
             onChange={(e) => setRoomFilter(e.target.value)}
-            className="bg-cult-black border border-cult-medium-gray text-cult-white px-3 py-1.5 text-xs focus:outline-none focus:border-cult-lighter-gray uppercase tracking-wider"
+            className="bg-cult-black border border-cult-border text-cult-text-primary px-3 py-1.5 text-xs focus:outline-none focus:border-cult-text-muted uppercase tracking-wider"
           >
             <option value="">All Rooms</option>
             {uniqueRoomCodes.map((code) => (
@@ -493,13 +493,13 @@ export function HarvestSessionsList() {
         {activeTab === 'active' ? (
           // Room-level grouping for active harvests
           activeRoomGroups.length === 0 ? (
-            <div className="bg-cult-near-black border border-cult-charcoal p-12 text-center">
-              <Leaf className="w-8 h-8 text-cult-medium-gray mx-auto mb-3" />
-              <p className="text-cult-light-gray text-sm uppercase tracking-wider">
+            <div className="bg-cult-surface border border-cult-surface-raised p-12 text-center">
+              <Leaf className="w-8 h-8 text-cult-border mx-auto mb-3" />
+              <p className="text-cult-text-muted text-sm uppercase tracking-wider">
                 No active harvests
               </p>
-              <p className="text-cult-lighter-gray text-xs mt-2">
-                Click <span className="text-cult-white font-semibold">+ Start Harvest</span> to begin harvesting a room.
+              <p className="text-cult-text-muted text-xs mt-2">
+                Click <span className="text-cult-text-primary font-semibold">+ Start Harvest</span> to begin harvesting a room.
               </p>
             </div>
           ) : (
@@ -507,7 +507,7 @@ export function HarvestSessionsList() {
               <button
                 key={roomGroup.roomId}
                 onClick={() => handleResumeRoom(roomGroup.roomId)}
-                className="w-full text-left border border-l-4 border-cult-charcoal border-l-cult-stage-harvest bg-cult-near-black hover:bg-cult-graphite hover:border-cult-medium-gray transition-all group"
+                className="w-full text-left border border-l-4 border-cult-surface-raised border-l-cult-stage-harvest bg-cult-surface hover:bg-cult-surface hover:border-cult-border transition-all group"
               >
                 <div className="flex items-center justify-between px-5 py-4 gap-4">
                   <div className="flex items-center gap-4 min-w-0">
@@ -516,26 +516,26 @@ export function HarvestSessionsList() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-cult-white font-mono text-base font-bold tracking-wide">{roomGroup.roomCode}</span>
-                        <span className="text-cult-light-gray text-sm">{roomGroup.roomName}</span>
+                        <span className="text-cult-text-primary font-mono text-base font-bold tracking-wide">{roomGroup.roomCode}</span>
+                        <span className="text-cult-text-muted text-sm">{roomGroup.roomName}</span>
                       </div>
                       <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                        <span className="text-cult-silver text-xs">{roomGroup.batchCount} batch{roomGroup.batchCount !== 1 ? 'es' : ''}</span>
+                        <span className="text-cult-text-secondary text-xs">{roomGroup.batchCount} batch{roomGroup.batchCount !== 1 ? 'es' : ''}</span>
                         {roomGroup.totalPlants > 0 && (
                           <>
-                            <span className="text-cult-medium-gray">·</span>
-                            <span className="text-cult-silver text-xs">{roomGroup.totalPlants} plants harvested</span>
+                            <span className="text-cult-border">·</span>
+                            <span className="text-cult-text-secondary text-xs">{roomGroup.totalPlants} plants harvested</span>
                           </>
                         )}
                         {roomGroup.totalWeight > 0 && (
                           <>
-                            <span className="text-cult-medium-gray">·</span>
+                            <span className="text-cult-border">·</span>
                             <span className="text-cult-stage-harvest text-xs font-mono font-semibold">{formatWeight(roomGroup.totalWeight)} recorded</span>
                           </>
                         )}
                         {roomGroup.completedSessions.length > 0 && (
                           <>
-                            <span className="text-cult-medium-gray">·</span>
+                            <span className="text-cult-border">·</span>
                             <span className="text-cult-success text-xs font-semibold">{roomGroup.completedSessions.length} batch{roomGroup.completedSessions.length !== 1 ? 'es' : ''} done</span>
                           </>
                         )}
@@ -543,10 +543,10 @@ export function HarvestSessionsList() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="text-xs text-cult-lighter-gray uppercase tracking-wider font-semibold group-hover:text-cult-stage-harvest transition-colors">
+                    <span className="text-xs text-cult-text-muted uppercase tracking-wider font-semibold group-hover:text-cult-stage-harvest transition-colors">
                       {roomGroup.activeSessions.length > 0 ? 'Continue' : 'Resume'}
                     </span>
-                    <ChevronRight className="w-5 h-5 text-cult-medium-gray group-hover:text-cult-white group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-5 h-5 text-cult-border group-hover:text-cult-text-primary group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
               </button>
@@ -555,8 +555,8 @@ export function HarvestSessionsList() {
         ) : (
           // Per-session rows for Completed / Cancelled tabs
           filteredSessions.length === 0 ? (
-            <div className="bg-cult-near-black border border-cult-medium-gray p-8 text-center">
-              <p className="text-cult-medium-gray text-sm uppercase tracking-wider">
+            <div className="bg-cult-surface border border-cult-border p-8 text-center">
+              <p className="text-cult-border text-sm uppercase tracking-wider">
                 No {TAB_LABELS[activeTab].toLowerCase()} harvests
                 {roomFilter && ` in ${roomFilter}`}
               </p>

@@ -87,7 +87,7 @@ export function CoversheetButton({ orderId }: CoversheetButtonProps) {
   // Show loading state while fetching initial data
   if (isLoading) {
     return (
-      <div className="text-cult-lighter-gray text-sm">
+      <div className="text-cult-text-muted text-sm">
         Loading coversheet data...
       </div>
     );
@@ -96,7 +96,7 @@ export function CoversheetButton({ orderId }: CoversheetButtonProps) {
   // Show error if data fetch failed (but still render actions)
   if (error && !coversheet) {
     return (
-      <div className="text-cult-lighter-gray text-sm">
+      <div className="text-cult-text-muted text-sm">
         <p className="mb-2">{error}</p>
         <CoversheetActions
           orderId={orderId}

@@ -1,7 +1,7 @@
 {
-  "name": "Cult Cannabis - Operations Management",
-  "short_name": "CultOps",
-  "description": "Cannabis cultivation operations management platform",
+  "name": "Cultivo",
+  "short_name": "Cultivo",
+  "description": "Closed-loop cultivation operations platform",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
@@ -9,6 +9,12 @@
   "theme_color": "#0A0A0A",
   "categories": ["business", "productivity"],
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/icon-72x72.png",
       "sizes": "72x72",

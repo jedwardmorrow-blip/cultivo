@@ -19,9 +19,9 @@ function getHealthColor(label: string): string {
     case 'healthy': return 'bg-cult-success-muted text-cult-success border-cult-success/30';
     case 'cooling': return 'bg-cult-warning-muted text-cult-warning border-cult-warning/30';
     case 'at_risk': return 'bg-cult-danger-muted text-cult-danger border-cult-danger/30';
-    case 'dormant': return 'bg-cult-medium-gray/30 text-cult-silver border-cult-medium-gray/30';
-    case 'no_orders': return 'bg-cult-medium-gray/20 text-cult-medium-gray border-cult-medium-gray/20';
-    default: return 'bg-cult-medium-gray/20 text-cult-medium-gray border-cult-medium-gray/20';
+    case 'dormant': return 'bg-cult-border/30 text-cult-text-secondary border-cult-border/30';
+    case 'no_orders': return 'bg-cult-border/20 text-cult-border border-cult-border/20';
+    default: return 'bg-cult-border/20 text-cult-border border-cult-border/20';
   }
 }
 
@@ -51,12 +51,12 @@ export function SubAccountsPanel({
   const perfByChildId = new Map(chainPerformance.map((p) => [p.child_id, p]));
 
   return (
-    <div className="bg-cult-near-black border border-cult-medium-gray rounded-lg overflow-hidden">
-      <div className="px-5 py-4 border-b border-cult-charcoal">
+    <div className="bg-cult-surface border border-cult-border rounded-lg overflow-hidden">
+      <div className="px-5 py-4 border-b border-cult-surface-raised">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-sky-400" />
-            <h3 className="text-sm font-semibold text-cult-white uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-cult-text-primary uppercase tracking-wider">
               Hub Locations
             </h3>
             <span className="px-1.5 py-0.5 text-xs font-bold bg-sky-500/20 text-sky-400 rounded">
@@ -74,17 +74,17 @@ export function SubAccountsPanel({
               )}
             </span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-cult-light-gray">
+          <div className="flex items-center gap-4 text-xs text-cult-text-muted">
             <span>{totalChildOrders} orders</span>
             <span className="text-cult-success font-semibold">{formatCurrency(totalChildRevenue)}</span>
           </div>
         </div>
-        <p className="text-xs text-cult-light-gray mt-1">
+        <p className="text-xs text-cult-text-muted mt-1">
           Delivery locations under {parentName}
         </p>
       </div>
 
-      <div className="divide-y divide-cult-charcoal/50">
+      <div className="divide-y divide-cult-surface-raised/50">
         {childAccounts.map((child) => {
           const perf = perfByChildId.get(child.id);
           const revenueSharePct = perf?.revenue_share_pct ?? 0;
@@ -93,13 +93,13 @@ export function SubAccountsPanel({
             <div
               key={child.id}
               onClick={() => onSelectAccount(child.id)}
-              className="px-5 py-3 hover:bg-cult-dark-gray/50 cursor-pointer transition-colors group"
+              className="px-5 py-3 hover:bg-cult-surface/50 cursor-pointer transition-colors group"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-cult-white">{child.name}</span>
-                    <span className="text-xs font-mono text-cult-light-gray">{child.dispensary_code}</span>
+                    <span className="text-sm font-medium text-cult-text-primary">{child.name}</span>
+                    <span className="text-xs font-mono text-cult-text-muted">{child.dispensary_code}</span>
                     {perf && (
                       <span className={`px-1.5 py-0.5 text-xs font-semibold rounded-full border ${getHealthColor(perf.health_label)}`}>
                         {getHealthLabel(perf.health_label)}
@@ -107,8 +107,8 @@ export function SubAccountsPanel({
                     )}
                   </div>
                   {child.city && (
-                    <div className="flex items-center gap-1 mt-0.5 text-xs text-cult-light-gray">
-                      <MapPin className="w-3 h-3 text-cult-medium-gray" />
+                    <div className="flex items-center gap-1 mt-0.5 text-xs text-cult-text-muted">
+                      <MapPin className="w-3 h-3 text-cult-border" />
                       <span>{[child.city, child.state].filter(Boolean).join(', ')}</span>
                     </div>
                   )}
@@ -119,10 +119,10 @@ export function SubAccountsPanel({
                     <div className="hidden sm:flex items-center gap-4">
                       <div className="w-24">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-cult-silver">Share</span>
-                          <span className="text-cult-white font-semibold">{revenueSharePct.toFixed(0)}%</span>
+                          <span className="text-cult-text-secondary">Share</span>
+                          <span className="text-cult-text-primary font-semibold">{revenueSharePct.toFixed(0)}%</span>
                         </div>
-                        <div className="h-1.5 bg-cult-charcoal rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-cult-surface-raised rounded-full overflow-hidden">
                           <div
                             className="h-full bg-sky-500 rounded-full transition-all"
                             style={{ width: `${Math.min(revenueSharePct, 100)}%` }}
@@ -130,31 +130,31 @@ export function SubAccountsPanel({
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-semibold ${Number(perf.revenue) > 0 ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
+                        <p className={`text-sm font-semibold ${Number(perf.revenue) > 0 ? 'text-cult-success' : 'text-cult-border'}`}>
                           {Number(perf.revenue) > 0 ? formatCurrency(Number(perf.revenue)) : '-'}
                         </p>
-                        <p className="text-xs text-cult-silver">{perf.order_count} orders</p>
+                        <p className="text-xs text-cult-text-secondary">{perf.order_count} orders</p>
                       </div>
                     </div>
                   )}
                   {!perf && (
                     <div className="text-right hidden sm:block">
-                      <p className={`text-sm font-semibold ${Number(child.total_revenue) > 0 ? 'text-cult-success' : 'text-cult-medium-gray'}`}>
+                      <p className={`text-sm font-semibold ${Number(child.total_revenue) > 0 ? 'text-cult-success' : 'text-cult-border'}`}>
                         {Number(child.total_revenue) > 0 ? formatCurrency(Number(child.total_revenue)) : '-'}
                       </p>
-                      <p className="text-xs text-cult-silver">{child.order_count} orders</p>
+                      <p className="text-xs text-cult-text-secondary">{child.order_count} orders</p>
                     </div>
                   )}
                   <div className="text-right hidden md:block">
                     <p className={`text-xs ${
                       child.days_since_last_order !== null && child.days_since_last_order > 30
                         ? 'text-cult-warning'
-                        : 'text-cult-light-gray'
+                        : 'text-cult-text-muted'
                     }`}>
                       {child.days_since_last_order !== null ? `${child.days_since_last_order}d ago` : 'No orders'}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-cult-medium-gray group-hover:text-cult-white transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-cult-border group-hover:text-cult-text-primary transition-colors" />
                 </div>
               </div>
             </div>
@@ -163,16 +163,16 @@ export function SubAccountsPanel({
       </div>
 
       {chainPerformance.length > 0 && (
-        <div className="px-5 py-3 border-t border-cult-charcoal bg-cult-dark-gray/30">
+        <div className="px-5 py-3 border-t border-cult-surface-raised bg-cult-surface/30">
           <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-cult-silver">
+            <div className="flex items-center gap-1.5 text-cult-text-secondary">
               <TrendingUp className="w-3.5 h-3.5" />
               <span>Top performer:</span>
-              <span className="text-cult-white font-medium">{chainPerformance[0].child_name}</span>
+              <span className="text-cult-text-primary font-medium">{chainPerformance[0].child_name}</span>
             </div>
             <span className="text-cult-success font-semibold">
               {formatCurrency(Number(chainPerformance[0].revenue))}
-              <span className="text-cult-silver font-normal ml-1">
+              <span className="text-cult-text-secondary font-normal ml-1">
                 ({chainPerformance[0].revenue_share_pct.toFixed(0)}% of chain)
               </span>
             </span>

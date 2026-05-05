@@ -36,10 +36,10 @@ export function OrderFormCartStep({
   if (orderItems.length === 0) {
     return (
       <div className="p-4 space-y-4">
-        <div className="bg-cult-near-black border-2 border-dashed border-cult-medium-gray rounded-lg p-12 text-center">
-          <ShoppingCart className="w-16 h-16 text-cult-medium-gray mx-auto mb-4" />
-          <p className="text-cult-light-gray text-lg mb-2">No items in cart</p>
-          <p className="text-cult-medium-gray text-sm mb-6">Add products to get started</p>
+        <div className="bg-cult-surface border-2 border-dashed border-cult-border rounded-lg p-12 text-center">
+          <ShoppingCart className="w-16 h-16 text-cult-border mx-auto mb-4" />
+          <p className="text-cult-text-muted text-lg mb-2">No items in cart</p>
+          <p className="text-cult-border text-sm mb-6">Add products to get started</p>
           <button
             type="button"
             onClick={onBackToProducts}
@@ -55,10 +55,10 @@ export function OrderFormCartStep({
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-bold text-cult-white uppercase tracking-wide">
+        <h2 className="text-lg font-bold text-cult-text-primary uppercase tracking-wide">
           Cart Items
         </h2>
-        <span className="text-sm text-cult-light-gray">
+        <span className="text-sm text-cult-text-muted">
           {orderItems.length} item{orderItems.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -74,8 +74,8 @@ export function OrderFormCartStep({
         return (
           <div
             key={index}
-            className={`bg-cult-near-black border rounded-lg p-4 space-y-3 transition-all ${
-              isEditing ? 'border-cult-green shadow-lg' : 'border-cult-medium-gray'
+            className={`bg-cult-surface border rounded-lg p-4 space-y-3 transition-all ${
+              isEditing ? 'border-cult-green shadow-lg' : 'border-cult-border'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
@@ -86,8 +86,8 @@ export function OrderFormCartStep({
                      selectedProduct.product_category === 'preroll' ? '🚬' : '📦'}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-cult-white truncate">{selectedProduct.name}</div>
-                    <div className="text-xs text-cult-light-gray">{selectedProduct.strain}</div>
+                    <div className="font-semibold text-cult-text-primary truncate">{selectedProduct.name}</div>
+                    <div className="text-xs text-cult-text-muted">{selectedProduct.strain}</div>
                   </div>
                 </div>
               </div>
@@ -98,7 +98,7 @@ export function OrderFormCartStep({
                   className={`p-2 rounded-lg transition-colors ${
                     isEditing
                       ? 'bg-cult-green text-cult-black'
-                      : 'bg-cult-dark-gray text-cult-light-gray hover:text-cult-white'
+                      : 'bg-cult-surface text-cult-text-muted hover:text-cult-text-primary'
                   }`}
                 >
                   <Edit3 className="w-4 h-4" />
@@ -106,7 +106,7 @@ export function OrderFormCartStep({
                 <button
                   type="button"
                   onClick={() => onRemoveItem(index)}
-                  className="p-2 text-cult-danger hover:text-cult-danger/80 hover:bg-cult-dark-gray rounded-lg transition-colors"
+                  className="p-2 text-cult-danger hover:text-cult-danger/80 hover:bg-cult-surface rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -116,14 +116,14 @@ export function OrderFormCartStep({
             {isEditing ? (
               <>
                 <div>
-                  <label className="block text-xs font-medium text-cult-light-gray mb-2">
+                  <label className="block text-xs font-medium text-cult-text-muted mb-2">
                     Quantity ({selectedProduct.pricing_unit})
                   </label>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => onAdjustQuantity(index, -1)}
-                      className="w-12 h-12 flex items-center justify-center bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white hover:bg-cult-medium-gray active:bg-cult-green active:text-cult-black transition-colors"
+                      className="w-12 h-12 flex items-center justify-center bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary hover:bg-cult-border active:bg-cult-green active:text-cult-black transition-colors"
                     >
                       <Minus className="w-5 h-5" />
                     </button>
@@ -134,12 +134,12 @@ export function OrderFormCartStep({
                       step={selectedProduct.allows_fractional_quantity ? "0.01" : "1"}
                       value={item.quantity || ''}
                       onChange={(e) => onUpdateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      className="flex-1 px-4 py-3 bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white text-center text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green"
+                      className="flex-1 px-4 py-3 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary text-center text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-cult-green focus:border-cult-green"
                     />
                     <button
                       type="button"
                       onClick={() => onAdjustQuantity(index, 1)}
-                      className="w-12 h-12 flex items-center justify-center bg-cult-dark-gray border border-cult-medium-gray rounded-lg text-cult-white hover:bg-cult-medium-gray active:bg-cult-green active:text-cult-black transition-colors"
+                      className="w-12 h-12 flex items-center justify-center bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary hover:bg-cult-border active:bg-cult-green active:text-cult-black transition-colors"
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -148,7 +148,7 @@ export function OrderFormCartStep({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-medium text-cult-light-gray">
+                    <label className="text-xs font-medium text-cult-text-muted">
                       Unit Price
                     </label>
                     <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export function OrderFormCartStep({
                         className={`p-1.5 rounded transition-colors ${
                           item.price_locked
                             ? 'bg-cult-green text-cult-black'
-                            : 'bg-cult-dark-gray text-cult-light-gray hover:text-cult-white'
+                            : 'bg-cult-surface text-cult-text-muted hover:text-cult-text-primary'
                         }`}
                       >
                         {item.price_locked ? (
@@ -180,7 +180,7 @@ export function OrderFormCartStep({
                     </div>
                   </div>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-cult-light-gray w-5 h-5" />
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-cult-text-muted w-5 h-5" />
                     <input
                       type="number"
                       required
@@ -189,10 +189,10 @@ export function OrderFormCartStep({
                       value={item.unit_price === 0 ? '0' : item.unit_price || ''}
                       onChange={(e) => onUpdateItem(index, 'unit_price', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
                       disabled={item.price_locked}
-                      className={`w-full pl-10 pr-4 py-3 bg-cult-dark-gray border rounded-lg text-cult-white text-lg font-semibold focus:outline-none focus:ring-2 ${
+                      className={`w-full pl-10 pr-4 py-3 bg-cult-surface border rounded-lg text-cult-text-primary text-lg font-semibold focus:outline-none focus:ring-2 ${
                         item.price_locked
                           ? 'border-cult-green opacity-75 cursor-not-allowed'
-                          : 'border-cult-medium-gray focus:ring-cult-green focus:border-cult-green'
+                          : 'border-cult-border focus:ring-cult-green focus:border-cult-green'
                       }`}
                     />
                   </div>
@@ -207,7 +207,7 @@ export function OrderFormCartStep({
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <div className="text-cult-light-gray">
+                  <div className="text-cult-text-muted">
                     {item.quantity} {selectedProduct.pricing_unit} × ${item.unit_price.toFixed(2)}
                   </div>
                   <div className="text-cult-green font-semibold text-lg">
@@ -228,10 +228,10 @@ export function OrderFormCartStep({
 
       <div className="bg-cult-green bg-opacity-10 border-2 border-cult-green rounded-lg p-4">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-cult-light-gray uppercase tracking-wide">Cart Total</span>
+          <span className="text-sm text-cult-text-muted uppercase tracking-wide">Cart Total</span>
           <span className="text-3xl font-bold text-cult-green">${totalAmount.toFixed(2)}</span>
         </div>
-        <div className="text-xs text-cult-light-gray text-right">
+        <div className="text-xs text-cult-text-muted text-right">
           {orderItems.length} item{orderItems.length !== 1 ? 's' : ''} • {totalUnits.toFixed(2)} units
         </div>
       </div>
@@ -240,7 +240,7 @@ export function OrderFormCartStep({
         <button
           type="button"
           onClick={onBackToProducts}
-          className="flex-1 py-3 bg-cult-dark-gray text-cult-white rounded-lg font-bold hover:bg-cult-medium-gray transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-3 bg-cult-surface text-cult-text-primary rounded-lg font-bold hover:bg-cult-border transition-colors flex items-center justify-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
           Add More

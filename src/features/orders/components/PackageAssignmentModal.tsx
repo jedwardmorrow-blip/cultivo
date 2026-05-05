@@ -144,21 +144,21 @@ export function PackageAssignmentModal({
             <span>No batch assigned to this order item. Assign a batch first to restrict packages to the correct batch.</span>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-cult-dark-gray border border-cult-medium-gray">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-cult-surface border border-cult-border">
           <div>
-            <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Order Item Quantity</p>
-            <p className="text-2xl font-bold text-cult-white">
+            <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Order Item Quantity</p>
+            <p className="text-2xl font-bold text-cult-text-primary">
               {orderItemQuantity} {unit}
             </p>
           </div>
           <div>
-            <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Already Assigned</p>
+            <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Already Assigned</p>
             <p className="text-2xl font-bold text-cult-success">
               {loadingTotal ? '...' : `${totalAssigned} ${unit}`}
             </p>
           </div>
           <div>
-            <p className="text-xs text-cult-lighter-gray uppercase tracking-wider mb-1">Remaining to Assign</p>
+            <p className="text-xs text-cult-text-muted uppercase tracking-wider mb-1">Remaining to Assign</p>
             <p className={`text-2xl font-bold ${remainingQty > 0 ? 'text-cult-warning' : 'text-cult-success'}`}>
               {loadingTotal ? '...' : `${remainingQty} ${unit}`}
             </p>
@@ -166,19 +166,19 @@ export function PackageAssignmentModal({
         </div>
 
         {selectedPackages.size > 0 && (
-          <div className="p-4 bg-cult-dark-gray border border-cult-medium-gray">
-            <p className="text-sm font-bold text-cult-white mb-2 uppercase tracking-wider">
+          <div className="p-4 bg-cult-surface border border-cult-border">
+            <p className="text-sm font-bold text-cult-text-primary mb-2 uppercase tracking-wider">
               Selected for Assignment: {selectedTotal} {unit}
             </p>
             <div className="space-y-2">
               {Array.from(selectedPackages.values()).map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="flex items-center justify-between p-2 bg-cult-near-black border border-cult-success"
+                  className="flex items-center justify-between p-2 bg-cult-surface border border-cult-success"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-cult-white font-medium">{pkg.package_id}</span>
-                    <span className="text-cult-lighter-gray text-sm">
+                    <span className="text-cult-text-primary font-medium">{pkg.package_id}</span>
+                    <span className="text-cult-text-muted text-sm">
                       {pkg.strain} - {pkg.batch}
                     </span>
                   </div>
@@ -189,9 +189,9 @@ export function PackageAssignmentModal({
                       max={Math.min(pkg.available_qty, remainingQty - selectedTotal + pkg.quantityToAssign)}
                       value={pkg.quantityToAssign}
                       onChange={(e) => handleQuantityChange(pkg.id, parseFloat(e.target.value) || 0)}
-                      className="w-24 px-3 py-1 bg-cult-dark-gray border border-cult-medium-gray text-cult-white focus:outline-none focus:border-cult-success"
+                      className="w-24 px-3 py-1 bg-cult-surface border border-cult-border text-cult-text-primary focus:outline-none focus:border-cult-success"
                     />
-                    <span className="text-cult-lighter-gray text-sm">
+                    <span className="text-cult-text-muted text-sm">
                       of {pkg.available_qty} {unit}
                     </span>
                     <button
@@ -209,8 +209,8 @@ export function PackageAssignmentModal({
 
         {remainingQty > 0 && (
           <>
-            <div className="border-t border-cult-medium-gray pt-4">
-              <h3 className="text-lg font-bold text-cult-white uppercase tracking-wider mb-4">
+            <div className="border-t border-cult-border pt-4">
+              <h3 className="text-lg font-bold text-cult-text-primary uppercase tracking-wider mb-4">
                 Available Inventory Packages
               </h3>
 
@@ -234,8 +234,8 @@ export function PackageAssignmentModal({
                 </div>
               ) : packages.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Package className="w-12 h-12 text-cult-lighter-gray mx-auto mb-4" />
-                  <p className="text-cult-lighter-gray">
+                  <Package className="w-12 h-12 text-cult-text-muted mx-auto mb-4" />
+                  <p className="text-cult-text-muted">
                     {strain
                       ? `No inventory found for ${strain}. This strain may need production.`
                       : `No available packages found for ${productName}`
@@ -255,7 +255,7 @@ export function PackageAssignmentModal({
                         className={`w-full p-4 border-2 text-left transition-all ${
                           isSelected
                             ? 'border-cult-success bg-cult-success-muted'
-                            : 'border-cult-medium-gray bg-cult-dark-gray hover:border-cult-lighter-gray'
+                            : 'border-cult-border bg-cult-surface hover:border-cult-text-muted'
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <div className="flex items-center justify-between">
@@ -264,14 +264,14 @@ export function PackageAssignmentModal({
                               className={`w-6 h-6 border-2 flex items-center justify-center ${
                                 isSelected
                                   ? 'border-cult-success bg-cult-success'
-                                  : 'border-cult-medium-gray'
+                                  : 'border-cult-border'
                               }`}
                             >
                               {isSelected && <Check className="w-4 h-4 text-white" />}
                             </div>
                             <div>
-                              <p className="font-bold text-cult-white">{pkg.package_id}</p>
-                              <p className="text-sm text-cult-lighter-gray">
+                              <p className="font-bold text-cult-text-primary">{pkg.package_id}</p>
+                              <p className="text-sm text-cult-text-muted">
                                 {pkg.strain || 'No strain'} • Batch: {pkg.batch || 'N/A'}
                               </p>
                               {isStrainFallback && pkg.product_name && (
@@ -280,12 +280,12 @@ export function PackageAssignmentModal({
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-bold text-cult-white">
+                            <p className="text-lg font-bold text-cult-text-primary">
                               {pkg.available_qty} {unit}
                             </p>
-                            <p className="text-xs text-cult-lighter-gray uppercase">Available</p>
+                            <p className="text-xs text-cult-text-muted uppercase">Available</p>
                             {pkg.room && (
-                              <p className="text-xs text-cult-lighter-gray mt-1">Room: {pkg.room}</p>
+                              <p className="text-xs text-cult-text-muted mt-1">Room: {pkg.room}</p>
                             )}
                             {pkg.thc_percentage && (
                               <p className="text-xs text-cult-success mt-1">
@@ -302,7 +302,7 @@ export function PackageAssignmentModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-cult-white mb-2 uppercase tracking-wider">
+              <label className="block text-sm font-medium text-cult-text-primary mb-2 uppercase tracking-wider">
                 Notes (Optional)
               </label>
               <textarea
@@ -310,13 +310,13 @@ export function PackageAssignmentModal({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add any notes about this assignment..."
                 rows={3}
-                className="w-full px-3 py-2 bg-cult-dark-gray border border-cult-medium-gray text-cult-white placeholder-cult-lighter-gray focus:outline-none focus:border-cult-white"
+                className="w-full px-3 py-2 bg-cult-surface border border-cult-border text-cult-text-primary placeholder-cult-text-muted focus:outline-none focus:border-cult-accent"
               />
             </div>
           </>
         )}
 
-        <div className="flex items-center justify-between gap-4 pt-4 border-t border-cult-medium-gray">
+        <div className="flex items-center justify-between gap-4 pt-4 border-t border-cult-border">
           {selectedTotal > remainingQty && (
             <div className="flex items-center gap-2 text-cult-danger">
               <AlertCircle className="w-5 h-5" />
@@ -330,7 +330,7 @@ export function PackageAssignmentModal({
             <button
               onClick={onClose}
               disabled={assigning}
-              className="px-6 py-3 border border-cult-medium-gray text-cult-white hover:bg-cult-dark-gray transition-colors disabled:opacity-50"
+              className="px-6 py-3 border border-cult-border text-cult-text-primary hover:bg-cult-surface transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

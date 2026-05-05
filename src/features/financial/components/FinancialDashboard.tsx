@@ -91,15 +91,15 @@ export function FinancialDashboard() {
   return (
     <div className="space-y-6 pb-8 stagger-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-cult-white">Financial Intelligence</h1>
-        <p className="text-cult-light-gray mt-2">Revenue pulse, receivables, payables, cost intelligence, and 280E</p>
+        <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Financial Intelligence</h1>
+        <p className="font-mono uppercase tracking-[0.12em] text-[10px] text-cult-text-muted mt-1.5">Revenue pulse · receivables · payables · cost intelligence · 280E</p>
       </div>
 
       {/* Section 1: Revenue Pulse */}
       <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-cult-white" />
-          <h2 className="text-lg font-semibold text-cult-white">Revenue Pulse</h2>
+          <TrendingUp className="w-5 h-5 text-cult-text-primary" />
+          <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Revenue Pulse</h2>
         </div>
         {pulse ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -122,10 +122,10 @@ export function FinancialDashboard() {
       <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-cult-white" />
-            <h2 className="text-lg font-semibold text-cult-white">Accounts Receivable</h2>
+            <DollarSign className="w-5 h-5 text-cult-text-primary" />
+            <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Accounts Receivable</h2>
           </div>
-          <span className="text-xl font-bold text-cult-white font-mono">{fmt(arTotal)}</span>
+          <span className="text-xl font-bold text-cult-text-primary font-mono">{fmt(arTotal)}</span>
         </div>
 
         {/* Aging Buckets */}
@@ -133,7 +133,7 @@ export function FinancialDashboard() {
           {['current', '1-30', '31-60', '61-90', '90+'].map(bucket => (
             <div key={bucket} className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
               <div className={`text-xs font-medium uppercase ${BUCKET_COLORS[bucket] || 'text-cult-text-muted'}`}>{bucket} days</div>
-              <div className="text-cult-white font-mono text-sm mt-1">{fmt(arBuckets[bucket] || 0)}</div>
+              <div className="text-cult-text-primary font-mono text-sm mt-1">{fmt(arBuckets[bucket] || 0)}</div>
             </div>
           ))}
         </div>
@@ -146,14 +146,14 @@ export function FinancialDashboard() {
               {ar.slice(0, 5).map(r => (
                 <div key={r.id} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-cult-black/30">
                   <div>
-                    <span className="text-cult-white">{r.customer_name}</span>
+                    <span className="text-cult-text-primary">{r.customer_name}</span>
                     <span className="text-cult-text-muted ml-2">{r.invoice_number}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-xs ${BUCKET_COLORS[r.age_bucket] || 'text-cult-text-muted'}`}>
                       {r.days_outstanding}d
                     </span>
-                    <span className="text-cult-white font-mono">{fmt(r.amount_due)}</span>
+                    <span className="text-cult-text-primary font-mono">{fmt(r.amount_due)}</span>
                   </div>
                 </div>
               ))}
@@ -166,24 +166,24 @@ export function FinancialDashboard() {
       <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-cult-white" />
-            <h2 className="text-lg font-semibold text-cult-white">Accounts Payable</h2>
+            <Receipt className="w-5 h-5 text-cult-text-primary" />
+            <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Accounts Payable</h2>
           </div>
-          <span className="text-xl font-bold text-cult-white font-mono">{fmt(apTotal)}</span>
+          <span className="text-xl font-bold text-cult-text-primary font-mono">{fmt(apTotal)}</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
           <div className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
             <div className="text-xs text-cult-text-muted uppercase">COGS Bills</div>
-            <div className="text-cult-white font-mono text-sm mt-1">{fmt(apCogs)}</div>
+            <div className="text-cult-text-primary font-mono text-sm mt-1">{fmt(apCogs)}</div>
           </div>
           <div className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
             <div className="text-xs text-cult-text-muted uppercase">OpEx Bills</div>
-            <div className="text-cult-white font-mono text-sm mt-1">{fmt(apOpex)}</div>
+            <div className="text-cult-text-primary font-mono text-sm mt-1">{fmt(apOpex)}</div>
           </div>
           <div className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
             <div className="text-xs text-cult-warning uppercase">Due This Week</div>
-            <div className="text-cult-white font-mono text-sm mt-1">
+            <div className="text-cult-text-primary font-mono text-sm mt-1">
               {apDueSoon.length} bill{apDueSoon.length !== 1 ? 's' : ''}
               {apDueSoon.length > 0 && (
                 <span className="text-cult-warning ml-1">
@@ -201,14 +201,14 @@ export function FinancialDashboard() {
               {ap.filter(r => r.days_overdue > 0).slice(0, 5).map(r => (
                 <div key={r.id} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-cult-black/30">
                   <div>
-                    <span className="text-cult-white">{r.vendor_name}</span>
+                    <span className="text-cult-text-primary">{r.vendor_name}</span>
                     <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${r.is_cogs ? 'bg-cult-success-muted text-cult-success' : 'bg-cult-warning-muted text-cult-warning'}`}>
                       {r.is_cogs ? 'COGS' : 'OpEx'}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-cult-danger text-xs">{r.days_overdue}d overdue</span>
-                    <span className="text-cult-white font-mono">{fmt(r.amount_outstanding)}</span>
+                    <span className="text-cult-text-primary font-mono">{fmt(r.amount_outstanding)}</span>
                   </div>
                 </div>
               ))}
@@ -223,12 +223,12 @@ export function FinancialDashboard() {
         <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-cult-success" />
-            <h2 className="text-lg font-semibold text-cult-white">Top 5 — Highest Margin</h2>
+            <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Top 5 · Highest Margin</h2>
           </div>
           {bestStrain && (
             <div className="bg-cult-success-muted border border-cult-success/40 rounded-cult p-3 mb-3">
               <div className="text-xs text-cult-success uppercase">Most Profitable to Process</div>
-              <div className="text-cult-white font-bold mt-1">{bestStrain.strain}</div>
+              <div className="text-cult-text-primary font-bold mt-1">{bestStrain.strain}</div>
               <div className="text-cult-success text-sm font-mono">{fmtDec(bestStrain.labor_margin_per_gram)}/g margin</div>
             </div>
           )}
@@ -237,7 +237,7 @@ export function FinancialDashboard() {
               <div key={s.strain} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-cult-black/30">
                 <div className="flex items-center gap-2">
                   <span className="text-cult-text-muted w-4">{i + 1}.</span>
-                  <span className="text-cult-white">{s.strain}</span>
+                  <span className="text-cult-text-primary">{s.strain}</span>
                 </div>
                 <div className="flex items-center gap-4 font-mono text-xs">
                   <span className="text-cult-text-muted">cost {fmtDec(s.labor_cost_per_gram)}/g</span>
@@ -253,14 +253,14 @@ export function FinancialDashboard() {
         <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingDown className="w-5 h-5 text-cult-danger" />
-            <h2 className="text-lg font-semibold text-cult-white">Bottom 5 — Highest Cost</h2>
+            <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">Bottom 5 · Highest Cost</h2>
           </div>
           <div className="space-y-1 mt-10">
             {bottomStrains.map((s, i) => (
               <div key={s.strain} className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-cult-black/30">
                 <div className="flex items-center gap-2">
                   <span className="text-cult-text-muted w-4">{i + 1}.</span>
-                  <span className="text-cult-white">{s.strain}</span>
+                  <span className="text-cult-text-primary">{s.strain}</span>
                 </div>
                 <div className="flex items-center gap-4 font-mono text-xs">
                   <span className="text-cult-text-muted">cost {fmtDec(s.labor_cost_per_gram)}/g</span>
@@ -278,8 +278,8 @@ export function FinancialDashboard() {
       {/* Section 5: 280E Snapshot */}
       <div className="bg-cult-surface border border-cult-border rounded-cult p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Scale className="w-5 h-5 text-cult-white" />
-          <h2 className="text-lg font-semibold text-cult-white">280E Tax Snapshot</h2>
+          <Scale className="w-5 h-5 text-cult-text-primary" />
+          <h2 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">280E Tax Snapshot</h2>
         </div>
 
         {latest280e ? (
@@ -298,12 +298,12 @@ export function FinancialDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-cult-black/50 rounded-cult p-4 border border-cult-border/50">
                 <div className="text-xs text-cult-text-muted uppercase">280E Taxable Income</div>
-                <div className="text-cult-white font-mono text-lg mt-1">{fmt(latest280e.taxable_income_estimate)}</div>
+                <div className="text-cult-text-primary font-mono text-lg mt-1">{fmt(latest280e.taxable_income_estimate)}</div>
                 <div className="text-xs text-cult-text-muted mt-1">Revenue - COGS only (280E rule)</div>
               </div>
               <div className="bg-cult-black/50 rounded-cult p-4 border border-cult-border/50">
                 <div className="text-xs text-cult-text-muted uppercase">Standard Accounting Income</div>
-                <div className="text-cult-white font-mono text-lg mt-1">{fmt(latest280e.vs_standard_accounting)}</div>
+                <div className="text-cult-text-primary font-mono text-lg mt-1">{fmt(latest280e.vs_standard_accounting)}</div>
                 <div className="text-xs text-cult-text-muted mt-1">Revenue - all expenses (what it would be)</div>
               </div>
             </div>
@@ -324,7 +324,7 @@ export function FinancialDashboard() {
 }
 
 function StatCard({ label, value, subtitle, color }: { label: string; value: string; subtitle?: string; color?: 'red' | 'amber' | 'green' }) {
-  const colorClass = color === 'red' ? 'text-cult-danger' : color === 'amber' ? 'text-cult-warning' : color === 'green' ? 'text-cult-success' : 'text-cult-white';
+  const colorClass = color === 'red' ? 'text-cult-danger' : color === 'amber' ? 'text-cult-warning' : color === 'green' ? 'text-cult-success' : 'text-cult-text-primary';
   return (
     <div className="bg-cult-black/50 rounded-cult p-3 border border-cult-border/50">
       <div className="text-xs text-cult-text-muted uppercase">{label}</div>
