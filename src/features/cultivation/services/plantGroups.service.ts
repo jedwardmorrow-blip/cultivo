@@ -39,7 +39,7 @@ const PLANT_GROUP_SELECT = `
   mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number), individual_plants (state_plant_id, is_active)),
   room_tables (table_number, table_name),
   room_sections (section_label),
-  batch_registry (batch_number, clone_date),
+  batch_registry (batch_number, clone_date, mother_individual_plant_ids),
   cut_sessions:plant_group_cut_sessions!plant_group_id (${CUT_SESSION_SELECT})
 `;
 
@@ -62,7 +62,7 @@ const PLANT_GROUP_SUMMARY_SELECT = `
   mother_group:plant_groups!mother_plant_group_id (id, growth_stage, batch_registry (batch_number), individual_plants (state_plant_id, is_active)),
   room_tables (table_number, table_name),
   room_sections (section_label),
-  batch_registry (batch_number, clone_date),
+  batch_registry (batch_number, clone_date, mother_individual_plant_ids),
   individual_plants (state_plant_id, is_active)
 `;
 
@@ -140,9 +140,22 @@ export const plantGroupsService = {
 
       if (group.batch_registry_id) {
         const motherIds = cut_sessions.map((cs) => cs.mother_plant_group_id);
+
+        const { data: momPlants } = await supabase
+          .from('individual_plants')
+          .select('state_plant_id')
+          .in('plant_group_id', motherIds)
+          .eq('is_active', true);
+
+        const motherIndividualPlantIds = momPlants?.map((p) => p.state_plant_id) ?? [];
+
         await supabase
           .from('batch_registry')
-          .update({ mother_plant_group_ids: motherIds })
+          .update({
+            mother_plant_group_ids: motherIds,
+            mother_individual_plant_ids:
+              motherIndividualPlantIds.length > 0 ? motherIndividualPlantIds : null,
+          })
           .eq('id', group.batch_registry_id);
       }
     }

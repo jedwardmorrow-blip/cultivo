@@ -789,6 +789,7 @@ export type Database = {
           is_quarantined: boolean | null
           lab_started_at: string | null
           lifecycle_state: string | null
+          mother_individual_plant_ids: string[] | null
           mother_plant_group_ids: string[] | null
           notes: string | null
           packaging_started_at: string | null
@@ -825,6 +826,7 @@ export type Database = {
           is_quarantined?: boolean | null
           lab_started_at?: string | null
           lifecycle_state?: string | null
+          mother_individual_plant_ids?: string[] | null
           mother_plant_group_ids?: string[] | null
           notes?: string | null
           packaging_started_at?: string | null
@@ -861,6 +863,7 @@ export type Database = {
           is_quarantined?: boolean | null
           lab_started_at?: string | null
           lifecycle_state?: string | null
+          mother_individual_plant_ids?: string[] | null
           mother_plant_group_ids?: string[] | null
           notes?: string | null
           packaging_started_at?: string | null
