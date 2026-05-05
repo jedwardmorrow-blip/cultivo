@@ -1,115 +1,119 @@
-/**
- * SalesInventoryView
- *
- * Read-only view of available inventory grouped by strain.
- * Designed for the sales team — shows what is ready to sell
- * without exposing internal workflow actions.
- *
- * Shows bulk and packaged stages only (sellable product).
- */
-
 import { useMemo, useState } from 'react';
-import { Search, Package, Box, TrendingDown, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle } from 'lucide-react';
 import { useInventoryData } from '../hooks/useInventoryData';
+import { useQualityGrades } from '@/hooks/useQualityGrades';
 import { getItemStage } from '../hooks/useInventoryFilters';
 import type { InventoryItem } from '../types';
-import { formatWeight } from '@/shared/utils/format';
+import type { QualityGrade } from '@/types';
 
-interface StrainSummary {
+const SELLABLE_STAGES = new Set(['bulk', 'packaged']);
+
+function gramsToLbs(g: number): string {
+  const lbs = g / 453.592;
+  return lbs < 0.1 ? '<0.1' : lbs.toFixed(1);
+}
+
+interface StrainRow {
   strain: string;
   bulkGrams: number;
   packagedGrams: number;
   packagedUnits: number;
-  packageCount: number;
-  packages: InventoryItem[];
+  reservedGrams: number;
 }
 
-const SELLABLE_STAGES = new Set(['bulk', 'packaged']);
+interface GradeBucket {
+  gradeId: string | null;
+  grade: QualityGrade | null;
+  availableGrams: number;
+  reservedGrams: number;
+  strains: StrainRow[];
+}
 
-function buildStrainSummaries(items: InventoryItem[]): StrainSummary[] {
-  const map = new Map<string, StrainSummary>();
+function buildGradeBuckets(
+  items: InventoryItem[],
+  getGradeById: (id: string | null | undefined) => QualityGrade | null
+): GradeBucket[] {
+  const bucketMap = new Map<string | null, GradeBucket>();
 
   for (const item of items) {
     const stage = getItemStage(item);
-    if (!SELLABLE_STAGES.has(stage)) continue;
+    if (!stage || !SELLABLE_STAGES.has(stage)) continue;
     if ((item.available_qty ?? 0) <= 0) continue;
 
-    const strain = item.strain || 'Unknown';
-    if (!map.has(strain)) {
-      map.set(strain, { strain, bulkGrams: 0, packagedGrams: 0, packagedUnits: 0, packageCount: 0, packages: [] });
+    const gradeId = item.quality_grade_id ?? null;
+    const grade = getGradeById(gradeId);
+
+    if (!bucketMap.has(gradeId)) {
+      bucketMap.set(gradeId, { gradeId, grade, availableGrams: 0, reservedGrams: 0, strains: [] });
     }
-    const summary = map.get(strain)!;
+
+    const bucket = bucketMap.get(gradeId)!;
+    const avail = item.available_qty ?? 0;
+    const reserved = item.reserved_qty ?? 0;
+    bucket.availableGrams += avail;
+    bucket.reservedGrams += reserved;
+
+    const strain = item.strain || 'Unknown';
+    let row = bucket.strains.find((s) => s.strain === strain);
+    if (!row) {
+      row = { strain, bulkGrams: 0, packagedGrams: 0, packagedUnits: 0, reservedGrams: 0 };
+      bucket.strains.push(row);
+    }
 
     if (stage === 'bulk') {
-      summary.bulkGrams += item.available_qty ?? 0;
+      row.bulkGrams += avail;
     } else {
-      // packaged — could be weight or units
       if (item.unit === 'units' || item.unit === 'unit') {
-        summary.packagedUnits += item.available_qty ?? 0;
+        row.packagedUnits += avail;
       } else {
-        summary.packagedGrams += item.available_qty ?? 0;
+        row.packagedGrams += avail;
       }
     }
-    summary.packageCount++;
-    summary.packages.push(item);
+    row.reservedGrams += reserved;
   }
 
-  return Array.from(map.values()).sort((a, b) => {
-    const totalA = a.bulkGrams + a.packagedGrams;
-    const totalB = b.bulkGrams + b.packagedGrams;
-    return totalB - totalA;
+  return Array.from(bucketMap.values()).sort((a, b) => {
+    if (a.gradeId === null) return 1;
+    if (b.gradeId === null) return -1;
+    return (a.grade?.sort_order ?? 99) - (b.grade?.sort_order ?? 99);
   });
 }
 
-function GramBadge({ grams, label }: { grams: number; label: string }) {
-  if (grams <= 0) return null;
-  return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-cult-warning-muted text-cult-warning border border-cult-warning/40">
-      {label}: {formatWeight(grams)}
-    </span>
-  );
-}
-
-function UnitBadge({ units }: { units: number }) {
-  if (units <= 0) return null;
-  return (
-    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-cult-stage-packaged/15 text-cult-stage-packaged border border-cult-stage-packaged/40">
-      Packaged: {units.toLocaleString()} units
-    </span>
-  );
+function totalAvailableLbs(buckets: GradeBucket[]): string {
+  return gramsToLbs(buckets.reduce((s, b) => s + b.availableGrams, 0));
 }
 
 export function SalesInventoryView() {
   const { inventoryItems, loading, fetchInventory } = useInventoryData();
+  const { grades, getGradeById } = useQualityGrades();
   const [search, setSearch] = useState('');
-  const [expandedStrain, setExpandedStrain] = useState<string | null>(null);
 
-  const summaries = useMemo(() => buildStrainSummaries(inventoryItems), [inventoryItems]);
+  const allBuckets = useMemo(
+    () => buildGradeBuckets(inventoryItems, getGradeById),
+    [inventoryItems, grades]
+  );
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return summaries;
+  const buckets = useMemo(() => {
+    if (!search.trim()) return allBuckets;
     const q = search.toLowerCase();
-    return summaries.filter((s) => s.strain.toLowerCase().includes(q));
-  }, [summaries, search]);
+    return allBuckets
+      .map((b) => ({ ...b, strains: b.strains.filter((s) => s.strain.toLowerCase().includes(q)) }))
+      .filter((b) => b.strains.length > 0);
+  }, [allBuckets, search]);
 
-  const totals = useMemo(
-    () => ({
-      strains: summaries.length,
-      bulkGrams: summaries.reduce((s, x) => s + x.bulkGrams, 0),
-      packagedGrams: summaries.reduce((s, x) => s + x.packagedGrams, 0),
-      packagedUnits: summaries.reduce((s, x) => s + x.packagedUnits, 0),
-    }),
-    [summaries]
+  const totalLbs = useMemo(() => totalAvailableLbs(allBuckets), [allBuckets]);
+  const strainCount = useMemo(
+    () => new Set(allBuckets.flatMap((b) => b.strains.map((s) => s.strain))).size,
+    [allBuckets]
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
+    <div className="space-y-5 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-cult-text-primary">Available Inventory</h1>
-          <p className="text-cult-text-muted text-sm mt-2">
-            Bulk and packaged inventory ready to sell — by strain
+          <p className="text-cult-text-muted text-sm mt-1.5">
+            {totalLbs} lbs across {strainCount} strain{strainCount !== 1 ? 's' : ''} — by grade
           </p>
         </div>
         <button
@@ -121,132 +125,108 @@ export function SalesInventoryView() {
         </button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-cult-surface border border-cult-border rounded-lg p-4">
-          <div className="text-xs text-cult-text-secondary uppercase tracking-wide mb-1">Strains</div>
-          <div className="text-2xl font-bold text-cult-text-primary">{totals.strains}</div>
-        </div>
-        <div className="bg-cult-surface border border-cult-border rounded-lg p-4">
-          <div className="text-xs text-cult-text-secondary uppercase tracking-wide mb-1">Bulk Available</div>
-          <div className="text-2xl font-bold text-cult-warning">{formatWeight(totals.bulkGrams)}</div>
-        </div>
-        <div className="bg-cult-surface border border-cult-border rounded-lg p-4">
-          <div className="text-xs text-cult-text-secondary uppercase tracking-wide mb-1">Packaged (g)</div>
-          <div className="text-2xl font-bold text-cult-stage-packaged">{formatWeight(totals.packagedGrams)}</div>
-        </div>
-        <div className="bg-cult-surface border border-cult-border rounded-lg p-4">
-          <div className="text-xs text-cult-text-secondary uppercase tracking-wide mb-1">Packaged (units)</div>
-          <div className="text-2xl font-bold text-cult-stage-packaged">{totals.packagedUnits.toLocaleString()}</div>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative max-w-md">
+      <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cult-text-secondary" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search strains..."
-          className="w-full pl-9 pr-4 py-2 bg-cult-surface border border-cult-border rounded-lg text-cult-text-primary placeholder-cult-text-secondary focus:ring-2 focus:ring-cult-green focus:border-transparent text-sm"
+          className="w-full pl-9 pr-4 py-2 bg-cult-surface border border-cult-border rounded text-cult-text-primary placeholder-cult-text-secondary focus:ring-1 focus:ring-cult-border-strong focus:border-cult-border-strong text-sm outline-none"
         />
       </div>
 
-      {/* Strain Table */}
       {loading ? (
-        <div className="text-cult-text-secondary text-sm py-8 text-center">Loading inventory...</div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-cult-surface border border-cult-border rounded-lg p-12 text-center">
-          <TrendingDown className="w-12 h-12 text-cult-text-secondary mx-auto mb-3" />
-          <p className="text-cult-text-secondary">
+        <div className="text-cult-text-secondary text-sm py-12 text-center">Loading inventory...</div>
+      ) : buckets.length === 0 ? (
+        <div className="bg-cult-surface border border-cult-border rounded p-12 text-center">
+          <p className="text-cult-text-secondary text-sm">
             {search ? `No strains match "${search}"` : 'No sellable inventory available'}
           </p>
         </div>
       ) : (
-        <div className="bg-cult-surface border border-cult-border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-cult-surface border-b border-cult-border">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Strain</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-cult-text-secondary uppercase tracking-wider hidden sm:table-cell">Available</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-secondary uppercase tracking-wider">Total</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-cult-text-secondary uppercase tracking-wider hidden md:table-cell">Packages</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-cult-border">
-              {filtered.map((s) => {
-                const totalGrams = s.bulkGrams + s.packagedGrams;
-                const isExpanded = expandedStrain === s.strain;
-                return (
-                  <>
-                    <tr
-                      key={s.strain}
-                      className="hover:bg-cult-surface/50 transition-colors cursor-pointer"
-                      onClick={() => setExpandedStrain(isExpanded ? null : s.strain)}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-cult-text-primary">{s.strain}</div>
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell">
-                        <div className="flex flex-wrap gap-1.5">
-                          <GramBadge grams={s.bulkGrams} label="Bulk" />
-                          <GramBadge grams={s.packagedGrams} label="Pkgd" />
-                          <UnitBadge units={s.packagedUnits} />
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="font-semibold text-cult-text-primary">{formatWeight(totalGrams)}</span>
-                      </td>
-                      <td className="px-4 py-3 text-right hidden md:table-cell">
-                        <span className="text-cult-text-secondary text-sm">{s.packageCount}</span>
-                      </td>
-                    </tr>
-
-                    {/* Expanded package breakdown */}
-                    {isExpanded && (
-                      <tr key={`${s.strain}-detail`}>
-                        <td colSpan={4} className="bg-cult-surface/60 px-6 py-3">
-                          <div className="text-xs font-medium text-cult-text-secondary uppercase tracking-wide mb-2">
-                            Package Breakdown
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                            {s.packages.map((pkg) => {
-                              const stage = getItemStage(pkg);
-                              return (
-                                <div
-                                  key={pkg.id}
-                                  className="flex items-center justify-between bg-cult-surface border border-cult-border rounded p-2"
-                                >
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    {stage === 'bulk' ? (
-                                      <Box className="w-4 h-4 text-cult-warning flex-shrink-0" />
-                                    ) : (
-                                      <Package className="w-4 h-4 text-cult-stage-packaged flex-shrink-0" />
-                                    )}
-                                    <span className="text-xs font-mono text-cult-text-secondary truncate">
-                                      {pkg.package_id}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs font-medium text-cult-text-primary ml-2 flex-shrink-0">
-                                    {pkg.unit === 'units' || pkg.unit === 'unit'
-                                      ? `${(pkg.available_qty ?? 0).toLocaleString()} units`
-                                      : formatWeight(pkg.available_qty ?? 0)}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {buckets.map((bucket) => (
+            <GradeBucketCard key={bucket.gradeId ?? '__ungraded'} bucket={bucket} />
+          ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function GradeBucketCard({ bucket }: { bucket: GradeBucket }) {
+  const isUngraded = bucket.gradeId === null;
+  const label = isUngraded ? 'UNGRADED' : (bucket.grade?.code ?? bucket.grade?.label ?? 'UNKNOWN');
+  const availLbs = gramsToLbs(bucket.availableGrams);
+  const reservedLbs = gramsToLbs(bucket.reservedGrams);
+  const hasReserved = bucket.reservedGrams > 0;
+
+  return (
+    <div className={`bg-cult-surface border rounded overflow-hidden ${isUngraded ? 'border-cult-border' : 'border-cult-border-strong'}`}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-cult-border">
+        <div className="flex items-center gap-3">
+          {isUngraded && <AlertCircle className="w-4 h-4 text-cult-text-secondary flex-shrink-0" />}
+          <span className={`font-mono text-sm font-semibold tracking-widest uppercase ${isUngraded ? 'text-cult-text-secondary' : 'text-cult-text-primary'}`}>
+            {label}
+          </span>
+          {isUngraded && (
+            <span className="text-xs text-cult-text-secondary font-mono">needs grading</span>
+          )}
+        </div>
+        <div className="flex items-center gap-4 text-right">
+          <div>
+            <span className="text-lg font-bold text-cult-text-primary tabular-nums">{availLbs}</span>
+            <span className="text-xs text-cult-text-secondary ml-1">lbs avail</span>
+          </div>
+          {hasReserved && (
+            <div>
+              <span className="text-sm font-medium text-cult-text-secondary tabular-nums">{reservedLbs}</span>
+              <span className="text-xs text-cult-text-secondary ml-1">promised</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="divide-y divide-cult-border">
+        {bucket.strains
+          .sort((a, b) => (b.bulkGrams + b.packagedGrams) - (a.bulkGrams + a.packagedGrams))
+          .map((row) => (
+            <StrainRowView key={row.strain} row={row} />
+          ))}
+      </div>
+    </div>
+  );
+}
+
+function StrainRowView({ row }: { row: StrainRow }) {
+  const hasReserved = row.reservedGrams > 0;
+
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5">
+      <span className="text-sm text-cult-text-primary">{row.strain}</span>
+      <div className="flex items-center gap-4 text-right">
+        {row.bulkGrams > 0 && (
+          <span className="text-xs text-cult-text-secondary tabular-nums">
+            {gramsToLbs(row.bulkGrams)} lbs bulk
+          </span>
+        )}
+        {row.packagedGrams > 0 && (
+          <span className="text-xs text-cult-text-secondary tabular-nums">
+            {gramsToLbs(row.packagedGrams)} lbs pkgd
+          </span>
+        )}
+        {row.packagedUnits > 0 && (
+          <span className="text-xs text-cult-text-secondary tabular-nums">
+            {row.packagedUnits.toLocaleString()} units
+          </span>
+        )}
+        {hasReserved && (
+          <span className="text-xs text-cult-text-secondary tabular-nums">
+            {gramsToLbs(row.reservedGrams)} promised
+          </span>
+        )}
+      </div>
     </div>
   );
 }
