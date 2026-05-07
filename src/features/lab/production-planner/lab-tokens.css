@@ -1,0 +1,1893 @@
+/* ═══════════════════════════════════════════════════════════════════
+   /lab/production-planner — Sandbox-scoped tokens
+   Pulled from the Praxis V4 token set canonicalized in cmd-center-b.
+   Default canvas is --pv4-canvas-deep #061a33 per session 435 decision
+   (operator-comfort default; brighter --pv4-canvas reserved for
+   marketing/splash).
+
+   Lab-only, scoped to .lab-prod-planner. brand-tokens.css contract is
+   untouched.
+
+   Big Shoulders Display + Special Elite via Google Fonts during the
+   lab phase. Self-host woff2 will land before promotion.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;800&family=Special+Elite&display=swap');
+
+/* ═════════ Praxis V4 token set ═════════ */
+.lab-prod-planner {
+  --pv4-canvas:        #0a2545;
+  --pv4-canvas-deep:   #061a33;
+  --pv4-canvas-deeper: #03101f;
+
+  --pv4-navy:          #14365E;
+  --pv4-navy-mid:      #2C5384;
+
+  --pv4-paper:         #F1E8D2;
+  --pv4-paper-dim:     rgba(241,232,210,0.78);
+  --pv4-paper-mute:    rgba(241,232,210,0.55);
+  --pv4-paper-faint:   rgba(241,232,210,0.32);
+  --pv4-paper-ghost:   rgba(241,232,210,0.14);
+
+  --pv4-gold:          #C9A24B;
+  --pv4-gold-paper:    #E8D69A;
+
+  --pv4-red:           #C42130;
+  --pv4-red-deep:      #8c1722;
+
+  --pv4-rule:          rgba(201,162,75,0.45);
+  --pv4-rule-soft:     rgba(201,162,75,0.18);
+
+  --pv4-ink:           #14365E;
+  --pv4-ink-2:         rgba(20,54,94,0.72);
+  --pv4-ink-3:         rgba(20,54,94,0.45);
+  --pv4-ink-4:         rgba(20,54,94,0.22);
+  --pv4-rule-ink:      rgba(20,54,94,0.18);
+  --pv4-rule-ink-strong: rgba(20,54,94,0.32);
+
+  /* ── Resolved variables (canvas-deep default per session 435) ─── */
+  --lab-canvas:        var(--pv4-canvas-deep);
+  --lab-surface:       var(--pv4-canvas-deeper);
+  --lab-surface-2:     #020a14;
+  --lab-ink:           var(--pv4-paper);
+  --lab-ink-2:         var(--pv4-paper-dim);
+  --lab-ink-3:         var(--pv4-paper-mute);
+  --lab-ink-4:         var(--pv4-paper-faint);
+  --lab-panel:         var(--pv4-rule-soft);
+  --lab-panel-strong:  var(--pv4-rule);
+  --lab-gold:          var(--pv4-gold);
+  --lab-gold-paper:    var(--pv4-gold-paper);
+  --lab-alarm:         var(--pv4-red);
+
+  /* Status semantics on dark canvas (kept tight — no third color) */
+  --lab-ok:            #6EAA8D;
+  --lab-warn:          var(--pv4-gold);
+  --lab-bad:           var(--pv4-red);
+
+  --lab-cap-tracking: 0.14em;
+  --lab-cap-size: 0.6875rem;
+}
+
+/* Marketing-mode toggle: brighter navy for splash + screenshots. */
+.lab-prod-planner.canvas-marketing {
+  --lab-canvas:        var(--pv4-canvas);
+  --lab-surface:       var(--pv4-canvas-deep);
+  --lab-surface-2:     var(--pv4-canvas-deeper);
+}
+
+/* Paper variant (Document mode) — for executive surfaces, weekly digests,
+   printable surfaces, marketing screenshots. Not the operator default. */
+.lab-prod-planner.canvas-paper {
+  --lab-canvas:        var(--pv4-paper);
+  --lab-surface:       #ECE2C7;
+  --lab-surface-2:     #E5D9B8;
+  --lab-ink:           var(--pv4-ink);
+  --lab-ink-2:         var(--pv4-ink-2);
+  --lab-ink-3:         var(--pv4-ink-3);
+  --lab-ink-4:         var(--pv4-ink-4);
+  --lab-panel:         var(--pv4-rule-ink);
+  --lab-panel-strong:  var(--pv4-rule-ink-strong);
+}
+
+/* ═════════ Layout primitives ═════════ */
+
+.lab-prod-planner {
+  background: var(--lab-canvas);
+  color: var(--lab-ink);
+  font-family: var(--font-sans);
+  min-height: calc(100dvh - 0px);
+  transition: background 0.2s ease, color 0.2s ease;
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.lab-prod-planner * { box-sizing: border-box; }
+
+.lab-prod-planner .mono,
+.lab-prod-planner .num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.lab-prod-planner .display {
+  font-family: 'Big Shoulders Display', var(--font-mono), sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: 0.02em;
+}
+
+.lab-prod-planner .typewriter {
+  font-family: 'Special Elite', var(--font-mono);
+}
+
+.lab-prod-planner .cap {
+  font-family: var(--font-mono);
+  font-size: var(--lab-cap-size);
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+}
+
+/* ═════════ Masthead ═════════ */
+
+.lab-prod-planner .masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--lab-panel);
+}
+
+.lab-prod-planner .wordmark-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lab-prod-planner .wordmark-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lab-prod-planner .wordmark {
+  font-family: 'Big Shoulders Display', var(--font-mono), sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--lab-ink);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.lab-prod-planner .wordmark .dot {
+  color: var(--lab-alarm);
+  width: auto;
+  height: auto;
+  background: transparent;
+  display: inline;
+  margin: 0;
+  font-size: inherit;
+}
+
+.lab-prod-planner .wordmark-sub {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lab-gold);
+  line-height: 1;
+}
+
+.lab-prod-planner .cog-badge { flex-shrink: 0; }
+
+.lab-prod-planner .masthead-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--lab-ink-3);
+}
+
+.lab-prod-planner .masthead-meta .live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lab-prod-planner .canvas-toggle {
+  display: inline-flex;
+  border: 1px solid var(--lab-panel-strong);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.lab-prod-planner .canvas-toggle button {
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+  cursor: pointer;
+  border-right: 1px solid var(--lab-panel);
+  transition: background 0.15s, color 0.15s;
+}
+
+.lab-prod-planner .canvas-toggle button:last-child { border-right: none; }
+.lab-prod-planner .canvas-toggle button:hover { color: var(--lab-ink); }
+.lab-prod-planner .canvas-toggle button.active {
+  background: var(--lab-gold);
+  color: var(--pv4-canvas-deep);
+  font-weight: 700;
+}
+
+/* ═════════ Serial plate ═════════ */
+
+.lab-prod-planner .serial-plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px;
+  border-top: 1px solid var(--lab-panel);
+  border-bottom: 1px solid var(--lab-panel);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+}
+
+.lab-prod-planner .serial-plate .stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lab-prod-planner .serial-plate .serial {
+  color: var(--lab-gold);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.lab-prod-planner .serial-plate .sep { color: var(--lab-ink-4); }
+
+/* ═════════ KPI strip (Treatment A · hairline grid) ═════════ */
+
+.lab-prod-planner .kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-bottom: 1px solid var(--lab-panel);
+}
+
+.lab-prod-planner .kpi {
+  padding: 16px 20px 14px;
+  border-right: 1px solid var(--lab-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.lab-prod-planner .kpi:last-child { border-right: none; }
+
+.lab-prod-planner .kpi .kpi-cap {
+  font-family: var(--font-mono);
+  font-size: var(--lab-cap-size);
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lab-prod-planner .kpi .kpi-num {
+  font-family: 'Big Shoulders Display', var(--font-mono);
+  font-size: 2.5rem;
+  line-height: 0.95;
+  font-weight: 800;
+  color: var(--lab-gold);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.lab-prod-planner .kpi .kpi-num.alarm { color: var(--lab-alarm); }
+.lab-prod-planner .kpi .kpi-num.ink   { color: var(--lab-ink); }
+.lab-prod-planner .kpi .kpi-num.dim   { color: var(--lab-ink-3); }
+
+.lab-prod-planner .kpi .kpi-trend {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--lab-ink-3);
+  letter-spacing: 0.02em;
+}
+
+.lab-prod-planner .kpi .kpi-spark {
+  display: block;
+  width: 100%;
+  height: 14px;
+  margin-top: 2px;
+}
+.lab-prod-planner .kpi .kpi-spark path {
+  fill: none;
+  stroke: var(--lab-ink-4);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+.lab-prod-planner .kpi .kpi-spark circle { fill: var(--lab-gold); }
+
+/* ═════════ Status dot ═════════ */
+
+.lab-prod-planner .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.lab-prod-planner .dot-ok    { background: var(--lab-ok); }
+.lab-prod-planner .dot-warn  { background: var(--lab-warn); }
+.lab-prod-planner .dot-bad,
+.lab-prod-planner .dot-alarm { background: var(--lab-alarm); }
+.lab-prod-planner .dot-gold  { background: var(--lab-gold); }
+.lab-prod-planner .dot-ink   { background: var(--lab-ink-3); }
+
+.lab-prod-planner .dot-pulse {
+  background: var(--lab-alarm);
+  animation: labPulse 2s ease-out infinite;
+}
+@keyframes labPulse {
+  0%   { opacity: 1; transform: scale(1); }
+  60%  { opacity: 0.55; transform: scale(2.2); }
+  100% { opacity: 0; transform: scale(2.8); }
+}
+.lab-prod-planner .dot-pulse-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 6px;
+  height: 6px;
+}
+.lab-prod-planner .dot-pulse-core {
+  background: var(--lab-alarm);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+}
+
+/* ═════════ Seed inline synthesis row ═════════ */
+
+.lab-prod-planner .seed-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 24px;
+  align-items: start;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--lab-panel-strong);
+}
+
+.lab-prod-planner .seed-label {
+  color: var(--lab-ink-3);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: var(--lab-cap-tracking);
+  padding-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lab-prod-planner .seed-label .seed-glyph {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--lab-gold);
+  flex-shrink: 0;
+  position: relative;
+}
+.lab-prod-planner .seed-label .seed-glyph::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--lab-canvas);
+}
+
+.lab-prod-planner .seed-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  max-width: 720px;
+}
+
+.lab-prod-planner .seed-obs {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .seed-obs:first-child { border-top: none; }
+
+.lab-prod-planner .seed-obs .seed-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  justify-self: center;
+  flex-shrink: 0;
+}
+
+.lab-prod-planner .seed-obs .seed-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lab-prod-planner .seed-obs .seed-entity {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--lab-ink);
+  letter-spacing: 0.02em;
+}
+
+.lab-prod-planner .seed-obs .seed-context {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--lab-ink-2);
+  line-height: 1.35;
+}
+
+.lab-prod-planner .seed-obs .seed-badge {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.lab-prod-planner .seed-obs .seed-badge.bad  { color: var(--lab-bad); }
+.lab-prod-planner .seed-obs .seed-badge.warn { color: var(--lab-warn); }
+.lab-prod-planner .seed-obs .seed-badge.ok   { color: var(--lab-ok); }
+
+.lab-prod-planner .seed-obs .seed-cta {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--lab-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 1px dotted var(--lab-gold);
+}
+.lab-prod-planner .seed-obs .seed-cta:hover { opacity: 0.78; }
+
+/* ═════════ Gantt placeholder (milestone 2 fills this) ═════════ */
+
+.lab-prod-planner .gantt-placeholder {
+  padding: 64px 24px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--lab-ink-4);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: 1px dashed var(--lab-panel);
+  margin: 24px;
+}
+
+/* ═════════ Gantt body ═════════ */
+
+.lab-prod-planner .gantt-shell {
+  border-bottom: 1px solid var(--lab-panel);
+}
+
+.lab-prod-planner .gantt-frame {
+  display: grid;
+  grid-template-columns: 156px 1fr;
+  position: relative;
+}
+
+.lab-prod-planner .gantt-left {
+  border-right: 1px solid var(--lab-panel-strong);
+  background: transparent;
+}
+
+.lab-prod-planner .gantt-left-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--lab-panel-strong);
+}
+.lab-prod-planner .gantt-left-head .cap.dim { color: var(--lab-ink-4); }
+
+.lab-prod-planner .gantt-left-cap {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--lab-panel);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.lab-prod-planner .gantt-left-cap:hover {
+  background: rgba(201,162,75,0.04);
+}
+
+.lab-prod-planner .cap-row-1 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.lab-prod-planner .room-code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lab-ink);
+  letter-spacing: 0.04em;
+}
+
+.lab-prod-planner .room-type {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+}
+
+.lab-prod-planner .cap-row-2 {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.lab-prod-planner .cap-cap {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-ink-4);
+}
+.lab-prod-planner .cap-num {
+  font-family: 'Big Shoulders Display', var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--lab-ink-2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.lab-prod-planner .cap-num-mute { color: var(--lab-ink-4); font-weight: 500; }
+
+.lab-prod-planner .gantt-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-color: var(--lab-panel) transparent;
+}
+.lab-prod-planner .gantt-scroll::-webkit-scrollbar { height: 8px; }
+.lab-prod-planner .gantt-scroll::-webkit-scrollbar-thumb {
+  background: var(--lab-panel);
+  border-radius: 0;
+}
+
+.lab-prod-planner .gantt-canvas {
+  position: relative;
+}
+
+.lab-prod-planner .gantt-weeks {
+  position: relative;
+  border-bottom: 1px solid var(--lab-panel-strong);
+}
+
+.lab-prod-planner .gantt-week {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-right: 1px solid var(--lab-panel);
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+.lab-prod-planner .gantt-week.month-start {
+  border-right-color: var(--lab-panel-strong);
+}
+.lab-prod-planner .gantt-week-label {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+}
+
+.lab-prod-planner .gantt-today {
+  position: absolute;
+  width: 2px;
+  background: var(--lab-gold);
+  z-index: 3;
+  pointer-events: none;
+  opacity: 1;
+}
+.lab-prod-planner .gantt-today-label {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-canvas);
+  background: var(--lab-gold);
+  padding: 2px 6px 1px;
+  border-radius: 1px;
+  z-index: 4;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Mother room: continuous "alive" bar across the visible timeline,
+   no harvest, no end. Reads as steady-state. */
+.lab-prod-planner .mother-bar {
+  position: absolute;
+  top: 16px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-top: 1px solid var(--lab-panel-strong);
+  border-bottom: 1px solid var(--lab-panel-strong);
+  z-index: 2;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.lab-prod-planner .mother-bar .mother-strains {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.lab-prod-planner .mother-bar .mother-strain {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--lab-ink-2);
+  letter-spacing: 0.04em;
+}
+.lab-prod-planner .mother-bar .mother-strain .count {
+  color: var(--lab-ink-3);
+  font-size: 0.625rem;
+}
+
+.lab-prod-planner .gantt-row {
+  position: absolute;
+  left: 0;
+  border-bottom: 1px solid var(--lab-panel);
+}
+
+.lab-prod-planner .gantt-row-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--lab-panel);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Cycle bar — flat, no fill, no shadow, no gradient. */
+.lab-prod-planner .cycle-bar {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  background: rgba(241,232,210,0.06);
+  border: 1px solid var(--lab-panel);
+  cursor: pointer;
+  transition: opacity 0.12s, border-color 0.12s;
+  overflow: hidden;
+  white-space: nowrap;
+  z-index: 2;
+  font-size: 0.6875rem;
+}
+.lab-prod-planner .cycle-bar.compact {
+  padding: 0 6px;
+  gap: 4px;
+}
+.lab-prod-planner .cycle-bar.compact .bar-strain { font-size: 0.5625rem; letter-spacing: 0.04em; }
+.lab-prod-planner .cycle-bar.compact .bar-count  { font-size: 0.5rem; }
+.lab-prod-planner .cycle-bar.dim { opacity: 0.32; }
+.lab-prod-planner .cycle-bar:hover { border-color: var(--lab-panel-strong); }
+.lab-prod-planner .cycle-bar.selected {
+  border: none;
+  outline: 1px solid var(--lab-gold);
+  outline-offset: -1px;
+  z-index: 4;
+}
+
+.lab-prod-planner .cycle-bar.planned {
+  background: transparent;
+  border: 1px dashed var(--lab-panel-strong);
+}
+.lab-prod-planner .cycle-bar.planned.status-committed {
+  border-style: solid;
+  border-color: var(--lab-gold);
+}
+.lab-prod-planner .cycle-bar.planned.status-draft {
+  border-style: dashed;
+  border-color: var(--lab-panel-strong);
+}
+
+.lab-prod-planner .bar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.lab-prod-planner .bar-dot.dot-clone   { background: #5BA9D9; }
+.lab-prod-planner .bar-dot.dot-veg     { background: #6EAA8D; }
+.lab-prod-planner .bar-dot.dot-flower  { background: #C56A6A; }
+.lab-prod-planner .bar-dot.dot-mother  { background: #D08F3C; }
+.lab-prod-planner .bar-dot.dot-harvest { background: var(--lab-gold); }
+.lab-prod-planner .bar-dot.dot-planned { background: var(--lab-ink-3); }
+
+.lab-prod-planner .bar-strain {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--lab-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.lab-prod-planner .bar-count {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--lab-ink-3);
+  margin-left: auto;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═════════ Batch segments (Y-axis = rooms; bars = batches per stage) ═════════
+   A batch is the unifying primitive (per Justin's clone-date confirmation
+   2026-05-07). Each batch may have segments in multiple rooms over its
+   lifecycle. Segments are absolute-positioned over the gantt-canvas with
+   coordinates derived in LabGantt's renderedSegments memo. */
+
+.lab-prod-planner .batch-seg {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  background: rgba(241,232,210,0.06);
+  border: 1px solid var(--lab-panel);
+  cursor: pointer;
+  transition: opacity 0.12s, border-color 0.12s, background 0.12s;
+  overflow: hidden;
+  white-space: nowrap;
+  z-index: 2;
+  font-size: 0.625rem;
+  user-select: none;
+}
+.lab-prod-planner .batch-seg.dim { opacity: 0.28; }
+.lab-prod-planner .batch-seg.highlight {
+  outline: 1px solid var(--lab-gold);
+  outline-offset: -1px;
+  z-index: 5;
+}
+
+/* Historical (past) segments render dimmer than current */
+.lab-prod-planner .batch-seg.is-history {
+  background: transparent;
+  border-color: var(--lab-panel);
+  opacity: 0.55;
+}
+.lab-prod-planner .batch-seg.is-history.highlight { opacity: 0.95; }
+
+/* Projected (future) segments — dashed border, no fill */
+.lab-prod-planner .batch-seg.is-projected {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--lab-panel-strong);
+  opacity: 0.7;
+}
+
+/* Current segments are full opacity by default */
+.lab-prod-planner .batch-seg.is-current {
+  background: rgba(241,232,210,0.08);
+}
+
+.lab-prod-planner .batch-seg.overridden {
+  outline: 1px dashed var(--lab-gold);
+  outline-offset: -1px;
+}
+
+.lab-prod-planner .bar-strain-name {
+  color: var(--lab-ink);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+.lab-prod-planner .bar-plant-count {
+  color: var(--lab-ink-3);
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+  margin-left: auto;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .bar-from-tag {
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lab-gold);
+  background: rgba(201,162,75,0.12);
+  border: 1px solid rgba(201,162,75,0.32);
+  padding: 0 4px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+/* Stage-marker dot at the leading edge of every batch segment */
+.lab-prod-planner .batch-seg .bar-dot.dot-clone   { background: #5BA9D9; }
+.lab-prod-planner .batch-seg .bar-dot.dot-veg     { background: #6EAA8D; }
+.lab-prod-planner .batch-seg .bar-dot.dot-flower  { background: #C56A6A; }
+.lab-prod-planner .batch-seg .bar-dot.dot-drying  { background: #C8943A; }
+.lab-prod-planner .batch-seg .bar-dot.dot-mother  { background: #D08F3C; }
+
+/* Connector overlay — curves between consecutive segments of same batch */
+.lab-prod-planner .batch-connector-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.lab-prod-planner .batch-connector .batch-connector-path {
+  fill: none;
+  stroke: var(--lab-gold);
+  stroke-width: 1;
+  opacity: 0.32;
+  vector-effect: non-scaling-stroke;
+  transition: opacity 0.12s, stroke-width 0.12s;
+}
+.lab-prod-planner .batch-connector .batch-connector-dot {
+  fill: var(--lab-gold);
+  opacity: 0.38;
+  transition: opacity 0.12s, r 0.12s;
+}
+.lab-prod-planner .batch-connector.highlight .batch-connector-path {
+  opacity: 0.95;
+  stroke-width: 1.5;
+}
+.lab-prod-planner .batch-connector.highlight .batch-connector-dot {
+  opacity: 1;
+  r: 3.4;
+}
+.lab-prod-planner .batch-connector.dim .batch-connector-path { opacity: 0.08; }
+.lab-prod-planner .batch-connector.dim .batch-connector-dot { opacity: 0.1; }
+
+/* ═════════ Drag-to-reschedule (harvest edge + planned slide) ═════════ */
+
+.lab-prod-planner .cycle-bar { cursor: pointer; user-select: none; }
+.lab-prod-planner .cycle-bar.planned { cursor: grab; }
+.lab-prod-planner .cycle-bar.planned.is-dragging { cursor: grabbing; outline: 1px solid var(--lab-gold); outline-offset: -1px; }
+
+/* Right-edge drag handle on in-progress strain bars */
+.lab-prod-planner .bar-edge-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 3;
+}
+.lab-prod-planner .bar-edge-handle::after {
+  content: '';
+  position: absolute;
+  right: 1px;
+  top: 25%;
+  bottom: 25%;
+  width: 2px;
+  background: var(--lab-gold);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.lab-prod-planner .cycle-bar:hover .bar-edge-handle::after,
+.lab-prod-planner .cycle-bar.is-dragging .bar-edge-handle::after { opacity: 0.85; }
+
+.lab-prod-planner .cycle-bar.is-dragging { z-index: 5; }
+.lab-prod-planner .cycle-bar.overridden {
+  outline: 1px dashed var(--lab-gold);
+  outline-offset: -1px;
+}
+
+/* Floating drag indicator (mono caps + impact) */
+.lab-prod-planner ~ .drag-indicator,
+.lab-prod-planner .drag-indicator {
+  position: fixed;
+  z-index: 200;
+  background: var(--lab-canvas);
+  border: 1px solid var(--lab-gold);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  pointer-events: none;
+  min-width: 220px;
+  box-shadow: none;
+}
+.lab-prod-planner .drag-indicator-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+  margin-bottom: 4px;
+}
+.lab-prod-planner .drag-indicator-delta {
+  color: var(--lab-gold);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.lab-prod-planner .drag-indicator-label { color: var(--lab-ink); font-weight: 600; }
+.lab-prod-planner .drag-indicator .sep { color: var(--lab-ink-4); }
+.lab-prod-planner .drag-indicator-date {
+  font-family: 'Big Shoulders Display', var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--lab-gold);
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+.lab-prod-planner .drag-indicator-impact {
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--lab-ink-2);
+}
+
+/* ═════════ View-mode toggle (FIG. 02 plate) ═════════ */
+.lab-prod-planner .view-mode-toggle button {
+  font-size: 0.625rem;
+  padding: 3px 10px;
+}
+
+/* ═════════ Finalize banner ═════════ */
+.lab-prod-planner .finalize-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 24px;
+  background: rgba(201,162,75,0.12);
+  border-bottom: 1px solid var(--lab-gold);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--lab-ink);
+  animation: bannerIn 200ms ease-out;
+}
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lab-prod-planner .finalize-banner .serial {
+  color: var(--lab-gold);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.lab-prod-planner .finalize-banner .strong {
+  color: var(--lab-ink);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.lab-prod-planner .finalize-banner .sep { color: var(--lab-ink-4); }
+.lab-prod-planner .finalize-banner .banner-x {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  color: var(--lab-ink-2);
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+/* ═════════ Inline cycle editor (popover under planned bar) ═════════ */
+.lab-prod-planner .cycle-bar.editing {
+  outline: 1px solid var(--lab-gold);
+  outline-offset: -1px;
+}
+
+.lab-prod-planner .cycle-editor {
+  position: absolute;
+  z-index: 10;
+  background: var(--lab-canvas);
+  border: 1px solid var(--lab-gold);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+  font-family: var(--font-mono);
+}
+.lab-prod-planner .cycle-editor-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lab-prod-planner .cycle-editor-row .cap {
+  flex: 1;
+  font-size: 0.5625rem;
+}
+.lab-prod-planner .cycle-editor-input {
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  border-radius: 2px;
+  color: var(--lab-ink);
+  padding: 4px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  width: 130px;
+}
+.lab-prod-planner .cycle-editor-input:focus {
+  outline: none;
+  border-color: var(--lab-gold);
+}
+.lab-prod-planner .cycle-editor-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+.lab-prod-planner .cycle-editor-btn {
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  color: var(--lab-ink-2);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.lab-prod-planner .cycle-editor-btn:hover { color: var(--lab-ink); border-color: var(--lab-gold); }
+.lab-prod-planner .cycle-editor-btn.primary {
+  background: var(--lab-gold);
+  color: var(--pv4-canvas-deep);
+  border-color: var(--lab-gold);
+  font-weight: 700;
+}
+.lab-prod-planner .cycle-editor-btn.danger {
+  margin-left: auto;
+  color: var(--lab-alarm);
+  border-color: rgba(196,33,48,0.4);
+}
+.lab-prod-planner .cycle-editor-btn.danger:hover {
+  background: var(--lab-alarm);
+  color: var(--lab-ink);
+  border-color: var(--lab-alarm);
+}
+
+/* ═════════ Plan-cycle form (FIG. 04 modal) ═════════ */
+.lab-prod-planner .plan-form-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(3,16,31,0.72);
+  z-index: 60;
+}
+.lab-prod-planner .plan-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--lab-canvas);
+  border: 1px solid var(--lab-panel-strong);
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  animation: planFormIn 200ms ease-out;
+}
+@keyframes planFormIn {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+.lab-prod-planner .plan-form-stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--lab-gold);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+}
+.lab-prod-planner .plan-form-stamp .serial {
+  color: var(--lab-gold);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+.lab-prod-planner .plan-form-stamp .strong {
+  color: var(--lab-ink);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.lab-prod-planner .plan-form-stamp .sep { color: var(--lab-ink-4); }
+.lab-prod-planner .plan-form-x {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  color: var(--lab-ink-2);
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.lab-prod-planner .plan-form-x:hover { color: var(--lab-gold); border-color: var(--lab-gold); }
+
+.lab-prod-planner .plan-form-body {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lab-prod-planner .plan-form-prefill {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(201,162,75,0.08);
+  border: 1px solid var(--lab-gold);
+  border-radius: 2px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--lab-ink);
+}
+.lab-prod-planner .plan-form-prefill .cap {
+  color: var(--lab-gold);
+  font-weight: 700;
+}
+.lab-prod-planner .plan-form-row {
+  display: grid;
+  grid-template-columns: 110px 220px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.lab-prod-planner .plan-form-row label.cap {
+  color: var(--lab-ink-3);
+}
+.lab-prod-planner .plan-form-input {
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  border-radius: 2px;
+  color: var(--lab-ink);
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .plan-form-input:focus {
+  outline: none;
+  border-color: var(--lab-gold);
+}
+.lab-prod-planner select.plan-form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--lab-ink-3) 50%), linear-gradient(135deg, var(--lab-ink-3) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 13px, calc(100% - 9px) 13px;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.lab-prod-planner .plan-form-help {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--lab-ink-4);
+  letter-spacing: 0.04em;
+}
+.lab-prod-planner .plan-form-help .warn { color: var(--lab-alarm); }
+.lab-prod-planner .plan-form-help.synthetic {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lab-prod-planner .plan-form-no-mother {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border: 1px dashed var(--lab-alarm);
+  background: rgba(196,33,48,0.05);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--lab-ink-2);
+}
+.lab-prod-planner .plan-form-no-mother .warn {
+  color: var(--lab-alarm);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ═════════ Data-state quarantine pills (per doctrine) ═════════
+   "model" / "synthetic" / "forced" pills next to values that are not
+   operator-captured. Render mono caps with dashed border + dim ink. */
+.lab-prod-planner .quarantine-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 1px 5px 0;
+  border: 1px dashed var(--lab-ink-4);
+  border-radius: 1px;
+  color: var(--lab-ink-3);
+  vertical-align: middle;
+  cursor: help;
+}
+.lab-prod-planner .quarantine-pill:hover { border-color: var(--lab-gold); color: var(--lab-gold); }
+.lab-prod-planner .quarantine-underline {
+  border-bottom: 1px dotted var(--lab-ink-4);
+  cursor: help;
+}
+
+.lab-prod-planner .plan-form-manifest {
+  margin-top: 14px;
+  border: 1px solid var(--lab-gold);
+  padding: 14px 16px 16px;
+}
+.lab-prod-planner .manifest-cap {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lab-gold);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.lab-prod-planner .manifest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--lab-panel);
+  margin-bottom: 12px;
+}
+.lab-prod-planner .manifest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 12px;
+  border-right: 1px solid var(--lab-panel);
+  border-bottom: 1px solid var(--lab-panel);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.lab-prod-planner .manifest-row:nth-child(2n) { border-right: none; }
+.lab-prod-planner .manifest-row:nth-last-child(-n+2) { border-bottom: none; }
+.lab-prod-planner .manifest-row .cap {
+  color: var(--lab-ink-3);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.lab-prod-planner .manifest-row .num {
+  color: var(--lab-gold);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .manifest-prose {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--lab-ink-2);
+}
+.lab-prod-planner .manifest-prose .strong { color: var(--lab-ink); font-weight: 600; }
+.lab-prod-planner .manifest-prose .num {
+  font-family: var(--font-mono);
+  color: var(--lab-gold);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.lab-prod-planner .plan-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .plan-form-btn {
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  color: var(--lab-ink-2);
+  padding: 7px 16px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.lab-prod-planner .plan-form-btn.ghost:hover {
+  color: var(--lab-ink);
+  border-color: var(--lab-ink-3);
+}
+.lab-prod-planner .plan-form-btn.primary {
+  background: var(--lab-gold);
+  border-color: var(--lab-gold);
+  color: var(--pv4-canvas-deep);
+  font-weight: 700;
+}
+.lab-prod-planner .plan-form-btn.primary:disabled {
+  background: transparent;
+  color: var(--lab-ink-4);
+  border-color: var(--lab-panel-strong);
+  cursor: not-allowed;
+  font-weight: 500;
+}
+.lab-prod-planner .plan-form-btn.primary:hover:not(:disabled) {
+  background: var(--lab-gold-paper);
+  border-color: var(--lab-gold-paper);
+}
+
+/* ═════════ Drawer plan-cycle chip ═════════ */
+.lab-prod-planner .drawer-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lab-prod-planner .drawer-plan-chip {
+  background: transparent;
+  border: 1px solid var(--lab-gold);
+  color: var(--lab-gold);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.lab-prod-planner .drawer-plan-chip:hover {
+  background: var(--lab-gold);
+  color: var(--pv4-canvas-deep);
+}
+
+/* ═════════ Drawer (FIG. 02 Room + FIG. 03 Strain split) ═════════ */
+
+.lab-prod-planner .drawer-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(3,16,31,0.62);
+  z-index: 50;
+}
+
+.lab-prod-planner .drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  background: var(--lab-canvas);
+  border-left: 1px solid var(--lab-panel-strong);
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  animation: drawerIn 220ms ease-out both;
+}
+@keyframes drawerIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+.lab-prod-planner .drawer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--lab-panel);
+  background: var(--lab-surface);
+}
+
+.lab-prod-planner .drawer-close {
+  background: transparent;
+  border: 1px solid var(--lab-panel-strong);
+  border-radius: 2px;
+  color: var(--lab-ink-2);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.lab-prod-planner .drawer-close:hover {
+  background: var(--lab-gold);
+  color: var(--pv4-canvas-deep);
+  border-color: var(--lab-gold);
+}
+
+.lab-prod-planner .drawer-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.lab-prod-planner .drawer-room-pane {
+  width: 100%;
+  border-right: 1px solid var(--lab-panel);
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+.lab-prod-planner .drawer-room-pane.split {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.lab-prod-planner .drawer-strain-pane {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+
+.lab-prod-planner .drawer-stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--lab-panel);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+  position: sticky;
+  top: 0;
+  background: var(--lab-canvas);
+  z-index: 2;
+}
+.lab-prod-planner .drawer-stamp .serial {
+  color: var(--lab-gold);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+.lab-prod-planner .drawer-stamp .strong {
+  color: var(--lab-ink);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.lab-prod-planner .drawer-stamp .sep { color: var(--lab-ink-4); }
+.lab-prod-planner .drawer-stamp-x {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--lab-panel);
+  width: 22px;
+  height: 22px;
+  border-radius: 2px;
+  color: var(--lab-ink-3);
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.lab-prod-planner .drawer-stamp-x:hover {
+  border-color: var(--lab-gold);
+  color: var(--lab-gold);
+}
+
+.lab-prod-planner .drawer-room-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--lab-panel);
+}
+
+.lab-prod-planner .drawer-cap-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.lab-prod-planner .drawer-big-num {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--lab-gold);
+  letter-spacing: 0.02em;
+}
+.lab-prod-planner .drawer-big-num .mute {
+  color: var(--lab-ink-4);
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+.lab-prod-planner .drawer-fill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.lab-prod-planner .drawer-fill-track {
+  flex: 1;
+  height: 4px;
+  background: var(--lab-panel);
+  position: relative;
+}
+.lab-prod-planner .drawer-fill-fill {
+  height: 100%;
+  background: var(--lab-gold);
+  opacity: 0.7;
+}
+.lab-prod-planner .cap.mute { color: var(--lab-ink-4); }
+
+.lab-prod-planner .drawer-section-cap {
+  padding: 14px 18px 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+  border-bottom: 1px solid var(--lab-panel);
+}
+
+.lab-prod-planner .drawer-empty {
+  padding: 24px 18px;
+  text-align: center;
+}
+
+.lab-prod-planner .drawer-strain-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-prod-planner .drawer-strain-row {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--lab-panel);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.lab-prod-planner .drawer-strain-row:hover,
+.lab-prod-planner .drawer-strain-row.hovered {
+  background: rgba(201,162,75,0.04);
+}
+
+.lab-prod-planner .drawer-strain-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lab-prod-planner .strain-name {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--lab-ink);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lab-prod-planner .strain-stage {
+  margin-left: auto;
+}
+.lab-prod-planner .strain-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--lab-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.lab-prod-planner .drawer-strain-bar-track {
+  height: 3px;
+  background: var(--lab-panel);
+  margin-bottom: 6px;
+}
+.lab-prod-planner .drawer-strain-bar-fill {
+  height: 100%;
+  background: var(--lab-gold);
+  opacity: 0.75;
+}
+
+.lab-prod-planner .drawer-strain-meta {
+  display: flex;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--lab-ink-3);
+  letter-spacing: 0.04em;
+}
+.lab-prod-planner .drawer-strain-meta .num { color: var(--lab-ink-2); }
+.lab-prod-planner .drawer-strain-meta .open-chip {
+  margin-left: auto;
+  color: var(--lab-gold);
+  border-bottom: 1px dotted var(--lab-gold);
+}
+
+/* ─── Batch list inside FIG. 02 (replaces the older strain list) ─── */
+.lab-prod-planner .drawer-batch-list {
+  display: flex;
+  flex-direction: column;
+}
+.lab-prod-planner .drawer-batch-row {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--lab-panel);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.lab-prod-planner .drawer-batch-row:hover,
+.lab-prod-planner .drawer-batch-row.selected {
+  background: rgba(201,162,75,0.06);
+}
+.lab-prod-planner .drawer-batch-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lab-prod-planner .batch-code {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--lab-gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.lab-prod-planner .batch-strain {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--lab-ink);
+}
+.lab-prod-planner .batch-stage {
+  margin-left: auto;
+}
+.lab-prod-planner .batch-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--lab-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .drawer-batch-meta {
+  display: flex;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--lab-ink-3);
+  letter-spacing: 0.04em;
+}
+.lab-prod-planner .drawer-batch-meta .num { color: var(--lab-ink-2); }
+.lab-prod-planner .drawer-batch-meta .open-chip {
+  margin-left: auto;
+  color: var(--lab-gold);
+  border-bottom: 1px dotted var(--lab-gold);
+}
+
+/* Mother row variant — surfaces genetics library entry, not a batch */
+.lab-prod-planner .drawer-strain-row.mother-row .drawer-strain-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ─── FIG. 03 BATCH detail (lineage timeline + segments + forecast) ─── */
+.lab-prod-planner .drawer-batch-pane { padding-bottom: 32px; }
+
+.lab-prod-planner .drawer-batch-identity {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-bottom: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .identity-row {
+  padding: 10px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-right: 1px solid var(--lab-panel);
+  border-bottom: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .identity-row:nth-child(2n) { border-right: none; }
+.lab-prod-planner .identity-row:nth-last-child(-n+2) { border-bottom: none; }
+.lab-prod-planner .identity-row .strong {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--lab-ink);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lab-prod-planner .drawer-batch-progress {
+  padding: 14px 18px 16px;
+  border-bottom: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .progress-track {
+  position: relative;
+  height: 4px;
+  background: var(--lab-panel);
+  margin-bottom: 8px;
+}
+.lab-prod-planner .progress-fill {
+  height: 100%;
+  background: var(--lab-gold);
+  opacity: 0.7;
+}
+.lab-prod-planner .progress-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 10px;
+  background: var(--lab-gold);
+  transform: translateX(-1px);
+}
+.lab-prod-planner .progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-ink);
+}
+.lab-prod-planner .progress-label .mute { color: var(--lab-ink-3); }
+
+/* Segment timeline */
+.lab-prod-planner .drawer-segment-list {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .segment-row {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--lab-panel);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+.lab-prod-planner .segment-row:last-child { border-bottom: none; }
+.lab-prod-planner .segment-row.segment-past {
+  opacity: 0.55;
+}
+.lab-prod-planner .segment-row.segment-projected {
+  opacity: 0.7;
+}
+.lab-prod-planner .segment-stage {
+  color: var(--lab-ink);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.lab-prod-planner .segment-room {
+  color: var(--lab-gold);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.lab-prod-planner .segment-dates {
+  color: var(--lab-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .segment-dur { color: var(--lab-ink-3); }
+.lab-prod-planner .segment-now-pill {
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  color: var(--lab-canvas);
+  background: var(--lab-gold);
+  padding: 1px 6px;
+  border-radius: 1px;
+}
+.lab-prod-planner .segment-future-pill {
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  color: var(--lab-ink-3);
+  border: 1px dashed var(--lab-panel-strong);
+  padding: 1px 6px;
+  border-radius: 1px;
+}
+
+.lab-prod-planner .drawer-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-bottom: 1px solid var(--lab-panel);
+}
+.lab-prod-planner .drawer-stat {
+  padding: 12px 18px;
+  border-right: 1px solid var(--lab-panel);
+  border-bottom: 1px solid var(--lab-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lab-prod-planner .drawer-stat:nth-child(2n) { border-right: none; }
+.lab-prod-planner .drawer-stat-num {
+  font-family: 'Big Shoulders Display', var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--lab-gold);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Plan-a-Cycle verb-chip on empty rooms */
+.lab-prod-planner .plan-chip {
+  position: absolute;
+  top: 16px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid var(--lab-gold);
+  border-radius: 2px;
+  color: var(--lab-gold);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  z-index: 2;
+}
+.lab-prod-planner .plan-chip:hover {
+  background: var(--lab-gold);
+  color: var(--pv4-canvas-deep);
+}
+.lab-prod-planner .plan-chip:focus-visible {
+  outline: 1px solid var(--lab-gold);
+  outline-offset: 2px;
+}

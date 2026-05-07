@@ -80,6 +80,7 @@ const FinancialDashboard = lazyRetry(() => import('./features/financial'), 'Fina
 const VendorBillEntry = lazyRetry(() => import('./features/financial'), 'VendorBillEntry');
 const AccountsReceivable = lazyRetry(() => import('./features/financial'), 'AccountsReceivable');
 const RosinLabModule = lazyRetry(() => import('./features/rosin-lab'), 'RosinLabModule');
+const LabProductionPlanner = lazyRetry(() => import('./features/lab/production-planner'), 'LabProductionPlanner');
 const ProductionQueue = lazyRetry(() => import('./features/production-queue'), 'ProductionQueue');
 const ProductionPipelineBoard = lazyRetry(() => import('./features/production-queue'), 'ProductionPipelineBoard');
 const TicketTriage = lazyRetry(() => import('./features/admin'), 'TicketTriage');
@@ -136,7 +137,14 @@ function AuthenticatedApp() {
     );
   }
 
-  if (!user) {
+  // Sandbox escape hatch: /lab/* routes with ?mock=1 bypass auth so the
+  // visual prototype renders without a Supabase session. Real-data view
+  // still requires sign-in. Confined to ?mock=1 so it can't be hit by
+  // accident.
+  const search = typeof window !== 'undefined' ? window.location.search : '';
+  const isLabMockRoute = location.pathname.startsWith('/lab/') && search.includes('mock=1');
+
+  if (!user && !isLabMockRoute) {
     return <Login />;
   }
 
@@ -208,6 +216,7 @@ function AuthenticatedApp() {
               <Route path="/cultivation-digest" element={<CultivationErrorBoundary><DailyDigestView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-map" element={<CultivationErrorBoundary><CultivationMapPage /></CultivationErrorBoundary>} />
               <Route path="/cultivation-command-center" element={<CultivationErrorBoundary><CommandCenter /></CultivationErrorBoundary>} />
+              <Route path="/lab/production-planner" element={<LabProductionPlanner />} />
               <Route path="/cultivation-command" element={<Navigate to="/cultivation-command-center" replace />} />
               <Route path="/worker-tasks" element={<CultivationErrorBoundary><WorkerTaskView /></CultivationErrorBoundary>} />
               <Route path="/cultivation-rooms" element={<CultivationErrorBoundary><GrowRoomsManagement /></CultivationErrorBoundary>} />
