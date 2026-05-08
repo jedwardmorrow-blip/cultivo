@@ -1053,6 +1053,120 @@
   margin-right: 4px;
 }
 
+/* ═════════ Production Calendar — 12-month forward roll-up ═════════
+   Mirrors file 2's Pivot sheet (Production by month/strain) at the
+   operator surface. Hairline grid Treatment A: 12 month cells with
+   no per-cell border, just hairline gold dividers; gold-tinted bar
+   per cell encodes relative yield amplitude. Today's month carries
+   a thin gold left edge as the you-are-here marker. */
+.lab-prod-planner .production-calendar {
+  margin: 16px 24px 0;
+  border: 1px solid var(--lab-rule);
+  background: var(--lab-canvas);
+}
+.lab-prod-planner .production-calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--lab-rule);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  color: var(--lab-ink-2);
+}
+.lab-prod-planner .production-calendar-header .serial {
+  color: var(--lab-gold);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.lab-prod-planner .production-calendar-header .sep { color: var(--lab-ink-4); }
+.lab-prod-planner .production-calendar-header .mute { color: var(--lab-ink-3); }
+
+.lab-prod-planner .production-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+.lab-prod-planner .month-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 10px 8px 8px;
+  border-right: 1px solid var(--lab-rule);
+  min-height: 96px;
+}
+.lab-prod-planner .month-cell:last-child {
+  border-right: none;
+}
+.lab-prod-planner .month-cell.is-current {
+  background: rgba(201,162,75,0.04);
+  border-left: 2px solid var(--lab-gold);
+  margin-left: -2px;
+}
+.lab-prod-planner .month-cell.is-empty .month-bar-fill { background: transparent; }
+.lab-prod-planner .month-cell.is-empty .month-kg { color: var(--lab-ink-4); }
+
+.lab-prod-planner .month-bar-track {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 40px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--lab-rule);
+}
+.lab-prod-planner .month-bar-fill {
+  width: 100%;
+  background: rgba(201,162,75,0.32);
+  border-top: 1px solid var(--lab-gold);
+  transition: height 200ms ease-out;
+}
+.lab-prod-planner .month-cell-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lab-prod-planner .month-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  color: var(--lab-ink-2);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .month-kg {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--lab-gold);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .month-trend {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--lab-ink-3);
+  text-transform: uppercase;
+}
+
+/* Area readout in the room cap. Renders only when room.square_footage
+   is present (Sostanza-flavor fixture; Cult fixture leaves this null
+   and the tag is hidden). Mono caps in dim ink, separated from the
+   capacity number by 8px gap. */
+.lab-prod-planner .gantt-left-cap .cap-area {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  color: var(--lab-ink-3);
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
 /* Per-room flower gap band — sits between consecutive flower
    segments in the same room, surfacing utilization gap explicitly.
    Hairline-only treatment per the working-instrument design contract.

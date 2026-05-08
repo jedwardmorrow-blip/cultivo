@@ -578,6 +578,57 @@ export function LabProductionPlanner() {
     ];
   }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats]);
 
+  // ── DERIVED Monthly production roll-up ─────────────────────────
+  // 12 months forward from today's month. Each batch contributes its
+  // forecast_yield_grams to the YYYY-MM bucket of its harvest date
+  // (flower segment end, or harvest override when present).
+  // Mirrors file 2's Pivot sheet — Production by month/strain — at
+  // the operator surface so the demo viewer doesn't need to open a
+  // separate report to see throughput cadence.
+  const monthlyProduction = useMemo(() => {
+    type MonthBucket = {
+      key: string;       // YYYY-MM
+      label: string;     // "MAY"
+      year: number;
+      year_short: string; // "26"
+      harvest_count: number;
+      total_grams: number;
+    };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const buckets: MonthBucket[] = [];
+    const monthLabels = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      buckets.push({
+        key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: monthLabels[d.getMonth()],
+        year: d.getFullYear(),
+        year_short: String(d.getFullYear()).slice(2),
+        harvest_count: 0,
+        total_grams: 0,
+      });
+    }
+    const bucketByKey = new Map(buckets.map((b) => [b.key, b]));
+    for (const b of batches) {
+      const flowerSeg = b.segments.find((s) => s.stage === 'flower');
+      if (!flowerSeg) continue;
+      const harvestISO = harvestOverrides[b.batch_id] ?? flowerSeg.end;
+      const d = new Date(harvestISO);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const bucket = bucketByKey.get(key);
+      if (!bucket) continue;
+      bucket.harvest_count++;
+      bucket.total_grams += b.forecast_yield_grams ?? flowerSeg.plant_count * 720;
+    }
+    return buckets;
+  }, [batches, harvestOverrides]);
+
+  const monthlyMaxGrams = useMemo(
+    () => Math.max(1, ...monthlyProduction.map((m) => m.total_grams)),
+    [monthlyProduction]
+  );
+
   // ── DERIVED Seed observations ──────────────────────────────────
   // Each observation carries an action callback so the gold dotted CTA
   // actually does something. PLAN SUCCESSOR opens the form pre-filled;
@@ -929,6 +980,55 @@ export function LabProductionPlanner() {
         onHarvestShift={handleHarvestShift}
         onPlannedShift={handlePlannedShift}
       />
+
+      {/* ── Production Calendar — 12 months forward (file 2 Pivot) ─ */}
+      <section className="production-calendar" aria-label="Monthly production roll-up">
+        <header className="production-calendar-header">
+          <span className="serial">PRODUCTION CALENDAR</span>
+          <span className="sep">·</span>
+          <span className="cap mute">12 months forward · projected harvest yield</span>
+          <span className="cap mute" style={{ marginLeft: 'auto' }}>
+            Total{' '}
+            {(
+              monthlyProduction.reduce((s, m) => s + m.total_grams, 0) / 1000
+            ).toFixed(0)}{' '}
+            kg ·{' '}
+            {monthlyProduction.reduce((s, m) => s + m.harvest_count, 0)} harvests
+          </span>
+        </header>
+        <div className="production-calendar-grid">
+          {monthlyProduction.map((m, i) => {
+            const heightPct = m.total_grams > 0
+              ? Math.max(8, (m.total_grams / monthlyMaxGrams) * 100)
+              : 0;
+            const kg = m.total_grams / 1000;
+            return (
+              <div
+                key={m.key}
+                className={`month-cell ${m.harvest_count === 0 ? 'is-empty' : ''} ${i === 0 ? 'is-current' : ''}`}
+                title={`${m.label} ${m.year_short} · ${m.harvest_count} harvest${m.harvest_count === 1 ? '' : 's'} · projected ${kg.toFixed(1)} kg`}
+              >
+                <div className="month-bar-track" aria-hidden>
+                  <div className="month-bar-fill" style={{ height: `${heightPct}%` }} />
+                </div>
+                <div className="month-cell-foot">
+                  <span className="month-label cap mono">
+                    {m.label} {m.year_short}
+                  </span>
+                  <span className="month-kg display">
+                    {m.harvest_count === 0 ? '—' : `${kg.toFixed(1)} kg`}
+                  </span>
+                  <span className="month-trend cap mute">
+                    {m.harvest_count === 0
+                      ? 'no harvest'
+                      : `${m.harvest_count} harvest${m.harvest_count === 1 ? '' : 's'}`}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       <LabRoomDrawer
         room={drawerRoom}

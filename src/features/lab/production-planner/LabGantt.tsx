@@ -390,6 +390,16 @@ export function LabGantt({
               room.room_type !== 'mother' &&
               room.total_plants === 0 &&
               plannedCount === 0;
+            // Yield × area math (file 2's per-row Production
+            // formula). When square_footage is present we surface a
+            // mono SQFT tag on the capacity row and put the full
+            // formula in the title attribute. For Sostanza's flower
+            // rooms (28 sqft × 800 g/sqft) this materializes the
+            // 22.4 kg per harvest expectation directly on the cap.
+            const sqft = room.square_footage ?? null;
+            const capTitle = sqft
+              ? `${room.room_code} · ${sqft} sqft. At Pink Kush avg yield (800 g/sqft) this room projects ${Math.round(sqft * 0.8)} kg per harvest.`
+              : undefined;
             return (
               <div
                 key={room.room_id}
@@ -398,6 +408,7 @@ export function LabGantt({
                 onClick={() => onRoomClick(room)}
                 role="button"
                 tabIndex={0}
+                title={capTitle}
               >
                 <div className="cap-row-1">
                   <span className="room-code mono">{room.room_code}</span>
@@ -419,6 +430,11 @@ export function LabGantt({
                       {room.capacity_plants ? ` / ${room.capacity_plants}` : ''}
                     </span>
                   </span>
+                  {sqft !== null && (
+                    <span className="cap-area cap mono" aria-label={`${sqft} square feet`}>
+                      {sqft} sqft
+                    </span>
+                  )}
                 </div>
               </div>
             );
