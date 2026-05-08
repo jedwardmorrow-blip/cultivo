@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:demo": "vite --config vite.config.demo.ts",
     "build": "vite build",
-    "build:demo": "vite build --config vite.config.demo.ts",
+    "build:demo": "vite build --config vite.config.demo.ts && bash scripts/finalize-demo-build.sh",
     "lint": "eslint .",
     "preview": "vite preview",
     "preview:demo": "vite preview --config vite.config.demo.ts",
