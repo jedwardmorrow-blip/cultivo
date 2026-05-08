@@ -745,6 +745,11 @@ export function LabGantt({
                       {cohortCount}×
                     </span>
                   )}
+                  {rs.stage !== 'flower' && rs.stage !== 'veg' && rs.isCurrent && (
+                    <span className="bar-stage-badge cap" aria-hidden>
+                      {rs.stage}
+                    </span>
+                  )}
                   <span className="bar-strain-name mono">
                     {isCohort ? `${rs.cohortBatches![0].strain_name}${cohortCount > 1 ? ` +${cohortCount - 1}` : ''}` : rs.batch.strain_name}
                   </span>

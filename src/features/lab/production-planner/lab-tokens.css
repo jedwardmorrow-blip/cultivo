@@ -798,11 +798,22 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+/* Stage marker dots — 6px desaturated swatches per the working-instrument
+   design contract. Color progression follows the lifecycle:
+     clone (cool blue) → veg (sage) → flower (rose) → harvest (terracotta)
+     → drying (amber) → trim (olive) → cure (chestnut) → test (slate)
+     → pack (dusty tan). Mother is its own warm orange.
+   Stage colors are 6px dots ONLY; never fills, borders, or backgrounds. */
 .lab-prod-planner .bar-dot.dot-clone   { background: #5BA9D9; }
 .lab-prod-planner .bar-dot.dot-veg     { background: #6EAA8D; }
 .lab-prod-planner .bar-dot.dot-flower  { background: #C56A6A; }
+.lab-prod-planner .bar-dot.dot-harvest { background: #B85A3F; }
+.lab-prod-planner .bar-dot.dot-drying  { background: #C8943A; }
+.lab-prod-planner .bar-dot.dot-trim    { background: #8C9275; }
+.lab-prod-planner .bar-dot.dot-cure    { background: #8B5C4A; }
+.lab-prod-planner .bar-dot.dot-test    { background: #6F87A1; }
+.lab-prod-planner .bar-dot.dot-pack    { background: #B0925F; }
 .lab-prod-planner .bar-dot.dot-mother  { background: #D08F3C; }
-.lab-prod-planner .bar-dot.dot-harvest { background: var(--lab-gold); }
 .lab-prod-planner .bar-dot.dot-planned { background: var(--lab-ink-3); }
 
 .lab-prod-planner .bar-strain {
@@ -1042,11 +1053,37 @@
   margin-right: 4px;
 }
 
-/* Stage-marker dot at the leading edge of every batch segment */
+/* Stage badge — mono caps label inside non-flower bars announcing
+   the lifecycle phase (DRYING / HARVEST / TRIM / CURE / TEST / PACK).
+   Flower and veg are room-implied at typical facility layouts, so we
+   skip the badge there to keep the dominant case clean. */
+.lab-prod-planner .batch-seg .bar-stage-badge {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--lab-ink-2);
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--lab-rule);
+  padding: 0 4px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stage-marker dot at the leading edge of every batch segment.
+   Mirrors the global .bar-dot palette so the lifecycle reads
+   identically whether the dot is in a left-cap or inside a bar. */
 .lab-prod-planner .batch-seg .bar-dot.dot-clone   { background: #5BA9D9; }
 .lab-prod-planner .batch-seg .bar-dot.dot-veg     { background: #6EAA8D; }
 .lab-prod-planner .batch-seg .bar-dot.dot-flower  { background: #C56A6A; }
+.lab-prod-planner .batch-seg .bar-dot.dot-harvest { background: #B85A3F; }
 .lab-prod-planner .batch-seg .bar-dot.dot-drying  { background: #C8943A; }
+.lab-prod-planner .batch-seg .bar-dot.dot-trim    { background: #8C9275; }
+.lab-prod-planner .batch-seg .bar-dot.dot-cure    { background: #8B5C4A; }
+.lab-prod-planner .batch-seg .bar-dot.dot-test    { background: #6F87A1; }
+.lab-prod-planner .batch-seg .bar-dot.dot-pack    { background: #B0925F; }
 .lab-prod-planner .batch-seg .bar-dot.dot-mother  { background: #D08F3C; }
 
 /* Connector overlay — curves between consecutive segments of same batch */
