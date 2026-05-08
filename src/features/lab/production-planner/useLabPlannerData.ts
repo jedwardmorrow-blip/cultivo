@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import type {
   CalendarRoom,
   CalendarRoomStrain,
@@ -7,7 +6,6 @@ import type {
   PlannedCycleTimelineRow,
   StrainCultivationStats,
 } from '@/features/production-planner/types';
-import { plannedCyclesService } from '@/features/production-planner/services/plannedCyclesService';
 import type { Batch, BatchSegment, LifecycleStage } from './planner-mock';
 import {
   MOCK_BATCHES,
@@ -222,6 +220,16 @@ interface LiveAssembly {
 }
 
 async function fetchLive(): Promise<LiveAssembly> {
+  // Dynamic-import supabase + plannedCyclesService so the standalone
+  // demo build (vite.config.demo.ts) never pulls them into its
+  // initial bundle. They only resolve when the surface is actually
+  // attempting a live read against Cult prod, which never happens in
+  // ?demo=* fixture mode or in the demo Vercel project.
+  const [{ supabase }, { plannedCyclesService }] = await Promise.all([
+    import('@/lib/supabase'),
+    import('@/features/production-planner/services/plannedCyclesService'),
+  ]);
+
   // planned_cycles read is best-effort — an empty timeline (the current
   // state at Cult per the doctrine v2 inspection) and a per-row failure
   // both fall through to plannedByRoom = {}. Lifecycle/stats/rooms/mom

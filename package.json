@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:demo": "vite --config vite.config.demo.ts",
     "build": "vite build",
+    "build:demo": "vite build --config vite.config.demo.ts",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:demo": "vite preview --config vite.config.demo.ts",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest",
     "test:ui": "vitest --ui",

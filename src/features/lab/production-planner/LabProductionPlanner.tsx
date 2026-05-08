@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { CalendarRoom, CalendarPlannedEntry, StrainCultivationStats } from '@/features/production-planner/types';
-import { plannedCyclesService } from '@/features/production-planner/services/plannedCyclesService';
 import { LabGantt } from './LabGantt';
 import { LabRoomDrawer } from './LabRoomDrawer';
 import { LabPlanCycleForm } from './LabPlanCycleForm';
@@ -310,6 +309,8 @@ export function LabProductionPlanner() {
 
       if (data.source === 'live') {
         try {
+          // Dynamic import keeps the demo bundle free of supabase deps.
+          const { plannedCyclesService } = await import('@/features/production-planner/services/plannedCyclesService');
           await plannedCyclesService.create({
             strain_id: entry.strain_id,
             target_room_id: roomId,
