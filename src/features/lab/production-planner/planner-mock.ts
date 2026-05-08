@@ -38,6 +38,15 @@ export interface BatchSegment {
   is_current: boolean;
   /** True for segments anchored entirely in the future (planning view). */
   is_projected: boolean;
+  /**
+   * True when one or more source fields backing this segment are null or
+   * came from a synthetic back-fill rather than operator capture. Per the
+   * cultivo_planner_data_lineage doctrine, segments with this flag must
+   * render with quarantine treatment.
+   */
+  is_synthetic?: boolean;
+  /** Human-readable explanation surfaced in the segment tooltip. */
+  synthetic_reason?: string;
 }
 
 export interface Batch {
@@ -58,6 +67,29 @@ export interface Batch {
   /** Cycle status (mirrors planned_cycles.status). */
   status: 'active' | 'committed' | 'draft' | 'completed';
   forecast_yield_grams?: number;
+  /**
+   * Batch-level quarantine flag. Set when v_batch_lifecycle.confidence is
+   * one of 'orphan' or 'cultivation_only', meaning the batch has data
+   * lineage hazards per the four-state doctrine. Drawer renders a pill,
+   * Gantt segment renders a dotted underline.
+   */
+  is_quarantined?: boolean;
+  /** Reason text surfaced when hovering the batch quarantine pill. */
+  quarantine_reason?: string;
+  /**
+   * Days since v_batch_lifecycle.lifecycle_state changed. Plumbed from
+   * the canonical primitive so the Gantt's urgency engine can detect
+   * stuck-in-stage cohorts without reverse-engineering it from segment
+   * dates (which can underestimate when plant_groups.stage_entered_at
+   * has been overwritten by a downstream lifecycle transition).
+   */
+  days_in_stage?: number;
+  /**
+   * v_batch_lifecycle.lifecycle_state. Surfaces post-cultivation states
+   * (drying, fresh_frozen, bucked, packaged, bulk_available, archived)
+   * that the lab's broader stage classification collapses.
+   */
+  lifecycle_state?: string | null;
 }
 
 const MOCK_TODAY = new Date();

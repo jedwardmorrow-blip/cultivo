@@ -3,9 +3,8 @@ import type { CalendarRoom, CalendarPlannedEntry, StrainCultivationStats } from 
 import { LabGantt } from './LabGantt';
 import { LabRoomDrawer } from './LabRoomDrawer';
 import { LabPlanCycleForm } from './LabPlanCycleForm';
-import type { MotherLot } from './LabPlanCycleForm';
-import { MOCK_ROOMS, MOCK_PLANNED, MOCK_STRAIN_STATS, MOCK_BATCHES } from './planner-mock';
 import type { Batch } from './planner-mock';
+import { useLabPlannerData } from './useLabPlannerData';
 import './lab-tokens.css';
 
 type ViewMode = 'current' | 'planning';
@@ -107,34 +106,21 @@ export function LabProductionPlanner() {
   const [hoveredBatchId, setHoveredBatchId] = useState<string | null>(null);
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
-  const batches: Batch[] = MOCK_BATCHES;
+  const data = useLabPlannerData();
+  const batches: Batch[] = data.batches;
+  const rooms: CalendarRoom[] = data.rooms;
+  const strainStats = data.strainStats;
+  const motherLots = data.motherLots;
+
   const today = useMemo(() => new Date(), []);
   const liveTime = useMemo(() => formatLiveTime(today), [today]);
   const weekOf = useMemo(() => formatWeekOf(today), [today]);
 
-  const rooms: CalendarRoom[] = MOCK_ROOMS;
-
-  // Planned cycles are now lifted into state so plan-create / inline-edit
-  // mutations are visible on the Gantt without a refresh.
-  const [plannedByRoom, setPlannedByRoom] = useState<Record<string, CalendarPlannedEntry[]>>(MOCK_PLANNED);
+  // Planned cycles are local state — committed plans persist across data
+  // refreshes. Initial value reads through the hook so mock and live
+  // share the same starting shape (empty in both cases today).
+  const [plannedByRoom, setPlannedByRoom] = useState<Record<string, CalendarPlannedEntry[]>>(data.plannedByRoom);
   const [viewMode, setViewMode] = useState<ViewMode>('current');
-
-  const strainStats = MOCK_STRAIN_STATS;
-
-  // Mother lots: one per strain in the MOM-01 mother room.
-  // Per cultivo_planner_data_lineage doctrine, all of Cult Cannabis's mock
-  // mothers are flagged as synthetic (back-filled planted_date 2026-04-03).
-  const motherLots: MotherLot[] = useMemo(() => {
-    const motherRoom = rooms.find((r) => r.room_type === 'mother');
-    if (!motherRoom) return [];
-    return motherRoom.strains.map((s) => ({
-      mom_plant_group_id: s.strain_id, // mock: one mom-group per strain
-      strain_id: s.strain_id,
-      strain_name: s.strain_name,
-      plant_count: s.plant_count,
-      synthetic: true,
-    }));
-  }, [rooms]);
   const strainStatsById = useMemo(() => {
     const m = new Map<string, StrainCultivationStats>();
     for (const s of strainStats) m.set(s.strain_id, s);
@@ -338,16 +324,60 @@ export function LabProductionPlanner() {
     }
     activeFlower.sort((a, b) => a.harvest.getTime() - b.harvest.getTime());
 
-    // 1. HARVEST WINDOW
-    const next = activeFlower[0];
+    // Cohort-aware harvest events: batches sharing (current_room_id, YYMMDD)
+    // are one operator-real harvest event (one trim crew session), not N
+    // distinct events. The KPI strip honors that math instead of counting
+    // batch rows.
+    type HarvestEvent = {
+      cohort_key: string;
+      room_code: string;
+      harvest: Date;
+      batch_count: number;
+      total_yield_g: number;
+    };
+    const eventsByKey = new Map<string, HarvestEvent>();
+    for (const b of batches) {
+      if (b.current_stage !== 'flower') continue;
+      const flowerSeg = b.segments.find((s) => s.stage === 'flower');
+      if (!flowerSeg) continue;
+      const harvestISO = harvestOverrides[b.batch_id] ?? flowerSeg.end;
+      const harvest = new Date(harvestISO);
+      const room = rooms.find((r) => r.room_id === b.current_room_id);
+      const yieldG = b.forecast_yield_grams ?? flowerSeg.plant_count * 720;
+      const m = b.batch_code.match(/^(\d{6})/);
+      const key = `${b.current_room_id}:${m?.[1] ?? b.batch_id}`;
+      const existing = eventsByKey.get(key);
+      if (existing) {
+        existing.batch_count++;
+        existing.total_yield_g += yieldG;
+        if (harvest < existing.harvest) existing.harvest = harvest;
+      } else {
+        eventsByKey.set(key, {
+          cohort_key: key,
+          room_code: room?.room_code ?? '?',
+          harvest,
+          batch_count: 1,
+          total_yield_g: yieldG,
+        });
+      }
+    }
+    const harvestEvents = Array.from(eventsByKey.values()).sort(
+      (a, b) => a.harvest.getTime() - b.harvest.getTime()
+    );
+
+    // 1. HARVEST WINDOW (cohort-aware)
+    const next = harvestEvents[0];
     const harvestDays = next ? Math.round((next.harvest.getTime() - today.getTime()) / 86400000) : null;
 
-    // 2. AVAILABLE FOR SALE — sum forecast yield for harvests in next 30 days
+    // 2. AVAILABLE FOR SALE — sum forecast yield across cohort harvest
+    //    events in the next 30 days. Trend rephrased to "N events · M
+    //    batches in 30d" so a single multi-batch trim day is not
+    //    overstated as N independent harvests.
     const horizon30 = new Date(today);
     horizon30.setDate(horizon30.getDate() + 30);
-    const afsGrams = activeFlower
-      .filter((b) => b.harvest <= horizon30)
-      .reduce((acc, b) => acc + b.yield_g, 0);
+    const eventsIn30 = harvestEvents.filter((e) => e.harvest <= horizon30);
+    const afsGrams = eventsIn30.reduce((sum, e) => sum + e.total_yield_g, 0);
+    const batchesIn30 = eventsIn30.reduce((sum, e) => sum + e.batch_count, 0);
 
     // 3. UNMATCHED DEMAND — strains with unassigned demand
     const unmatched = strainStats.filter((s) => (s.demand_unassigned_units ?? 0) > 0);
@@ -361,7 +391,28 @@ export function LabProductionPlanner() {
     const committed = allPlanned.filter((p) => p.status === 'committed').length;
     const draft = allPlanned.filter((p) => p.status === 'draft').length;
 
-    // 6. WEEK STATUS — derived from harvest delays + planning state
+    // 6. WEEK STATUS — derived from harvest delays + stuck cohorts +
+    //    planning state. Stuck-cohort detection mirrors the LabGantt
+    //    urgency engine: drying-stage batches with clone-cut date more
+    //    than 100 days ago are stuck (lifecycle_state never advanced
+    //    out of drying / data hygiene smell). Aggregated by cohort key
+    //    so a 23-batch stuck cohort counts as one operational alarm,
+    //    not 23.
+    const horizon100Ago = new Date(today);
+    horizon100Ago.setDate(horizon100Ago.getDate() - 100);
+    const stuckCohortKeys = new Set<string>();
+    let stuckBatchTotal = 0;
+    for (const b of batches) {
+      if (b.current_stage !== 'drying') continue;
+      const cutDate = new Date(b.clone_cut_date);
+      if (cutDate > horizon100Ago) continue;
+      stuckBatchTotal++;
+      const m = b.batch_code.match(/^(\d{6})/);
+      const key = `${b.current_room_id}:${m?.[1] ?? b.batch_id}`;
+      stuckCohortKeys.add(key);
+    }
+    const stuckCohortCount = stuckCohortKeys.size;
+
     const overdueDrags = Object.entries(harvestOverrides).filter(([batchId, iso]) => {
       const original = batches.find((b) => b.batch_id === batchId)?.segments.find((s) => s.stage === 'flower')?.end;
       if (!original) return false;
@@ -371,7 +422,11 @@ export function LabProductionPlanner() {
     let statusLabel = 'OK';
     let statusTrend = 'no blocked rooms';
     let statusTone: Kpi['tone'] = 'ink';
-    if (overdueDrags.length > 0) {
+    if (stuckCohortCount > 0) {
+      statusLabel = 'ALARM';
+      statusTrend = `${stuckCohortCount} ${stuckCohortCount === 1 ? 'cohort' : 'cohorts'} stuck >100d (${stuckBatchTotal} batches)`;
+      statusTone = 'alarm' as const;
+    } else if (overdueDrags.length > 0) {
       statusLabel = 'WARN';
       statusTrend = `${overdueDrags.length} harvest shifted`;
       statusTone = 'gold' as const;
@@ -385,13 +440,19 @@ export function LabProductionPlanner() {
       {
         label: 'Harvest Window',
         value: harvestDays !== null ? `${harvestDays}d` : '—',
-        trend: next ? `next harvest ${next.room_code}` : 'no active flower',
+        trend: next
+          ? `next harvest ${next.room_code}${next.batch_count > 1 ? ` · ${next.batch_count} batches` : ''}`
+          : 'no active flower',
         spark: makeSpark(SPARK_SEEDS.harvest),
       },
       {
         label: 'Available For Sale',
         value: afsGrams > 0 ? Math.round(afsGrams / 1000).toLocaleString() + ' kg' : '—',
-        trend: `${activeFlower.filter((b) => b.harvest <= horizon30).length} harvests in 30d`,
+        trend: eventsIn30.length === 0
+          ? 'no harvests in 30d'
+          : eventsIn30.length === 1
+            ? `1 harvest event · ${batchesIn30} ${batchesIn30 === 1 ? 'batch' : 'batches'} in 30d`
+            : `${eventsIn30.length} harvest events · ${batchesIn30} batches in 30d`,
         spark: makeSpark(SPARK_SEEDS.afs),
       },
       {
@@ -600,12 +661,32 @@ export function LabProductionPlanner() {
           <span>Week of {weekOf}</span>
         </div>
         <div className="stamp">
-          <span
-            className="quarantine-pill"
-            title="This surface is operating on a mock fixture per the cultivo_planner_data_lineage doctrine. No values are operator-captured. Real-data wire is the next milestone."
-          >
-            Mock Fixture
-          </span>
+          {data.loading ? (
+            <span className="quarantine-pill" title="Fetching live data from production…">
+              Loading…
+            </span>
+          ) : data.source === 'live' ? (
+            <span
+              className="data-source-pill live"
+              title={`Loaded from production (fonreynkfeqywshijqpi) at ${data.loadedAt.toLocaleTimeString()}. ${batches.length} batches in scope (cultivation/drying). Quarantine pills mark fields without operator capture per the cultivo_planner_data_lineage doctrine.`}
+            >
+              Live · Cult Cannabis · {data.loadedAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            </span>
+          ) : data.source === 'fallback' ? (
+            <span
+              className="quarantine-pill"
+              title={`Live fetch failed${data.error ? `: ${data.error}` : ''}. Showing mock fixture. Sign in or fix the connection to load real data.`}
+            >
+              Fallback · Mock Fixture
+            </span>
+          ) : (
+            <span
+              className="quarantine-pill"
+              title="This surface is operating on a mock fixture per the cultivo_planner_data_lineage doctrine. No values are operator-captured. Drop ?mock=1 to attempt the live wire."
+            >
+              Mock Fixture
+            </span>
+          )}
           <span className="sep">·</span>
           <span>Bureau Product No. 01</span>
           <span className="sep">·</span>
@@ -741,6 +822,7 @@ export function LabProductionPlanner() {
         batches={batches}
         selectedBatchId={selectedBatchId}
         strainStatsById={strainStatsById}
+        motherLots={motherLots}
         onClose={handleDrawerClose}
         onSelectBatch={(id) => setSelectedBatchId(id === '' ? null : id)}
         onPlanCycle={(room) => {

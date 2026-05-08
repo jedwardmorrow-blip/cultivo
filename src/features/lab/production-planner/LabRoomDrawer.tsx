@@ -1,8 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { CalendarRoom, StrainCultivationStats } from '@/features/production-planner/types';
 import type { Batch } from './planner-mock';
-
-const DRAWER_WIDTH = 720;
+import type { MotherLot } from './LabPlanCycleForm';
 
 interface LabRoomDrawerProps {
   room: CalendarRoom | null;
@@ -12,6 +11,15 @@ interface LabRoomDrawerProps {
   batches: Batch[];
   selectedBatchId: string | null;
   strainStatsById: Map<string, StrainCultivationStats>;
+  /**
+   * Mother lots in the genetics library, keyed by mom_plant_group_id.
+   * The BatchPane uses this to render the Mother row's "model" pill
+   * conditionally — only when the actual mother is synthetic-back-filled
+   * per the cultivo_planner_data_lineage v2 doctrine. Without this,
+   * the drawer hardcoded the pill on every mother row, which lied for
+   * the 16 plausibly-dated mothers.
+   */
+  motherLots?: MotherLot[];
   onClose: () => void;
   onSelectBatch: (id: string | null) => void;
   onPlanCycle?: (room: CalendarRoom) => void;
@@ -173,11 +181,17 @@ function BatchPane({
   batch,
   rooms,
   strainStats,
+  syntheticMotherIds,
   onClose,
 }: {
   batch: Batch;
   rooms: CalendarRoom[];
   strainStats: StrainCultivationStats | null;
+  /** Set of mom_plant_group_ids whose mother is synthetic-back-filled
+   *  per the 2026-04-27 audit-import burst fingerprint. The Mother row's
+   *  "model" pill renders only when the batch's mom_plant_group_id is in
+   *  this set — never always-on. */
+  syntheticMotherIds: Set<string>;
   onClose: () => void;
 }) {
   const today = useMemo(() => {
@@ -222,6 +236,14 @@ function BatchPane({
         <span>Batch</span>
         <span className="sep">·</span>
         <span className="strong mono">{batch.batch_code}</span>
+        {batch.is_quarantined && (
+          <span
+            className="quarantine-pill"
+            title={batch.quarantine_reason ?? 'Batch lineage suspect per cultivo_planner_data_lineage doctrine'}
+          >
+            quarantined
+          </span>
+        )}
         <button className="drawer-stamp-x" onClick={onClose} aria-label="Close batch detail">×</button>
       </div>
 
@@ -242,9 +264,16 @@ function BatchPane({
           <span className="cap">Mother</span>
           <span className="strong">
             {batch.mom_strain_name ?? 'External'}
-            {batch.mom_strain_name && (
-              <span className="quarantine-pill" title="Mother establishment date is back-filled per data-lineage doctrine">model</span>
-            )}
+            {batch.mom_strain_name &&
+              batch.mom_plant_group_id &&
+              syntheticMotherIds.has(batch.mom_plant_group_id) && (
+                <span
+                  className="quarantine-pill"
+                  title="Mother establishment date falls in the 2026-04-27 audit-import burst window per cultivo_planner_data_lineage v2. Operator-verified mothers do not carry this pill."
+                >
+                  model
+                </span>
+              )}
           </span>
         </div>
       </div>
@@ -278,17 +307,30 @@ function BatchPane({
           const isPast = new Date(seg.end).getTime() <= today.getTime();
           const isFuture = new Date(seg.start).getTime() > today.getTime();
           const status = seg.is_current ? 'now' : isPast ? 'past' : isFuture ? 'projected' : 'now';
+          const isSegSynthetic = !!seg.is_synthetic;
           return (
-            <div key={i} className={`segment-row segment-${status}`}>
+            <div
+              key={i}
+              className={`segment-row segment-${status} ${isSegSynthetic ? 'segment-synthetic' : ''}`}
+              title={isSegSynthetic && seg.synthetic_reason ? seg.synthetic_reason : undefined}
+            >
               <span className={`bar-dot dot-${seg.stage}`} aria-hidden />
               <span className="segment-stage mono">{seg.stage.toUpperCase()}</span>
               <span className="segment-room cap">{roomCode}</span>
-              <span className="segment-dates mono">
+              <span className={`segment-dates mono ${isSegSynthetic ? 'quarantine-underline' : ''}`}>
                 {fmtDateShort(seg.start)} → {fmtDateShort(seg.end)}
               </span>
               <span className="segment-dur cap mute">{dur}d</span>
               {seg.is_current && <span className="segment-now-pill">NOW</span>}
               {isFuture && !seg.is_current && <span className="segment-future-pill">PROJECTED</span>}
+              {isSegSynthetic && (
+                <span
+                  className="quarantine-pill"
+                  title={seg.synthetic_reason ?? 'Segment dates inferred per data-lineage doctrine'}
+                >
+                  model
+                </span>
+              )}
             </div>
           );
         })}
@@ -343,6 +385,7 @@ export function LabRoomDrawer({
   batches,
   selectedBatchId,
   strainStatsById,
+  motherLots,
   onClose,
   onSelectBatch,
   onPlanCycle,
@@ -356,6 +399,16 @@ export function LabRoomDrawer({
     return () => window.removeEventListener('keydown', onKey);
   }, [room, onClose]);
 
+  // Stable Set of mom_plant_group_ids whose mother is synthetic. Computed
+  // once per motherLots change so BatchPane lookups are O(1).
+  const syntheticMotherIds = useMemo(() => {
+    const s = new Set<string>();
+    for (const m of motherLots ?? []) {
+      if (m.synthetic && m.mom_plant_group_id) s.add(m.mom_plant_group_id);
+    }
+    return s;
+  }, [motherLots]);
+
   if (!room) return null;
 
   const split = !!selectedBatchId;
@@ -367,7 +420,6 @@ export function LabRoomDrawer({
       <div className="drawer-scrim" onClick={onClose} aria-hidden />
       <aside
         className={`drawer ${split ? 'is-split' : ''}`}
-        style={{ width: DRAWER_WIDTH }}
         role="dialog"
         aria-label={`Room ${room.room_code} detail`}
       >
@@ -406,6 +458,7 @@ export function LabRoomDrawer({
               batch={selectedBatch}
               rooms={rooms}
               strainStats={strainStats}
+              syntheticMotherIds={syntheticMotherIds}
               onClose={() => onSelectBatch('')}
             />
           )}

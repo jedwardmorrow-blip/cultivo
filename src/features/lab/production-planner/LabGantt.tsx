@@ -59,6 +59,28 @@ interface RenderSegment {
   stage: string;
   isCurrent: boolean;
   isProjected: boolean;
+  /**
+   * Cohort grouping (per Justin's clone-cut date confirmation 2026-05-07):
+   * batches in the same room sharing the YYMMDD prefix of batch_code are
+   * one operator-real cohort. When a cohort has 2+ batches, the Gantt
+   * collapses them into a single cohort tile to honor the operator's
+   * unit-of-work (a single harvest event), reduce wall-of-bars noise, and
+   * surface the cohort's plant total + strain count as the primary signal.
+   * The drawer's FIG. 02 room pane still lists every batch, so individual
+   * drilldown is preserved.
+   */
+  cohortBatches?: Batch[];
+  cohortKey?: string;
+  cohortTotalPlants?: number;
+  cohortSynthetic?: boolean;
+  cohortQuarantined?: boolean;
+}
+
+function getCohortKey(batch: Batch): string {
+  // YYMMDD prefix per batch_code_prefix_semantic doctrine.
+  // batch_code format: "YYMMDD-STRAIN" where YYMMDD is the clone-cut date.
+  const m = batch.batch_code.match(/^(\d{6})/);
+  return m ? m[1] : batch.batch_id;
 }
 
 export function LabGantt({
@@ -187,9 +209,61 @@ export function LabGantt({
         });
       }
     }
+    // Cohort pass (1.5): group segments by (roomIndex, cohortKey) for the
+    // current stage. Groups of 2+ collapse to a single cohort tile.
+    // Historical and projected segments are left as individual bars since
+    // the cohort visual only makes sense for the live operational unit.
+    // Mother room segments are excluded from cohort grouping — mothers
+    // are an independent genetics library, not a harvest cohort, and
+    // synthetic-burst back-fill dates would otherwise collapse the
+    // entire library into one misleading tile.
+    const cohortGroups = new Map<string, RenderSegment[]>();
+    const passThrough: RenderSegment[] = [];
+    for (const seg of out) {
+      const isMotherRoom = rooms[seg.roomIndex]?.room_type === 'mother';
+      if (!seg.isCurrent || seg.isProjected || isMotherRoom) {
+        passThrough.push(seg);
+        continue;
+      }
+      const key = `${seg.roomIndex}:${getCohortKey(seg.batch)}:${seg.stage}`;
+      const list = cohortGroups.get(key) ?? [];
+      list.push(seg);
+      cohortGroups.set(key, list);
+    }
+
+    const collapsed: RenderSegment[] = [...passThrough];
+    for (const [key, group] of cohortGroups) {
+      if (group.length === 1) {
+        collapsed.push(group[0]);
+        continue;
+      }
+      // Build composite cohort tile from group
+      const minX = Math.min(...group.map(g => g.x));
+      const maxEndX = Math.max(...group.map(g => g.x + g.w));
+      const totalPlants = group.reduce(
+        (sum, g) => sum + g.batch.segments[g.segmentIndex].plant_count,
+        0
+      );
+      const anySynthetic = group.some(g => g.batch.segments[g.segmentIndex].is_synthetic);
+      const anyQuarantined = group.some(g => g.batch.is_quarantined);
+      const primary = group.reduce(
+        (a, b) => a.batch.segments[a.segmentIndex].plant_count >= b.batch.segments[b.segmentIndex].plant_count ? a : b
+      );
+      collapsed.push({
+        ...primary,
+        x: minX,
+        w: Math.max(8, maxEndX - minX),
+        cohortBatches: group.map(g => g.batch),
+        cohortKey: key,
+        cohortTotalPlants: totalPlants,
+        cohortSynthetic: anySynthetic,
+        cohortQuarantined: anyQuarantined,
+      });
+    }
+
     // Pass 2: stack within room. For each room, sort by start, lane-pack.
     const byRoom = new Map<number, RenderSegment[]>();
-    out.forEach((s) => {
+    collapsed.forEach((s) => {
       const list = byRoom.get(s.roomIndex) ?? [];
       list.push(s);
       byRoom.set(s.roomIndex, list);
@@ -216,8 +290,8 @@ export function LabGantt({
         }
       });
     });
-    return out;
-  }, [batches, roomIndexById, startDate, harvestOverrides, highlightedBatch, viewMode]);
+    return collapsed;
+  }, [batches, rooms, roomIndexById, startDate, harvestOverrides, highlightedBatch, viewMode]);
 
   // Batch lookup by id for drag handlers
   const batchById = useMemo(() => {
@@ -225,6 +299,28 @@ export function LabGantt({
     batches.forEach((b) => m.set(b.batch_id, b));
     return m;
   }, [batches]);
+
+  // Quarantine polarity inversion. Per the four-state lineage doctrine the
+  // dotted-bottom + dotted-left-edge treatments mark "data lineage is
+  // suspect." On Cult's live data ~95% of segments carry one of those
+  // signals, which inverts the doctrine's intent: the eye lands on noise
+  // rather than on the few trustworthy values. When the ratio of
+  // suspect-current segments crosses 50%, the lab flips polarity by
+  // rendering a small gold "captured" chip on segments that are NOT
+  // synthetic AND NOT quarantined. The dotted treatments stay so the
+  // operator can still see provenance per-bar; the chip is the
+  // additive signal that lands the eye on what to trust.
+  const quarantineRatio = useMemo(() => {
+    const current = renderedSegments.filter(rs => rs.isCurrent && !rs.isProjected);
+    if (current.length === 0) return 0;
+    const suspect = current.filter(rs => {
+      if (rs.cohortBatches) return !!rs.cohortQuarantined || !!rs.cohortSynthetic;
+      const seg = rs.batch.segments[rs.segmentIndex];
+      return !!rs.batch.is_quarantined || !!seg.is_synthetic;
+    }).length;
+    return suspect / current.length;
+  }, [renderedSegments]);
+  const showCapturedChip = quarantineRatio > 0.5;
 
   // Connector overlay geometry: for each batch, draw curves between the
   // end of segment[i] (in room i's row) and the start of segment[i+1] (in room
@@ -239,30 +335,45 @@ export function LabGantt({
             <span className="cap">Rooms</span>
             <span className="cap dim">{rooms.length}</span>
           </div>
-          {rooms.map((room) => (
-            <div
-              key={room.room_id}
-              className="gantt-left-cap"
-              style={{ height: ROW_HEIGHT }}
-              onClick={() => onRoomClick(room)}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="cap-row-1">
-                <span className="room-code mono">{room.room_code}</span>
-                <span className="room-type cap">{room.room_type}</span>
-              </div>
-              <div className="cap-row-2">
-                <span className="cap-cap">CAPACITY</span>
-                <span className="cap-num display">
-                  {room.total_plants}
-                  <span className="cap-num-mute">
-                    {room.capacity_plants ? ` / ${room.capacity_plants}` : ''}
+          {rooms.map((room) => {
+            const plannedCount = plannedByRoom[room.room_id]?.length ?? 0;
+            const isEmptyRoom =
+              room.room_type !== 'mother' &&
+              room.total_plants === 0 &&
+              plannedCount === 0;
+            return (
+              <div
+                key={room.room_id}
+                className="gantt-left-cap"
+                style={{ height: ROW_HEIGHT }}
+                onClick={() => onRoomClick(room)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="cap-row-1">
+                  <span className="room-code mono">{room.room_code}</span>
+                  <span className="room-type cap">{room.room_type}</span>
+                  {isEmptyRoom && (
+                    <span
+                      className="room-empty-chip cap"
+                      title="No current batches and no planned cycles in this room. Open the drawer to plan a cycle."
+                    >
+                      Empty
+                    </span>
+                  )}
+                </div>
+                <div className="cap-row-2">
+                  <span className="cap-cap">CAPACITY</span>
+                  <span className="cap-num display">
+                    {room.total_plants}
+                    <span className="cap-num-mute">
+                      {room.capacity_plants ? ` / ${room.capacity_plants}` : ''}
+                    </span>
                   </span>
-                </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="gantt-scroll" ref={scrollRef}>
@@ -309,7 +420,14 @@ export function LabGantt({
                     <div key={w.x} className="gantt-row-tick" style={{ left: w.x }} aria-hidden />
                   ))}
 
-                  {/* Mother room: continuous bar across full timeline */}
+                  {/* Mother room: continuous summary bar. With Cult's
+                      live data carrying ~65 strains in the genetics
+                      library, inline strain-name rendering becomes a
+                      wall of text. The collapsed default surfaces the
+                      operator's mental model — "the genetics library
+                      contains N strains, M total mothers." Click the
+                      bar to open the drawer for the per-strain breakdown
+                      with synthetic-mother quarantine treatment. */}
                   {isMother && room.strains.length > 0 && (
                     <div
                       className="mother-bar"
@@ -317,19 +435,17 @@ export function LabGantt({
                       onClick={() => onRoomClick(room)}
                       role="button"
                       tabIndex={0}
-                      title={`${room.room_code} · ${room.strains.length} mothers`}
+                      title={`${room.room_code} · ${room.strains.length} strains in genetics library · ${room.total_plants} mother plants total. Click to open the drawer for the full library.`}
                     >
                       <span className="bar-dot dot-mother" aria-hidden />
-                      <div className="mother-strains">
-                        {room.strains.slice(0, 6).map((s) => (
-                          <span
-                            key={s.strain_id}
-                            className="mother-strain"
-                          >
-                            {s.strain_name}
-                            <span className="count">×{s.plant_count}</span>
-                          </span>
-                        ))}
+                      <div className="mother-summary mono">
+                        <span className="mother-summary-label cap">Genetics library</span>
+                        <span className="mother-summary-num">{room.strains.length}</span>
+                        <span className="mother-summary-unit cap">strains</span>
+                        <span className="mother-summary-sep">·</span>
+                        <span className="mother-summary-num">{room.total_plants}</span>
+                        <span className="mother-summary-unit cap">mothers</span>
+                        <span className="mother-summary-cta cap">Open library →</span>
                       </div>
                     </div>
                   )}
@@ -505,11 +621,106 @@ export function LabGantt({
                   }
                 }
               }
-              const plantCount = rs.batch.segments[rs.segmentIndex].plant_count;
+              const seg = rs.batch.segments[rs.segmentIndex];
+              const isCohort = !!rs.cohortBatches && rs.cohortBatches.length >= 2;
+              const cohortCount = isCohort ? rs.cohortBatches!.length : 0;
+              const plantCount = isCohort
+                ? (rs.cohortTotalPlants ?? seg.plant_count)
+                : seg.plant_count;
+              const isSegSynthetic = isCohort
+                ? !!rs.cohortSynthetic
+                : !!seg.is_synthetic;
+              const isBatchQuarantined = isCohort
+                ? !!rs.cohortQuarantined
+                : !!rs.batch.is_quarantined;
+
+              const quarantineParts: string[] = [];
+              if (isBatchQuarantined) {
+                quarantineParts.push(isCohort
+                  ? 'one or more batches in this cohort carry orphan or cultivation_only confidence per cultivo_planner_data_lineage v2'
+                  : `batch quarantine: ${rs.batch.quarantine_reason ?? 'confidence tier suspect'}`);
+              }
+              if (isSegSynthetic) {
+                quarantineParts.push(isCohort
+                  ? 'one or more segments in this cohort have inferred dates'
+                  : `segment: ${seg.synthetic_reason ?? 'dates inferred'}`);
+              }
+
+              // Urgency computation. Static signal only (no animations) per
+              // the working-instrument design contract. Flower-stage bars
+              // surface days-to-harvest urgency; drying-stage bars surface
+              // stuck-in-stage urgency. Floor today to start-of-day so the
+              // calendar-day delta matches the chrome KPI calculation.
+              const todayStart = new Date(today);
+              todayStart.setHours(0, 0, 0, 0);
+              const todayMs = todayStart.getTime();
+              const urgencyCandidates: { level: 'bad' | 'warn'; reason: string }[] = [];
+              const urgentBatches = isCohort ? rs.cohortBatches! : [rs.batch];
+              for (const ub of urgentBatches) {
+                const ubSeg = ub.segments.find(s => s.is_current) ?? ub.segments[0];
+                if (!ubSeg) continue;
+                if (rs.stage === 'flower') {
+                  const harvestISO = harvestOverrides[ub.batch_id] ?? ubSeg.end;
+                  const harvestMs = new Date(harvestISO).getTime();
+                  const daysToHarvest = Math.round((harvestMs - todayMs) / 86400000);
+                  if (daysToHarvest < 0) {
+                    urgencyCandidates.push({ level: 'bad', reason: `${ub.strain_name} harvest overdue ${Math.abs(daysToHarvest)}d` });
+                  } else if (daysToHarvest <= 3) {
+                    urgencyCandidates.push({ level: 'bad', reason: `${ub.strain_name} harvest in ${daysToHarvest}d` });
+                  } else if (daysToHarvest <= 14) {
+                    urgencyCandidates.push({ level: 'warn', reason: `${ub.strain_name} harvest in ${daysToHarvest}d` });
+                  }
+                } else if (rs.stage === 'drying') {
+                  // Prefer plumbed v_batch_lifecycle.days_in_stage since
+                  // it tracks lifecycle_state transitions accurately. The
+                  // segment-derived calc undershoots for batches whose
+                  // plant_groups.stage_entered_at was overwritten by a
+                  // post-drying transition (the D15 stuck-in-flower /
+                  // stuck-in-drying signature).
+                  const segStartMs = new Date(ubSeg.start).getTime();
+                  const segDays = Math.round((todayMs - segStartMs) / 86400000);
+                  const stageDays = ub.days_in_stage ?? segDays;
+                  // Also factor cut-date age — if cut > 100 days ago and
+                  // batch is still in drying bucket, that's stuck.
+                  const cutMs = new Date(ub.clone_cut_date).getTime();
+                  const ageDays = Math.round((todayMs - cutMs) / 86400000);
+                  const stuckSignal = Math.max(stageDays, ageDays > 100 ? ageDays - 100 + 14 : 0);
+                  if (stuckSignal >= 21) {
+                    urgencyCandidates.push({ level: 'bad', reason: `${ub.strain_name} stuck ${stageDays}d in drying / cut ${ageDays}d ago` });
+                  } else if (stuckSignal >= 14) {
+                    urgencyCandidates.push({ level: 'warn', reason: `${ub.strain_name} drying ${stageDays}d / cut ${ageDays}d ago` });
+                  }
+                }
+              }
+              const urgencyLevel: 'bad' | 'warn' | null = urgencyCandidates.some(u => u.level === 'bad')
+                ? 'bad'
+                : urgencyCandidates.some(u => u.level === 'warn') ? 'warn' : null;
+              const urgencyReasons = urgencyCandidates.length > 0
+                ? urgencyCandidates.slice(0, 3).map(u => u.reason).join('; ') +
+                  (urgencyCandidates.length > 3 ? `; +${urgencyCandidates.length - 3} more` : '')
+                : null;
+
+              let baseTitle: string;
+              if (isCohort) {
+                const strainList = rs.cohortBatches!.map(b => b.strain_name);
+                const preview = strainList.slice(0, 6).join(', ') + (strainList.length > 6 ? `, +${strainList.length - 6} more` : '');
+                baseTitle = `Cohort ${getCohortKey(rs.batch)} (cut ${rs.batch.clone_cut_date}) · ${cohortCount} strains · ${plantCount} plants · ${rs.stage}\nstrains: ${preview}`;
+              } else {
+                baseTitle = `${rs.batch.batch_code} · ${rs.batch.strain_name} · ${rs.stage} · ${plantCount} plants${fromRoomCode ? ` · from ${fromRoomCode}` : ''}`;
+              }
+              const titleParts = [baseTitle];
+              if (urgencyReasons) titleParts.push(`urgency: ${urgencyReasons}`);
+              if (quarantineParts.length > 0) titleParts.push(quarantineParts.join('\n'));
+              const fullTitle = titleParts.join('\n\n');
+
+              const cohortHasHover = isCohort && !!hoveredBatchId && rs.cohortBatches!.some(b => b.batch_id === hoveredBatchId);
+              const cohortHasSelect = isCohort && !!selectedBatchId && rs.cohortBatches!.some(b => b.batch_id === selectedBatchId);
+              const effectiveHighlight = isHighlighted || cohortHasHover || cohortHasSelect;
+
               return (
                 <div
-                  key={`${rs.batch.batch_id}-${rs.segmentIndex}`}
-                  className={`batch-seg stage-${rs.stage} ${rs.isCurrent ? 'is-current' : 'is-history'} ${rs.isProjected ? 'is-projected' : ''} ${dimmed ? 'dim' : ''} ${isHighlighted ? 'highlight' : ''} ${isOverridden ? 'overridden' : ''} ${isDraggingHarvest ? 'is-dragging' : ''}`}
+                  key={isCohort ? `cohort-${rs.cohortKey}` : `${rs.batch.batch_id}-${rs.segmentIndex}`}
+                  className={`batch-seg stage-${rs.stage} ${rs.isCurrent ? 'is-current' : 'is-history'} ${rs.isProjected ? 'is-projected' : ''} ${dimmed ? 'dim' : ''} ${effectiveHighlight ? 'highlight' : ''} ${isOverridden ? 'overridden' : ''} ${isDraggingHarvest ? 'is-dragging' : ''} ${isSegSynthetic ? 'is-synthetic' : ''} ${isBatchQuarantined ? 'is-quarantined' : ''} ${isCohort ? 'is-cohort' : ''}`}
                   style={{ left: rs.x, width: displayW, top, height: rs.h }}
                   onMouseEnter={() => onBatchHover(rs.batch.batch_id)}
                   onMouseLeave={() => onBatchHover(null)}
@@ -518,17 +729,40 @@ export function LabGantt({
                     e.stopPropagation();
                     onBatchSelect(rs.batch.batch_id === selectedBatchId ? null : rs.batch.batch_id);
                   }}
-                  title={`${rs.batch.batch_code} · ${rs.batch.strain_name} · ${rs.stage} · ${plantCount} plants${fromRoomCode ? ` · from ${fromRoomCode}` : ''}`}
+                  title={fullTitle}
                   data-batch-id={rs.batch.batch_id}
+                  data-cohort-key={isCohort ? rs.cohortKey : undefined}
+                  data-cohort-count={isCohort ? cohortCount : undefined}
                 >
-                  {fromRoomCode && (
+                  {fromRoomCode && !isCohort && (
                     <span className="bar-from-tag mono" aria-label={`from ${fromRoomCode}`}>
                       ←{fromRoomCode}
                     </span>
                   )}
                   <span className={`bar-dot dot-${rs.stage}`} aria-hidden />
-                  <span className="bar-strain-name mono">{rs.batch.strain_name}</span>
-                  <span className="bar-plant-count mono">{plantCount}</span>
+                  {isCohort && (
+                    <span className="bar-cohort-count mono" aria-label={`${cohortCount} batches in cohort`}>
+                      {cohortCount}×
+                    </span>
+                  )}
+                  <span className="bar-strain-name mono">
+                    {isCohort ? `${rs.cohortBatches![0].strain_name}${cohortCount > 1 ? ` +${cohortCount - 1}` : ''}` : rs.batch.strain_name}
+                  </span>
+                  <span className="bar-plant-count mono">{plantCount > 0 ? plantCount : '—'}</span>
+                  {showCapturedChip && !isBatchQuarantined && rs.isCurrent && (
+                    <span
+                      className="bar-captured cap"
+                      title="Confidence tier is clean (operator-captured per cultivo_planner_data_lineage). In a render where most batches carry quarantine signals, this chip marks the lineage you can trust. Note: dotted-underlined dates inside the bar may still indicate date projection — that signal is independent from lineage trust."
+                    >
+                      Captured
+                    </span>
+                  )}
+                  {urgencyLevel && (
+                    <span
+                      className={`bar-urgency dot-${urgencyLevel === 'bad' ? 'alarm' : 'warn'}`}
+                      aria-label={`urgency ${urgencyLevel}`}
+                    />
+                  )}
                   {/* Drag handle on flower-stage current segment only */}
                   {rs.stage === 'flower' && rs.isCurrent && (
                     <span

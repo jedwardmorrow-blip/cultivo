@@ -683,6 +683,55 @@
   font-size: 0.625rem;
 }
 
+/* Mother-bar summary view (collapsed default). Shows
+   "Genetics library · N strains · M mothers · Open library →"
+   in a horizontal mono row. Click opens the drawer for full library. */
+.lab-prod-planner .mother-bar .mother-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  color: var(--lab-ink-2);
+  white-space: nowrap;
+}
+.lab-prod-planner .mother-bar .mother-summary-label {
+  color: var(--lab-ink-3);
+  font-size: 0.625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+}
+.lab-prod-planner .mother-bar .mother-summary-num {
+  font-family: 'Big Shoulders Display', var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--lab-gold);
+  letter-spacing: 0.02em;
+}
+.lab-prod-planner .mother-bar .mother-summary-unit {
+  color: var(--lab-ink-3);
+  font-size: 0.625rem;
+  letter-spacing: var(--lab-cap-tracking);
+  text-transform: uppercase;
+}
+.lab-prod-planner .mother-bar .mother-summary-sep {
+  color: var(--lab-ink-4);
+}
+.lab-prod-planner .mother-bar .mother-summary-cta {
+  margin-left: 12px;
+  color: var(--lab-gold);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px dotted var(--lab-gold);
+}
+.lab-prod-planner .mother-bar:hover .mother-summary-cta {
+  color: var(--lab-gold-paper);
+  border-bottom-color: var(--lab-gold-paper);
+}
+
 .lab-prod-planner .gantt-row {
   position: absolute;
   left: 0;
@@ -831,6 +880,134 @@
 .lab-prod-planner .batch-seg.overridden {
   outline: 1px dashed var(--lab-gold);
   outline-offset: -1px;
+}
+
+/* Segment whose start or end was inferred (no operator capture).
+   Signals "dates dotted, trust loosely" without changing the bar's main
+   silhouette. Per cultivo_planner_data_lineage doctrine. */
+.lab-prod-planner .batch-seg.is-synthetic {
+  border-bottom-style: dotted;
+  border-bottom-color: var(--lab-ink-3);
+}
+.lab-prod-planner .batch-seg.is-synthetic.is-current {
+  border-bottom-color: var(--lab-ink-2);
+}
+
+/* Batch whose v_batch_lifecycle confidence tier is 'orphan' or
+   'cultivation_only'. Marks the segment with a 1px dotted left edge so
+   the operator can scan the gantt for lineage-suspect batches at a
+   glance. The drawer carries the full pill + reason. */
+.lab-prod-planner .batch-seg.is-quarantined::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  border-left: 1px dotted var(--lab-ink-3);
+  pointer-events: none;
+}
+.lab-prod-planner .batch-seg.is-quarantined.is-current::before {
+  border-left-color: var(--lab-ink-2);
+}
+
+/* Drawer segment row carrying a synthetic flag. The dates span gets the
+   shared .quarantine-underline treatment, plus the row title surfaces
+   the synthetic_reason on hover. */
+.lab-prod-planner .segment-row.segment-synthetic .segment-dates {
+  cursor: help;
+}
+
+/* Cohort tile — a single bar standing in for 2+ batches that share a
+   YYMMDD-cohort-key in the same room. Visually denser than a single bar
+   so the operator's eye lands on cohort harvest events (the unit-of-
+   work) rather than parsing a wall of stripes. The cohort tile inherits
+   .is-synthetic and .is-quarantined treatments from any constituent. */
+.lab-prod-planner .batch-seg.is-cohort {
+  border-left: 2px solid var(--lab-gold);
+  padding-left: 6px;
+}
+.lab-prod-planner .batch-seg.is-cohort.is-current {
+  background: rgba(201,162,75,0.08);
+}
+.lab-prod-planner .batch-seg .bar-cohort-count {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--lab-gold);
+  letter-spacing: 0.06em;
+  background: rgba(201,162,75,0.14);
+  border: 1px solid rgba(201,162,75,0.45);
+  padding: 0 4px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+/* When .is-cohort and .is-quarantined coexist, the dotted-left-edge
+   doctrine signal would conflict with the gold solid left border. The
+   gold border wins (the cohort identity is the primary axis); the
+   quarantine signal is conveyed via the inherited .is-synthetic dotted
+   bottom and via the title attribute. */
+.lab-prod-planner .batch-seg.is-cohort.is-quarantined::before {
+  display: none;
+}
+
+/* Urgency dot — static 6px marker on the right edge of bars carrying a
+   harvest-imminent or stuck-in-stage signal. Per the design contract:
+   no pulses, no animation, no glow. Status colors are desaturated and
+   used here only at the 6px-dot scale, never as fills or borders.
+   The dot sits in the inline flow after .bar-plant-count and before
+   the absolute-positioned drag handle, so it never collides with the
+   handle's hit area. */
+.lab-prod-planner .bar-urgency {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 4px;
+  margin-right: 2px;
+  align-self: center;
+}
+.lab-prod-planner .bar-urgency.dot-alarm { background: var(--lab-bad); }
+.lab-prod-planner .bar-urgency.dot-warn  { background: var(--lab-warn); }
+
+/* Operator-captured chip — the inverse of the quarantine pill. Renders
+   only when most visible segments are quarantined (ratio > 50%), so the
+   chip lands the operator's eye on the few high-confidence values
+   instead of fighting through the dotted-line wall. Solid gold border,
+   gold ink, mono caps. The aesthetic is "anchored," opposite of the
+   dashed quarantine pill. */
+.lab-prod-planner .bar-captured {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--lab-gold);
+  background: rgba(201,162,75,0.14);
+  border: 1px solid var(--lab-gold);
+  padding: 1px 5px 0;
+  border-radius: 1px;
+  flex-shrink: 0;
+  margin-left: 4px;
+  cursor: help;
+}
+
+/* Empty-room chip on the gantt-left-cap. Renders only on non-mother
+   rooms with zero current plants and zero planned cycles. The chip
+   sits at the right edge of the room-code/room-type row, dim ink with
+   a dashed hairline so it reads as accountability signal, not alarm. */
+.lab-prod-planner .room-empty-chip {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lab-ink-3);
+  padding: 1px 5px 0;
+  border: 1px dashed var(--lab-ink-4);
+  border-radius: 1px;
+  cursor: help;
 }
 
 .lab-prod-planner .bar-strain-name {
@@ -1281,6 +1458,36 @@
   cursor: help;
 }
 
+/* Live-data chip — opposite of quarantine. Solid gold hairline, gold ink,
+   tabular-nums for the timestamp readout. Reads as confident/anchored. */
+.lab-prod-planner .data-source-pill.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 1px 7px 0;
+  border: 1px solid var(--lab-gold);
+  border-radius: 1px;
+  color: var(--lab-gold);
+  font-weight: 600;
+  vertical-align: middle;
+  cursor: help;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+.lab-prod-planner .data-source-pill.live::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lab-gold);
+  flex-shrink: 0;
+}
+
 .lab-prod-planner .plan-form-manifest {
   margin-top: 14px;
   border: 1px solid var(--lab-gold);
@@ -1420,6 +1627,11 @@
   top: 0;
   right: 0;
   height: 100vh;
+  /* Responsive width: 720 default, scale up on wide viewports, scale
+     down on narrow ones. The split FIG. 02 + FIG. 03 layout needs
+     ~720 to read comfortably; >960 wastes canvas. */
+  width: min(960px, max(720px, 56vw));
+  max-width: 92vw;
   background: var(--lab-canvas);
   border-left: 1px solid var(--lab-panel-strong);
   z-index: 51;
@@ -1427,6 +1639,11 @@
   flex-direction: column;
   font-family: var(--font-sans);
   animation: drawerIn 220ms ease-out both;
+}
+@media (max-width: 800px) {
+  .lab-prod-planner .drawer {
+    width: 92vw;
+  }
 }
 @keyframes drawerIn {
   from { transform: translateX(40px); opacity: 0; }
