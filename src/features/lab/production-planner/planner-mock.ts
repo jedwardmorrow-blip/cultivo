@@ -19,11 +19,39 @@ import type { CalendarRoom, CalendarRoomStrain, StrainCultivationStats } from '@
  *   flower: 63d
  */
 
+/**
+ * Lifecycle stage taxonomy. Mirrors Sostanza's Master Production Schedule
+ * column set — the canonical 9-phase pipeline they (and most commercial
+ * indoor cultivators) use. Cult Cannabis live data flattens several of
+ * these into v_batch_lifecycle.lifecycle_state values that
+ * useLabPlannerData maps back into specific phases.
+ *
+ * - clone:      cuts rooting in the mother room (16-21d)
+ * - veg:        rooted clones in vegetative growth (14-30d)
+ * - flower:     12/12 photoperiod, mid-cycle (56-70d)
+ * - harvest:    cut day (1-2d, room cleaning bookends)
+ * - drying:     wet→dry hang phase (10-14d)
+ * - trim:       buck and trim wet/dry product (5-10d)
+ * - cure:       jar/cure prior to test (5-14d)
+ * - test:       Sample collection + lab QA (10-14d)
+ * - pack:       grade, pack, batch ready for sale (1-3d)
+ *
+ * Legacy values kept for back-compat with the Cult mock fixture and
+ * v_batch_lifecycle.lifecycle_state mapping:
+ * - processing: catch-all for fresh_frozen / bucked when phase unknown
+ * - inventory:  packaged + bulk_available
+ * - closed:     archived
+ */
 export type LifecycleStage =
   | 'clone'
   | 'veg'
   | 'flower'
+  | 'harvest'
   | 'drying'
+  | 'trim'
+  | 'cure'
+  | 'test'
+  | 'pack'
   | 'processing'
   | 'inventory'
   | 'closed';

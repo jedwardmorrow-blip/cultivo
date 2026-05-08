@@ -15,6 +15,13 @@ import {
   MOCK_PLANNED,
   MOCK_STRAIN_STATS,
 } from './planner-mock';
+import {
+  SOSTANZA_BATCHES,
+  SOSTANZA_ROOMS,
+  SOSTANZA_PLANNED,
+  SOSTANZA_STRAIN_STATS,
+  SOSTANZA_MOTHER_LOTS,
+} from './sostanza-mock';
 import type { MotherLot } from './LabPlanCycleForm';
 
 /**
@@ -39,7 +46,16 @@ import type { MotherLot } from './LabPlanCycleForm';
  * capture; back-filled values render quarantined.
  */
 
-export type LabDataSource = 'mock' | 'live' | 'fallback';
+/**
+ * Where the rendered data came from this tick.
+ *
+ * - 'mock'        → Cult-flavor mock fixture (?mock=1 in URL)
+ * - 'sostanza'    → Sostanza-flavor mock fixture (?demo=sostanza)
+ * - 'live'        → Authenticated read of v_batch_lifecycle from Cult prod
+ * - 'fallback'    → Live read failed; rendering Cult mock with the error
+ *                   surfaced in FIG. 01 so the operator knows it's stale
+ */
+export type LabDataSource = 'mock' | 'sostanza' | 'live' | 'fallback';
 
 export interface LabPlannerData {
   source: LabDataSource;
@@ -62,9 +78,25 @@ export interface LabPlannerData {
 const SYNTHETIC_MOTHER_BURST_START = new Date('2026-04-27T03:00:00Z').getTime();
 const SYNTHETIC_MOTHER_BURST_END = new Date('2026-04-27T05:00:00Z').getTime();
 
-function detectMockMode(): boolean {
-  if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('mock') === '1';
+/**
+ * Resolve which fixture (or live read) the surface should render.
+ * Returns null when the surface should attempt a live read.
+ *
+ * - ?mock=1            → 'mock'      (Cult-flavor fixture)
+ * - ?demo=sostanza     → 'sostanza'  (Sostanza interactive-artifact fixture)
+ * - any other ?demo=*  → 'mock'      (reserved: future prospect fixtures
+ *                                     fall through to Cult mock until
+ *                                     a real fixture lands for them)
+ * - no flag            → null        (caller does the live fetch)
+ */
+function detectFixtureMode(): 'mock' | 'sostanza' | null {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mock') === '1') return 'mock';
+  const demo = params.get('demo');
+  if (demo === 'sostanza') return 'sostanza';
+  if (demo) return 'mock'; // unknown demo flag → fall through to Cult mock
+  return null;
 }
 
 function todayISO(): string {
@@ -482,6 +514,20 @@ function mockState(): InternalState {
   };
 }
 
+function sostanzaState(): InternalState {
+  return {
+    source: 'sostanza',
+    loadedAt: new Date(),
+    batches: SOSTANZA_BATCHES,
+    rooms: SOSTANZA_ROOMS,
+    plannedByRoom: SOSTANZA_PLANNED,
+    strainStats: SOSTANZA_STRAIN_STATS,
+    motherLots: SOSTANZA_MOTHER_LOTS,
+    error: null,
+    loading: false,
+  };
+}
+
 function fallbackState(error: string | null, loading: boolean): InternalState {
   return {
     source: 'fallback',
@@ -497,11 +543,13 @@ function fallbackState(error: string | null, loading: boolean): InternalState {
 }
 
 export function useLabPlannerData(): LabPlannerData {
-  const isMockMode = useMemo(detectMockMode, []);
+  const fixtureMode = useMemo(detectFixtureMode, []);
 
-  const [state, setState] = useState<InternalState>(() =>
-    isMockMode ? mockState() : fallbackState(null, true)
-  );
+  const [state, setState] = useState<InternalState>(() => {
+    if (fixtureMode === 'sostanza') return sostanzaState();
+    if (fixtureMode === 'mock') return mockState();
+    return fallbackState(null, true);
+  });
 
   const loadLive = useCallback(async (signal: { cancelled: boolean }) => {
     setState(prev => ({ ...prev, loading: true }));
@@ -533,16 +581,16 @@ export function useLabPlannerData(): LabPlannerData {
   }, []);
 
   useEffect(() => {
-    if (isMockMode) return;
+    if (fixtureMode !== null) return;
     const signal = { cancelled: false };
     loadLive(signal);
     return () => { signal.cancelled = true; };
-  }, [isMockMode, loadLive]);
+  }, [fixtureMode, loadLive]);
 
   const refresh = useCallback(async () => {
-    if (isMockMode) return;
+    if (fixtureMode !== null) return;
     await loadLive({ cancelled: false });
-  }, [isMockMode, loadLive]);
+  }, [fixtureMode, loadLive]);
 
   return {
     source: state.source,

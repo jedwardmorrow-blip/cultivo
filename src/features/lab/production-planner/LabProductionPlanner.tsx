@@ -704,7 +704,7 @@ export function LabProductionPlanner() {
           <span className="sep">·</span>
           <span>Production Planner</span>
           <span className="sep">·</span>
-          <span>Cult Cannabis</span>
+          <span>{data.source === 'sostanza' ? 'Sostanza' : 'Cult Cannabis'}</span>
           <span className="sep">·</span>
           <span>Week of {weekOf}</span>
         </div>
@@ -719,6 +719,13 @@ export function LabProductionPlanner() {
               title={`Loaded from production (fonreynkfeqywshijqpi) at ${data.loadedAt.toLocaleTimeString()}. ${batches.length} batches in scope (cultivation/drying). Quarantine pills mark fields without operator capture per the cultivo_planner_data_lineage doctrine.`}
             >
               Live · Cult Cannabis · {data.loadedAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+            </span>
+          ) : data.source === 'sostanza' ? (
+            <span
+              className="data-source-pill live"
+              title={`Sostanza demo fixture. ${batches.length} batches across 4 flower rooms in continuous Pink Kush rotation. Cycle parameters mirror the Master Production Planning Schedule.`}
+            >
+              Sostanza · Demo Fixture · {batches.length} batches
             </span>
           ) : data.source === 'fallback' ? (
             <span

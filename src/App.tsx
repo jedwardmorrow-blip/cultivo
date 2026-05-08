@@ -137,14 +137,19 @@ function AuthenticatedApp() {
     );
   }
 
-  // Sandbox escape hatch: /lab/* routes with ?mock=1 bypass auth so the
-  // visual prototype renders without a Supabase session. Real-data view
-  // still requires sign-in. Confined to ?mock=1 so it can't be hit by
-  // accident.
+  // Sandbox escape hatch: /lab/* routes with ?mock=1 OR ?demo=<name>
+  // bypass auth so the visual prototype renders without a Supabase
+  // session. Real-data view still requires sign-in. Confined to these
+  // explicit flags so the bypass can't be hit by accident.
+  // - ?mock=1            → Cult-flavor fixture (existing internal demo)
+  // - ?demo=sostanza     → Sostanza-flavor fixture (interactive artifact)
+  // - ?demo=<future>     → reserved for additional prospect-specific fixtures
   const search = typeof window !== 'undefined' ? window.location.search : '';
-  const isLabMockRoute = location.pathname.startsWith('/lab/') && search.includes('mock=1');
+  const isLabUnauthRoute =
+    location.pathname.startsWith('/lab/') &&
+    (search.includes('mock=1') || /[?&]demo=/.test(search));
 
-  if (!user && !isLabMockRoute) {
+  if (!user && !isLabUnauthRoute) {
     return <Login />;
   }
 
