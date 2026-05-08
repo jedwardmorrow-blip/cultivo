@@ -93,7 +93,7 @@ function buildSostanzaBatch(seed: SostanzaSeed): Batch {
   const segments: BatchSegment[] = [
     {
       stage: 'clone',
-      room_id: 'r-mom-01',
+      room_id: 'r-clone-01',
       start: offsetDate(cloneStart),
       end: offsetDate(vegStart),
       plant_count: seed.plant_count,
@@ -224,11 +224,21 @@ function buildSostanzaBatch(seed: SostanzaSeed): Batch {
  * positive and negative cases visible without exploding the canvas.
  */
 const SEEDS: SostanzaSeed[] = [
-  // Currently mid-flower — one per room, staggered ~30 days apart
+  // Active flower pipeline — one per flower room, staggered ~30 days apart
   { batch_num: 296, cloneDaysAgo: 98, current_stage: 'harvest', flower_room_id: 'r-flw-04', plant_count: 800 },
   { batch_num: 297, cloneDaysAgo: 68, current_stage: 'flower', flower_room_id: 'r-flw-01', plant_count: 800 },
   { batch_num: 298, cloneDaysAgo: 38, current_stage: 'flower', flower_room_id: 'r-flw-02', plant_count: 800 },
-  { batch_num: 299, cloneDaysAgo: 8, current_stage: 'veg', flower_room_id: 'r-flw-03', plant_count: 800 },
+
+  // Active upstream pipeline — currently in clone or veg, headed for the
+  // flower room each is destined to flip into. Sostanza file 2 cadence
+  // (18d clone + 14d veg + 69d flower = 101d cut-to-harvest) means the
+  // 4-room rotation natively supports ~1 in clone + ~1 in veg at any
+  // moment. Two veg batches and one mid-clone batch shown here so the
+  // demo surfaces the predictive lineage from upstream stages into
+  // their next-room destinations.
+  { batch_num: 306, cloneDaysAgo: 30, current_stage: 'veg', flower_room_id: 'r-flw-04', plant_count: 800, notes: 'late veg, flips to FLW-04 once batch 296 finishes harvest' },
+  { batch_num: 299, cloneDaysAgo: 22, current_stage: 'veg', flower_room_id: 'r-flw-03', plant_count: 800, notes: 'mid veg, flips to FLW-03 (currently empty)' },
+  { batch_num: 305, cloneDaysAgo: 5,  current_stage: 'clone', flower_room_id: 'r-flw-01', plant_count: 800, notes: 'mid clone, flips to FLW-01 once batch 297 finishes harvest' },
 
   // Post-harvest pipeline — older batches still in dry/trim/cure/test/pack
   // Each in their dedicated processing room, lineage from a flower room
@@ -334,6 +344,7 @@ function sostanzaMotherRoom(): CalendarRoom {
 
 export const SOSTANZA_ROOMS: CalendarRoom[] = [
   sostanzaMotherRoom(),
+  buildSostanzaRoom('r-clone-01', 'Cloning Room', 'CLONE-01', 'clone', 1000, 64),
   buildSostanzaRoom('r-veg-01', 'Vegetative Room', 'VEG-01', 'veg', 1600, 80),
   buildSostanzaRoom('r-flw-01', 'Flower Room 1', 'FLW-01', 'flower', 800, 28),
   buildSostanzaRoom('r-flw-02', 'Flower Room 2', 'FLW-02', 'flower', 800, 28),

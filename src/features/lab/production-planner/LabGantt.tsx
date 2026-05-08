@@ -230,8 +230,17 @@ export function LabGantt({
       for (let i = 0; i < b.segments.length; i++) {
         const seg = b.segments[i];
 
-        // Doctrine: clone segments never render as bars
-        if (seg.stage === 'clone') continue;
+        // Doctrine: clone segments rendered as bars when they live in a
+        // dedicated propagation room. Clone segments routed to a mother
+        // room are absorbed into the genetics-library summary bar and
+        // skip individual rendering, since the cuts have not separated
+        // from the mother bank yet.
+        if (seg.stage === 'clone') {
+          const cloneRoom = roomIndexById.get(seg.room_id);
+          if (cloneRoom === undefined) continue;
+          const room = rooms[cloneRoom];
+          if (room?.room_type === 'mother') continue;
+        }
 
         // Doctrine: history hidden unless the batch is highlighted
         if (!seg.is_current && !seg.is_projected && !isHighlighted) continue;
@@ -846,8 +855,26 @@ export function LabGantt({
                   }
                 }
               }
+
               const seg = rs.batch.segments[rs.segmentIndex];
               const isCohort = !!rs.cohortBatches && rs.cohortBatches.length >= 2;
+
+              // "To" tag — for clone or veg current bars, surface the
+              // destination flower room and projected flip date so the
+              // operator can read upstream pipeline lineage at a glance.
+              let toRoomCode: string | null = null;
+              let toFlipDate: string | null = null;
+              if (rs.isCurrent && (rs.stage === 'clone' || rs.stage === 'veg') && !isCohort) {
+                const flowerSeg = rs.batch.segments.find(s => s.stage === 'flower');
+                if (flowerSeg) {
+                  const destRoom = rooms[roomIndexById.get(flowerSeg.room_id) ?? -1];
+                  if (destRoom) {
+                    toRoomCode = destRoom.room_code;
+                    const d = new Date(flowerSeg.start);
+                    toFlipDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  }
+                }
+              }
               const cohortCount = isCohort ? rs.cohortBatches!.length : 0;
               const plantCount = isCohort
                 ? (rs.cohortTotalPlants ?? seg.plant_count)
@@ -983,6 +1010,15 @@ export function LabGantt({
                     {isCohort ? `${rs.cohortBatches![0].strain_name}${cohortCount > 1 ? ` +${cohortCount - 1}` : ''}` : rs.batch.strain_name}
                   </span>
                   <span className="bar-plant-count mono">{plantCount > 0 ? plantCount : '—'}</span>
+                  {toRoomCode && toFlipDate && (
+                    <span
+                      className="bar-to-tag mono"
+                      aria-label={`flips to ${toRoomCode} on ${toFlipDate}`}
+                      title={`Destined for ${toRoomCode} on ${toFlipDate}`}
+                    >
+                      →{toRoomCode} · {toFlipDate}
+                    </span>
+                  )}
                   {showCapturedChip && !isBatchQuarantined && rs.isCurrent && (
                     <span
                       className="bar-captured cap"

@@ -1106,6 +1106,19 @@
   flex-shrink: 0;
   margin-right: 4px;
 }
+.lab-prod-planner .bar-to-tag {
+  font-size: 0.5rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--lab-gold);
+  background: rgba(201,162,75,0.10);
+  border: 1px solid rgba(201,162,75,0.28);
+  padding: 0 4px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Plant attrition funnel — drawer FIG. 03 BATCH section showing
    plant retention through each pipeline stage (Cuts → Rooted →
