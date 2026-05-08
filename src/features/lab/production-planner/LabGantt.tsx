@@ -156,6 +156,55 @@ export function LabGantt({
 
   const highlightedBatch = selectedBatchId ?? hoveredBatchId;
 
+  /**
+   * Per-room flower gap bands. For each flower room, gather all flower
+   * segments (regardless of current/historical/projected status — the
+   * gap exists in time even if the segment isn't rendering as a bar
+   * today), sort by start, and produce a band per consecutive pair.
+   * Positive gap → idle band (gold hairline). Negative gap → overlap
+   * band (red, indicates scheduling collision per file 2's "Gap"
+   * column convention).
+   */
+  type GapBand = {
+    roomIndex: number;
+    x: number;
+    w: number;
+    days: number;
+    isOverlap: boolean;
+  };
+  const gapBands = useMemo<GapBand[]>(() => {
+    const out: GapBand[] = [];
+    const windowEnd = new Date(startDate);
+    windowEnd.setDate(windowEnd.getDate() + totalDays);
+    rooms.forEach((room, ri) => {
+      if (room.room_type !== 'flower') return;
+      const segs = batches
+        .map((b) => b.segments.find((s) => s.stage === 'flower' && s.room_id === room.room_id))
+        .filter((s): s is NonNullable<typeof s> => !!s)
+        .map((s) => ({ start: new Date(s.start), end: new Date(s.end) }))
+        .filter((s) => s.end >= startDate && s.start <= windowEnd)
+        .sort((a, b) => a.start.getTime() - b.start.getTime());
+      for (let i = 1; i < segs.length; i++) {
+        const prev = segs[i - 1];
+        const curr = segs[i];
+        const gapDays = Math.round((curr.start.getTime() - prev.end.getTime()) / 86400000);
+        if (gapDays === 0) continue;
+        if (gapDays > 0) {
+          // Positive idle gap.
+          const x = daysBetween(startDate, prev.end) * DAY_WIDTH;
+          const w = gapDays * DAY_WIDTH;
+          out.push({ roomIndex: ri, x, w, days: gapDays, isOverlap: false });
+        } else {
+          // Negative gap = overlap. Render the band over the overlap window.
+          const x = daysBetween(startDate, curr.start) * DAY_WIDTH;
+          const w = Math.max(8, -gapDays * DAY_WIDTH);
+          out.push({ roomIndex: ri, x, w, days: gapDays, isOverlap: true });
+        }
+      }
+    });
+    return out;
+  }, [batches, rooms, startDate, totalDays]);
+
   // Compute every segment's render geometry up front so the connector overlay
   // can read it without re-deriving.
   //
@@ -404,6 +453,36 @@ export function LabGantt({
             >
               Today
             </div>
+
+            {/* Per-room flower gap bands. Hairline gold band with
+                "GAP · Nd" label between consecutive flower batches in
+                the same room. Negative gap (overlap) renders red as
+                "OVERLAP · Nd" — a scheduling collision per Sostanza's
+                Master Production Schedule convention. */}
+            {gapBands.map((g, gi) => (
+              <div
+                key={`gap-${gi}`}
+                className={`gantt-gap-band ${g.isOverlap ? 'is-overlap' : ''}`}
+                style={{
+                  left: g.x,
+                  top: HEADER_HEIGHT + g.roomIndex * ROW_HEIGHT + (ROW_HEIGHT - 18) / 2,
+                  width: g.w,
+                  height: 18,
+                }}
+                title={
+                  g.isOverlap
+                    ? `Overlap of ${Math.abs(g.days)} day${Math.abs(g.days) === 1 ? '' : 's'} — next batch starts before the prior batch harvests. Scheduling collision.`
+                    : `Idle ${g.days} day${g.days === 1 ? '' : 's'} between batches in this room.`
+                }
+                aria-hidden
+              >
+                <span className="gantt-gap-band-label cap mono">
+                  {g.isOverlap
+                    ? `Overlap · ${Math.abs(g.days)}d`
+                    : `Gap · ${g.days}d`}
+                </span>
+              </div>
+            ))}
 
             {/* Room rows */}
             {rooms.map((room, ri) => {

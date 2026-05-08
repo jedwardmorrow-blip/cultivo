@@ -467,6 +467,38 @@ export function LabProductionPlanner() {
       const delta = Math.round((new Date(iso).getTime() - new Date(original).getTime()) / 86400000);
       return delta > 3;
     });
+    // 7. ROOM IDLE TIME — total flower-room idle days across the
+    // visible Gantt window (4 weeks back, 16 weeks forward — the
+    // surface's current-view default). Per Sostanza's Master
+    // Production Schedule, continuous-rotation facilities track the
+    // "Gap" column between consecutive batches in the same flower
+    // room as the central throughput KPI. We compute gaps as
+    // (next.flower_start - prev.flower_end) per room. Negative gaps
+    // (the next batch starting before the prior one harvests) are
+    // overlap conflicts and do not add to idle time; they're flagged
+    // separately so the operator sees scheduling collisions.
+    const idleWindowStart = new Date(today);
+    idleWindowStart.setDate(idleWindowStart.getDate() - 28);
+    const idleWindowEnd = new Date(today);
+    idleWindowEnd.setDate(idleWindowEnd.getDate() + 112);
+    let totalIdleDays = 0;
+    let overlapEvents = 0;
+    const flowerRoomList = rooms.filter((r) => r.room_type === 'flower');
+    for (const r of flowerRoomList) {
+      const flowerSegs = batches
+        .map((b) => b.segments.find((s) => s.stage === 'flower' && s.room_id === r.room_id))
+        .filter((s): s is NonNullable<typeof s> => !!s)
+        .map((s) => ({ start: new Date(s.start), end: new Date(s.end) }))
+        .filter((s) => s.end >= idleWindowStart && s.start <= idleWindowEnd)
+        .sort((a, b) => a.start.getTime() - b.start.getTime());
+      for (let i = 1; i < flowerSegs.length; i++) {
+        const gapMs = flowerSegs[i].start.getTime() - flowerSegs[i - 1].end.getTime();
+        const gapDays = Math.round(gapMs / 86400000);
+        if (gapDays >= 0) totalIdleDays += gapDays;
+        else overlapEvents++;
+      }
+    }
+
     let statusLabel = 'OK';
     let statusTrend = 'no blocked rooms';
     let statusTone: Kpi['tone'] = 'ink';
@@ -524,6 +556,17 @@ export function LabProductionPlanner() {
         value: String(allPlanned.length),
         trend: `${committed} committed · ${draft} draft`,
         spark: makeSpark(SPARK_SEEDS.cycles),
+      },
+      {
+        label: 'Room Idle Time',
+        value: `${totalIdleDays}d`,
+        trend: overlapEvents > 0
+          ? `${overlapEvents} overlap${overlapEvents === 1 ? '' : 's'} flagged · ${totalIdleDays}d idle`
+          : totalIdleDays === 0
+            ? 'continuous rotation'
+            : 'across 20-week window',
+        tone: overlapEvents > 0 ? 'alarm' : (totalIdleDays > 30 ? 'gold' : 'ink'),
+        spark: makeSpark(SPARK_SEEDS.rooms),
       },
       {
         label: 'Week Status',

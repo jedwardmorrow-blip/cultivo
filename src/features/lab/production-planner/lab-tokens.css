@@ -265,7 +265,7 @@
 
 .lab-prod-planner .kpi-strip {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   border-bottom: 1px solid var(--lab-panel);
 }
 
@@ -1051,6 +1051,44 @@
   border-radius: 1px;
   flex-shrink: 0;
   margin-right: 4px;
+}
+
+/* Per-room flower gap band — sits between consecutive flower
+   segments in the same room, surfacing utilization gap explicitly.
+   Hairline-only treatment per the working-instrument design contract.
+   Default: gold dashed top/bottom border, mono caps label centered.
+   Overlap variant: red, indicates a scheduling collision (next batch
+   starts before prior batch harvests). */
+.lab-prod-planner .gantt-gap-band {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px dashed var(--lab-gold);
+  border-bottom: 1px dashed var(--lab-gold);
+  background: rgba(201,162,75,0.04);
+  pointer-events: auto;
+  z-index: 1;
+}
+.lab-prod-planner .gantt-gap-band.is-overlap {
+  border-top-color: var(--lab-bad);
+  border-bottom-color: var(--lab-bad);
+  background: rgba(197,106,106,0.08);
+}
+.lab-prod-planner .gantt-gap-band-label {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--lab-gold);
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0 4px;
+  background: var(--lab-canvas);
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .gantt-gap-band.is-overlap .gantt-gap-band-label {
+  color: var(--lab-bad);
 }
 
 /* Stage badge — mono caps label inside non-flower bars announcing

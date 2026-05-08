@@ -197,44 +197,63 @@ function buildSostanzaBatch(seed: SostanzaSeed): Batch {
 }
 
 /**
- * 24 batches across one calendar year, 4 flower rooms in continuous
- * rotation. Anchors loosely match file 2's flip cadence: ~30 days
- * between flips in the same room. cloneDaysAgo offsets sweep from
- * 14 weeks past to 14 weeks future so today's render shows a
- * complete operating snapshot.
+ * 16 batches in 4-room continuous rotation (file 2 cadence). Each
+ * flower room sees a new flip every 4 × 30 ≈ 120 days, leaving
+ * roughly 50 days of room-idle time between same-room flower
+ * segments — which is what the gap analysis surfaces. Sostanza's
+ * actual schedule shows similar 28-50d gaps depending on dry-room
+ * availability and turnaround pace.
+ *
+ * Room rotation: r-flw-04 → r-flw-01 → r-flw-02 → r-flw-03 → repeat.
+ *
+ * cloneDaysAgo grid (30-day cadence) with current_stage chosen to
+ * match where each batch lands today:
+ *   188d → pack/test (oldest visible, post-AFS)
+ *   158d → cure
+ *   128d → trim
+ *    98d → drying / harvest
+ *    68d → flower (mid)
+ *    38d → flower (early)
+ *     8d → veg
+ *   -22d → clone (fresh)
+ *   -52d / -82d / -112d / -142d → committed future plans
+ *
+ * One deliberate scheduling collision in r-flw-02: a planned flip
+ * lands 4d before the prior batch's projected harvest. Surfaces as
+ * a single OVERLAP · 4d band so the gap-analysis demo has both
+ * positive and negative cases visible without exploding the canvas.
  */
 const SEEDS: SostanzaSeed[] = [
-  // Past — completed cycles already shipped to AFS
-  { batch_num: 288, cloneDaysAgo: 200, current_stage: 'pack', flower_room_id: 'r-flw-04', plant_count: 800, status: 'completed' },
-  { batch_num: 289, cloneDaysAgo: 175, current_stage: 'pack', flower_room_id: 'r-flw-01', plant_count: 800, status: 'completed' },
-  { batch_num: 290, cloneDaysAgo: 165, current_stage: 'test', flower_room_id: 'r-flw-03', plant_count: 800, status: 'active' },
-  { batch_num: 291, cloneDaysAgo: 155, current_stage: 'test', flower_room_id: 'r-flw-02', plant_count: 800, status: 'active' },
+  // Currently mid-flower — one per room, staggered ~30 days apart
+  { batch_num: 296, cloneDaysAgo: 98, current_stage: 'harvest', flower_room_id: 'r-flw-04', plant_count: 800 },
+  { batch_num: 297, cloneDaysAgo: 68, current_stage: 'flower', flower_room_id: 'r-flw-01', plant_count: 800 },
+  { batch_num: 298, cloneDaysAgo: 38, current_stage: 'flower', flower_room_id: 'r-flw-02', plant_count: 800 },
+  { batch_num: 299, cloneDaysAgo: 8, current_stage: 'veg', flower_room_id: 'r-flw-03', plant_count: 800 },
 
-  // Mid-cycle — currently in cure / trim / drying
-  { batch_num: 292, cloneDaysAgo: 140, current_stage: 'cure', flower_room_id: 'r-flw-04', plant_count: 800 },
-  { batch_num: 293, cloneDaysAgo: 130, current_stage: 'trim', flower_room_id: 'r-flw-01', plant_count: 800 },
-  { batch_num: 294, cloneDaysAgo: 120, current_stage: 'drying', flower_room_id: 'r-flw-03', plant_count: 800 },
-  { batch_num: 295, cloneDaysAgo: 110, current_stage: 'harvest', flower_room_id: 'r-flw-02', plant_count: 800 },
+  // Post-harvest pipeline — older batches still in dry/trim/cure/test/pack
+  // Each in their dedicated processing room, lineage from a flower room
+  { batch_num: 295, cloneDaysAgo: 128, current_stage: 'drying', flower_room_id: 'r-flw-03', plant_count: 800 },
+  { batch_num: 294, cloneDaysAgo: 158, current_stage: 'trim',   flower_room_id: 'r-flw-02', plant_count: 800 },
+  { batch_num: 293, cloneDaysAgo: 188, current_stage: 'cure',   flower_room_id: 'r-flw-01', plant_count: 800 },
+  { batch_num: 292, cloneDaysAgo: 218, current_stage: 'test',   flower_room_id: 'r-flw-04', plant_count: 800 },
+  { batch_num: 291, cloneDaysAgo: 248, current_stage: 'pack',   flower_room_id: 'r-flw-03', plant_count: 800 },
 
-  // Currently in flower — visible bars in flower rooms
-  { batch_num: 296, cloneDaysAgo: 95, current_stage: 'flower', flower_room_id: 'r-flw-04', plant_count: 800 },
-  { batch_num: 297, cloneDaysAgo: 75, current_stage: 'flower', flower_room_id: 'r-flw-01', plant_count: 800 },
-  { batch_num: 298, cloneDaysAgo: 60, current_stage: 'flower', flower_room_id: 'r-flw-03', plant_count: 800 },
-  { batch_num: 299, cloneDaysAgo: 45, current_stage: 'flower', flower_room_id: 'r-flw-02', plant_count: 800 },
+  // Future planned cycles — clone stage, committed status (planning view).
+  // Maintain 4-room rotation continuing from the last past room (r-flw-03).
+  // Cadence stays 30 days. cloneDaysAgo negative = future.
+  { batch_num: 300, cloneDaysAgo: -22, current_stage: 'clone', flower_room_id: 'r-flw-04', plant_count: 800, status: 'committed' },
+  { batch_num: 301, cloneDaysAgo: -52, current_stage: 'clone', flower_room_id: 'r-flw-01', plant_count: 800, status: 'committed' },
+  { batch_num: 302, cloneDaysAgo: -82, current_stage: 'clone', flower_room_id: 'r-flw-02', plant_count: 800, status: 'committed' },
+  { batch_num: 303, cloneDaysAgo: -112, current_stage: 'clone', flower_room_id: 'r-flw-03', plant_count: 800, status: 'committed' },
 
-  // Currently in veg — preparing for next flower flip
-  { batch_num: 300, cloneDaysAgo: 30, current_stage: 'veg', flower_room_id: 'r-flw-04', plant_count: 800 },
-  { batch_num: 301, cloneDaysAgo: 22, current_stage: 'veg', flower_room_id: 'r-flw-01', plant_count: 800 },
+  // Deliberate scheduling collision — a draft plan in r-flw-02 lands
+  // 4 days before batch 298's projected harvest. Surfaces the
+  // OVERLAP · 4d band on FLW-02 in the gap-analysis demo.
+  { batch_num: 304, cloneDaysAgo: -29, current_stage: 'clone', flower_room_id: 'r-flw-02', plant_count: 800, status: 'draft' },
 
-  // Currently in clone — fresh cuts
-  { batch_num: 302, cloneDaysAgo: 8, current_stage: 'clone', flower_room_id: 'r-flw-03', plant_count: 800 },
-  { batch_num: 303, cloneDaysAgo: 2, current_stage: 'clone', flower_room_id: 'r-flw-02', plant_count: 800 },
-
-  // Future planned cycles (committed)
-  { batch_num: 304, cloneDaysAgo: -7, current_stage: 'clone', flower_room_id: 'r-flw-04', plant_count: 800, status: 'committed' },
-  { batch_num: 305, cloneDaysAgo: -22, current_stage: 'clone', flower_room_id: 'r-flw-01', plant_count: 800, status: 'committed' },
-  { batch_num: 306, cloneDaysAgo: -37, current_stage: 'clone', flower_room_id: 'r-flw-03', plant_count: 800, status: 'committed' },
-  { batch_num: 307, cloneDaysAgo: -52, current_stage: 'clone', flower_room_id: 'r-flw-02', plant_count: 800, status: 'committed' },
+  // Past completed batches — give the AFS row some history
+  { batch_num: 290, cloneDaysAgo: 278, current_stage: 'pack', flower_room_id: 'r-flw-02', plant_count: 800, status: 'completed' },
+  { batch_num: 289, cloneDaysAgo: 308, current_stage: 'pack', flower_room_id: 'r-flw-01', plant_count: 800, status: 'completed' },
 ];
 
 export const SOSTANZA_BATCHES: Batch[] = SEEDS.map(buildSostanzaBatch);
