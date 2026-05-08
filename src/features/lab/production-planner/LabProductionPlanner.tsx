@@ -17,6 +17,7 @@ interface Kpi {
   trend?: string;
   tone?: 'gold' | 'alarm' | 'ink' | 'dim';
   spark?: number[];
+  onClick?: () => void;
 }
 
 interface SeedObservation {
@@ -175,6 +176,34 @@ export function LabProductionPlanner() {
   const handlePlanCycle = useCallback((room: CalendarRoom) => {
     setPlanFormRoom(room);
   }, []);
+
+  // Mother-row Cut Clones flow: pick first idle flower room as the
+  // destination and pre-fill the form with the mother's strain. The
+  // flower-start defaults to today + (vegDays + 14) so cut_clones
+  // lands on today in the Manifest panel.
+  const handleCutClones = useCallback(
+    (motherRoom: CalendarRoom) => {
+      const destination =
+        rooms.find((r) => r.room_type === 'flower' && r.total_plants === 0) ??
+        rooms.find((r) => r.room_type === 'flower');
+      if (!destination) return;
+      const motherStrain = motherRoom.strains?.[0];
+      const stats = motherStrain
+        ? strainStats.find((s) => s.strain_id === motherStrain.strain_id)
+        : strainStats[0];
+      const today = new Date();
+      const flowerStart = new Date(today);
+      const offset = (stats?.veg_days_avg ?? 14) + 14;
+      flowerStart.setDate(flowerStart.getDate() + offset);
+      setPlanFormPrefill({
+        initialStrainId: stats?.strain_id,
+        initialFlowerStart: flowerStart.toISOString().slice(0, 10),
+        prefillReason: `Cut from ${motherRoom.room_code} · ${stats?.strain_name ?? 'in-house genetics'}`,
+      });
+      setPlanFormRoom(destination);
+    },
+    [rooms, strainStats]
+  );
 
   const handleDrawerClose = useCallback(() => {
     setDrawerRoomId(null);
@@ -511,6 +540,23 @@ export function LabProductionPlanner() {
           ? `${unmatched.slice(0, 2).map((s) => s.strain_name.split(' ')[0]).join(', ')}${unmatched.length > 2 ? '…' : ''}`
           : 'all strains matched',
         spark: makeSpark(SPARK_SEEDS.demand),
+        onClick: unmatched.length > 0 ? () => {
+          const strain = unmatched[0];
+          const destination =
+            rooms.find((r) => r.room_type === 'flower' && r.total_plants === 0) ??
+            rooms.find((r) => r.room_type === 'flower');
+          if (!destination) return;
+          const stats = strainStatsById.get(strain.strain_id) ?? null;
+          const flowerStart = new Date(today);
+          const offset = (stats?.veg_days_avg ?? 14) + 14;
+          flowerStart.setDate(flowerStart.getDate() + offset);
+          setPlanFormPrefill({
+            initialStrainId: strain.strain_id,
+            initialFlowerStart: flowerStart.toISOString().slice(0, 10),
+            prefillReason: `${strain.strain_name} demand unassigned, plan a cycle to fill`,
+          });
+          setPlanFormRoom(destination);
+        } : undefined,
       },
       {
         label: 'Rooms Ready',
@@ -534,7 +580,7 @@ export function LabProductionPlanner() {
         spark: makeSpark(SPARK_SEEDS.status),
       },
     ];
-  }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats]);
+  }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats, strainStatsById]);
 
   // ── DERIVED Monthly production roll-up ─────────────────────────
   // 12 months forward from today's month. Each batch contributes its
@@ -867,7 +913,15 @@ export function LabProductionPlanner() {
           const max = k.spark ? Math.max(...k.spark) : 1;
           const cy = k.spark ? 14 - ((last - min) / Math.max(1, max - min)) * 14 : 0;
           return (
-            <div className="kpi" key={k.label}>
+            <div
+              className={`kpi${k.onClick ? ' is-clickable' : ''}`}
+              key={k.label}
+              role={k.onClick ? 'button' : undefined}
+              tabIndex={k.onClick ? 0 : undefined}
+              onClick={k.onClick}
+              onKeyDown={k.onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') k.onClick!(); } : undefined}
+              title={k.onClick ? `${k.label}: click to plan a cycle from ${k.trend ?? 'this signal'}` : undefined}
+            >
               <div className="kpi-cap">{k.label}</div>
               <div className={`kpi-num ${k.tone ?? ''}`.trim()}>{k.value}</div>
               {k.trend && <div className="kpi-trend">{k.trend}</div>}
@@ -998,6 +1052,7 @@ export function LabProductionPlanner() {
         onBatchSelect={handleBatchSelect}
         onRoomClick={handleRoomClick}
         onPlanCycle={handlePlanCycle}
+        onCutClones={handleCutClones}
         onCycleEdit={handleCycleEdit}
         onCycleDelete={handleCycleDelete}
         harvestOverrides={harvestOverrides}

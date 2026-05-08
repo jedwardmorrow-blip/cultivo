@@ -96,7 +96,11 @@ export function LabPlanCycleForm({
 
   const selectedMother = availableMothers.find((m) => m.mom_plant_group_id === momPlantGroupId) ?? null;
 
-  // Derived dates from flower start.
+  // Derived dates from flower start. Post-harvest day counts mirror
+  // the Sostanza cycle constants in sostanza-mock.ts: drying overlaps
+  // the cleaning + trim window, cure follows trim, then test + pack.
+  // Drying ends and trim ends land on the same calendar date because
+  // drying happens during the cleaning window in their model.
   const derived = useMemo(() => {
     const start = new Date(flowerStart);
     if (Number.isNaN(start.getTime())) return null;
@@ -108,11 +112,20 @@ export function LabPlanCycleForm({
     vegStart.setDate(vegStart.getDate() - vegDays);
     const harvest = new Date(start);
     harvest.setDate(harvest.getDate() + flowerDays);
+    const dryingEnds = new Date(harvest);
+    dryingEnds.setDate(dryingEnds.getDate() + 15);
+    const cureEnds = new Date(harvest);
+    cureEnds.setDate(cureEnds.getDate() + 20);
+    const afs = new Date(harvest);
+    afs.setDate(afs.getDate() + 35);
     return {
       cloneCut: isoDate(cloneCut),
       vegStart: isoDate(vegStart),
       flowerStart: isoDate(start),
       harvest: isoDate(harvest),
+      dryingEnds: isoDate(dryingEnds),
+      cureEnds: isoDate(cureEnds),
+      afs: isoDate(afs),
       flowerDays,
       vegDays,
     };
@@ -285,6 +298,18 @@ export function LabPlanCycleForm({
                 <span className="num">{derived?.harvest ?? '—'}</span>
               </div>
               <div className="manifest-row">
+                <span className="cap">Drying ends</span>
+                <span className="num">{derived?.dryingEnds ?? '—'}</span>
+              </div>
+              <div className="manifest-row">
+                <span className="cap">Cure ends</span>
+                <span className="num">{derived?.cureEnds ?? '—'}</span>
+              </div>
+              <div className="manifest-row">
+                <span className="cap">Available for sale</span>
+                <span className="num">{derived?.afs ?? '—'}</span>
+              </div>
+              <div className="manifest-row">
                 <span className="cap">Veg days</span>
                 <span className="num">{derived ? `${derived.vegDays}d` : '—'}</span>
               </div>
@@ -312,8 +337,10 @@ export function LabPlanCycleForm({
                 <>
                   Cut <span className="num">{plantCount}</span> clones of <span className="strong">{stats.strain_name}</span> on{' '}
                   <span className="num">{derived.cloneCut}</span>, transplant to veg <span className="num">{derived.vegStart}</span>,
-                  flip to flower <span className="num">{derived.flowerStart}</span>, harvest <span className="num">{derived.harvest}</span>.
-                  Forecast yield <span className="num">{fmtNum(forecast.totalGrams, ' g')}</span> at{' '}
+                  flip to flower <span className="num">{derived.flowerStart}</span>, harvest <span className="num">{derived.harvest}</span>,
+                  drying ends <span className="num">{derived.dryingEnds}</span>, available for sale{' '}
+                  <span className="num">{derived.afs}</span>. Forecast yield{' '}
+                  <span className="num">{fmtNum(forecast.totalGrams, ' g')}</span> at{' '}
                   <span className="num">${pricePerGram}/g</span> = <span className="num">{fmtMoney(forecast.revenue)}</span>.
                 </>
               ) : (

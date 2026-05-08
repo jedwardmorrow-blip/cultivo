@@ -35,6 +35,9 @@ export interface LabGanttProps {
   onBatchSelect: (id: string | null) => void;
   onRoomClick: (room: CalendarRoom) => void;
   onPlanCycle: (room: CalendarRoom) => void;
+  /** Optional: open the plan-cycle form sourced from a mother room.
+   *  Caller is responsible for picking the destination flower room. */
+  onCutClones?: (motherRoom: CalendarRoom) => void;
   onCycleEdit?: (
     roomId: string,
     cycleId: string,
@@ -95,6 +98,7 @@ export function LabGantt({
   onBatchSelect,
   onRoomClick,
   onPlanCycle,
+  onCutClones,
   onCycleEdit,
   onCycleDelete,
   harvestOverrides = {},
@@ -570,6 +574,17 @@ export function LabGantt({
                                 </span>
                               )}
                             </>
+                          )}
+                          {onCutClones && (
+                            <button
+                              type="button"
+                              className="mother-cut-chip cap mono"
+                              onClick={(e) => { e.stopPropagation(); onCutClones(room); }}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); onCutClones(room); } }}
+                              title="Plan a clone cut from this mother room"
+                            >
+                              Cut Clones →
+                            </button>
                           )}
                           <span className="mother-summary-cta cap">Open library →</span>
                         </div>

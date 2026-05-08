@@ -266,6 +266,23 @@
 
 .lab-prod-planner .kpi:last-child { border-right: none; }
 
+/* Clickable KPI tiles get a subtle dotted underline on the trend
+   line and a hover background lift so the affordance is discoverable
+   without violating the no-shadow / no-radius doctrine. */
+.lab-prod-planner .kpi.is-clickable {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.lab-prod-planner .kpi.is-clickable:hover,
+.lab-prod-planner .kpi.is-clickable:focus-visible {
+  background: rgba(201, 162, 75, 0.06);
+  outline: none;
+}
+.lab-prod-planner .kpi.is-clickable .kpi-trend {
+  border-bottom: 1px dotted var(--lab-gold);
+  align-self: flex-start;
+}
+
 .lab-prod-planner .kpi .kpi-cap {
   font-family: var(--font-mono);
   font-size: var(--lab-cap-size);
@@ -707,6 +724,30 @@
 .lab-prod-planner .mother-bar:hover .mother-summary-cta {
   color: var(--lab-gold-paper);
   border-bottom-color: var(--lab-gold-paper);
+}
+
+/* Mother-row Cut Clones verb chip. Sits inline with the genetics
+   library summary; gold-bordered mono caps to mirror the empty-room
+   plan-chip pattern from the bureau brief. Stops propagation so the
+   chip click does not also fire the parent mother-bar click. */
+.lab-prod-planner .mother-cut-chip {
+  margin-left: 12px;
+  padding: 2px 9px;
+  background: transparent;
+  color: var(--lab-gold);
+  border: 1px solid var(--lab-gold);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.lab-prod-planner .mother-cut-chip:hover,
+.lab-prod-planner .mother-cut-chip:focus-visible {
+  background: var(--lab-gold);
+  color: var(--lab-canvas);
+  outline: none;
 }
 
 .lab-prod-planner .gantt-row {
