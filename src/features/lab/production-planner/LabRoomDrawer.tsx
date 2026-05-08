@@ -3,7 +3,7 @@ import type { CalendarRoom, StrainCultivationStats } from '@/features/production
 import type { Batch } from './planner-mock';
 import type { MotherLot } from './LabPlanCycleForm';
 import type { LifecycleStage } from './planner-mock';
-import { STAGE_SHORT } from './planner-mock';
+import { STAGE_SHORT, STAGE_LONG } from './planner-mock';
 
 interface LabRoomDrawerProps {
   room: CalendarRoom | null;
@@ -302,7 +302,7 @@ function BatchPane({
           <span className="cap">Stage</span>
           <span className="strong">
             <span className={`bar-dot dot-${batch.current_stage}`} aria-hidden />{' '}
-            {(STAGE_SHORT[batch.current_stage as LifecycleStage] ?? batch.current_stage).toUpperCase()}
+            {STAGE_LONG[batch.current_stage as LifecycleStage] ?? batch.current_stage}
           </span>
         </div>
         <div className="identity-row">

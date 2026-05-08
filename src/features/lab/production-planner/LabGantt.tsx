@@ -670,7 +670,6 @@ export function LabGantt({
                               Cut Clones →
                             </button>
                           )}
-                          <span className="mother-summary-cta cap">Open library →</span>
                         </div>
                       </div>
                     );

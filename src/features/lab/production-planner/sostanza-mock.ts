@@ -340,9 +340,9 @@ export const SOSTANZA_ROOMS: CalendarRoom[] = [
   buildSostanzaRoom('r-flw-03', 'Flower Room 3', 'FLW-03', 'flower', 800, 28),
   buildSostanzaRoom('r-flw-04', 'Flower Room 4', 'FLW-04', 'flower', 800, 28),
   buildSostanzaRoom('r-dry-01', 'Drying Room', 'DRY-01', 'drying', 3200, 120),
-  buildSostanzaRoom('r-trim-01', 'Trim Room', 'TRIM-01', 'processing', 3200, 120),
-  buildSostanzaRoom('r-cure-01', 'Cure & Test Room', 'CURE-01', 'processing', 6400, 180),
-  buildSostanzaRoom('r-pack-01', 'Pack & AFS Room', 'PACK-01', 'processing', 3200, 100),
+  buildSostanzaRoom('r-trim-01', 'Trim Room', 'TRIM-01', 'trim', 3200, 120),
+  buildSostanzaRoom('r-cure-01', 'Cure & Test Room', 'CURE-01', 'cure', 6400, 180),
+  buildSostanzaRoom('r-pack-01', 'Pack & AFS Room', 'PACK-01', 'pack', 3200, 100),
 ];
 
 export const SOSTANZA_PLANNED: Record<string, import('@/features/production-planner/types').CalendarPlannedEntry[]> = {};

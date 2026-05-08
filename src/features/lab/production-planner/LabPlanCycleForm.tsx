@@ -332,21 +332,11 @@ export function LabPlanCycleForm({
                 </span>
               </div>
             </div>
-            <div className="manifest-prose">
-              {stats && derived && forecast ? (
-                <>
-                  Cut <span className="num">{plantCount}</span> clones of <span className="strong">{stats.strain_name}</span> on{' '}
-                  <span className="num">{derived.cloneCut}</span>, transplant to veg <span className="num">{derived.vegStart}</span>,
-                  flip to flower <span className="num">{derived.flowerStart}</span>, harvest <span className="num">{derived.harvest}</span>,
-                  drying ends <span className="num">{derived.dryingEnds}</span>, available for sale{' '}
-                  <span className="num">{derived.afs}</span>. Forecast yield{' '}
-                  <span className="num">{fmtNum(forecast.totalGrams, ' g')}</span> at{' '}
-                  <span className="num">${pricePerGram}/g</span> = <span className="num">{fmtMoney(forecast.revenue)}</span>.
-                </>
-              ) : (
+            {!(stats && derived && forecast) && (
+              <div className="manifest-prose">
                 <span className="cap mute">Pick a strain and start date to see the manifest</span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 

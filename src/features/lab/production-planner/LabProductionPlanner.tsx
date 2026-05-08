@@ -745,65 +745,41 @@ export function LabProductionPlanner() {
           out.push({
             status: 'warn',
             entity: motherRoom.room_code,
-            context: `${ready} mother strain${ready === 1 ? '' : 's'} past the ${CUTBACK_CADENCE}d cutback cadence, cuts can be taken today.`,
+            context: `${ready} mother strain${ready === 1 ? '' : 's'} past the ${CUTBACK_CADENCE}d cutback cadence, cuts can be taken today`,
             badge: { text: 'READY TO CUT', tone: 'warn' },
-            cta: 'OPEN LIBRARY →',
-            action: {
-              cta: 'OPEN LIBRARY →',
-              onClick: () => setDrawerRoomId(motherRoom.room_id),
-            },
           });
         } else if (CUTBACK_CADENCE - minDays <= 7) {
           const nextDays = CUTBACK_CADENCE - minDays;
           out.push({
             status: 'ok',
             entity: motherRoom.room_code,
-            context: `${motherRoom.total_plants} mothers in rotation, next cutback in ${nextDays}d on the ${CUTBACK_CADENCE}d cadence.`,
+            context: `${motherRoom.total_plants} mothers in rotation, next cutback in ${nextDays}d on the ${CUTBACK_CADENCE}d cadence`,
             badge: { text: `CUT IN ${nextDays}d`, tone: 'ok' },
-            cta: 'OPEN LIBRARY →',
-            action: {
-              cta: 'OPEN LIBRARY →',
-              onClick: () => setDrawerRoomId(motherRoom.room_id),
-            },
           });
         }
       }
     }
 
-    // Idle flower with unmatched demand — pull the demand signal
-    // forward into a planning prompt instead of letting UNMATCHED
-    // DEMAND remain a dead-end KPI. Suggests a flower-start date
-    // back-derived from clone+veg pipeline timing.
+    // Idle flower with no demand pressure — surface only when the
+    // UNMATCHED DEMAND KPI tile is silent, otherwise the tile (which
+    // is itself clickable and pre-fills the same plan-cycle flow)
+    // already covers the case. Avoids the metric/observation
+    // duplication that reads as the system saying the same thing twice.
     const idleFlower = rooms.find((r) => r.room_type === 'flower' && r.total_plants === 0);
     const unmatched = strainStats.filter((s) => (s.demand_unassigned_units ?? 0) > 0);
-    if (idleFlower && unmatched.length > 0) {
-      const strain = unmatched[0];
-      const flowerStart = new Date(today);
-      flowerStart.setDate(flowerStart.getDate() + 35);
-      const flowerStartISO = flowerStart.toISOString().slice(0, 10);
+    if (idleFlower && unmatched.length === 0) {
       out.push({
-        status: 'warn',
-        entity: `${idleFlower.room_code} · ${strain.strain_name.toUpperCase()}`,
-        context: `flower room idle with unassigned demand for ${strain.strain_name}, a cycle started today flips ~${flowerStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.`,
-        badge: { text: 'IDLE', tone: 'warn' },
-        cta: 'PLAN A CYCLE →',
-        action: {
-          cta: 'PLAN A CYCLE →',
-          onClick: () => {
-            setPlanFormPrefill({
-              initialStrainId: strain.strain_id,
-              initialFlowerStart: flowerStartISO,
-              prefillReason: `${idleFlower.room_code} idle, ${strain.strain_name} demand unassigned`,
-            });
-            setPlanFormRoom(idleFlower);
-          },
-        },
+        status: 'ok',
+        entity: idleFlower.room_code,
+        context: `flower room open, no unmatched demand pressure — capacity available for next cycle`,
+        badge: { text: 'OPEN', tone: 'ok' },
       });
     }
 
     return out;
   }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats]);
 
+  const isDemoFixture = data.source === 'sostanza';
   const canvasClass =
     canvas === 'marketing' ? 'canvas-marketing' : '';
 
@@ -817,9 +793,11 @@ export function LabProductionPlanner() {
             <div className="wordmark">
               CULTIVATION<span className="dot">.</span>
             </div>
-            <div className="wordmark-sub">
-              Operational Bureau No. 26
-            </div>
+            {!isDemoFixture && (
+              <div className="wordmark-sub">
+                Operational Bureau No. 26
+              </div>
+            )}
           </div>
         </div>
 
@@ -831,24 +809,26 @@ export function LabProductionPlanner() {
             <span>SYSTEM LIVE</span>
           </span>
           <span>{liveTime}</span>
-          <div className="canvas-toggle" role="tablist" aria-label="Canvas mode">
-            <button
-              role="tab"
-              aria-selected={canvas === 'deep'}
-              className={canvas === 'deep' ? 'active' : ''}
-              onClick={() => setCanvas('deep')}
-            >
-              Deep
-            </button>
-            <button
-              role="tab"
-              aria-selected={canvas === 'marketing'}
-              className={canvas === 'marketing' ? 'active' : ''}
-              onClick={() => setCanvas('marketing')}
-            >
-              Marketing
-            </button>
-          </div>
+          {!isDemoFixture && (
+            <div className="canvas-toggle" role="tablist" aria-label="Canvas mode">
+              <button
+                role="tab"
+                aria-selected={canvas === 'deep'}
+                className={canvas === 'deep' ? 'active' : ''}
+                onClick={() => setCanvas('deep')}
+              >
+                Deep
+              </button>
+              <button
+                role="tab"
+                aria-selected={canvas === 'marketing'}
+                className={canvas === 'marketing' ? 'active' : ''}
+                onClick={() => setCanvas('marketing')}
+              >
+                Marketing
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -897,10 +877,14 @@ export function LabProductionPlanner() {
               Mock Fixture
             </span>
           )}
-          <span className="sep">·</span>
-          <span>Bureau Product No. 01</span>
-          <span className="sep">·</span>
-          <span>CC-B</span>
+          {!isDemoFixture && (
+            <>
+              <span className="sep">·</span>
+              <span>Bureau Product No. 01</span>
+              <span className="sep">·</span>
+              <span>CC-B</span>
+            </>
+          )}
         </div>
       </div>
 
