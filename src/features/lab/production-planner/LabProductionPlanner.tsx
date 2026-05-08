@@ -174,8 +174,43 @@ export function LabProductionPlanner() {
   );
 
   const handlePlanCycle = useCallback((room: CalendarRoom) => {
+    // Queue-aware anchor: when the operator clicks PLAN A CYCLE on a
+    // flower room, anchor flower-start to the predecessor's harvest
+    // end + 3d turnover. Predecessor = the latest flower segment that
+    // lives in this room across all active batches and committed
+    // plans. If the room has no predecessor (never used or all
+    // history older than today), flowerStart defaults to today + 32d
+    // (clone phase + veg phase) so the operator is planning from a
+    // cut-today starting point rather than calendar arithmetic.
+    if (room.room_type === 'flower') {
+      let latestEndISO: string | null = null;
+      for (const b of batches) {
+        for (const s of b.segments) {
+          if (s.stage !== 'flower') continue;
+          if (s.room_id !== room.room_id) continue;
+          if (!latestEndISO || s.end > latestEndISO) latestEndISO = s.end;
+        }
+      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let anchorDate: Date;
+      let prefillReason: string;
+      if (latestEndISO && new Date(latestEndISO) > today) {
+        anchorDate = new Date(latestEndISO);
+        anchorDate.setDate(anchorDate.getDate() + 3);
+        prefillReason = `Anchored to ${room.room_code} predecessor harvest ${new Date(latestEndISO).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} + 3d turnover`;
+      } else {
+        anchorDate = new Date(today);
+        anchorDate.setDate(anchorDate.getDate() + 32);
+        prefillReason = `${room.room_code} has no upcoming predecessor, anchoring to today + 32d (clone + veg pipeline)`;
+      }
+      setPlanFormPrefill({
+        initialFlowerStart: anchorDate.toISOString().slice(0, 10),
+        prefillReason,
+      });
+    }
     setPlanFormRoom(room);
-  }, []);
+  }, [batches]);
 
   // Mother-row Cut Clones flow: pick first idle flower room as the
   // destination and pre-fill the form with the mother's strain. The
@@ -1105,7 +1140,7 @@ export function LabProductionPlanner() {
         onSelectBatch={(id) => setSelectedBatchId(id === '' ? null : id)}
         onPlanCycle={(room) => {
           setDrawerRoomId(null);
-          setPlanFormRoom(room);
+          handlePlanCycle(room);
         }}
       />
 
