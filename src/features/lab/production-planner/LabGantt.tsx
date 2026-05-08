@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CalendarRoom, CalendarPlannedEntry } from '@/features/production-planner/types';
-import type { Batch } from './planner-mock';
+import type { Batch, LifecycleStage } from './planner-mock';
+import { STAGE_SHORT, STAGE_LONG } from './planner-mock';
 import { useGanttDrag } from './useGanttDrag';
 import type { DragImpact } from './useGanttDrag';
 
@@ -826,13 +827,14 @@ export function LabGantt({
                   (urgencyCandidates.length > 3 ? `; +${urgencyCandidates.length - 3} more` : '')
                 : null;
 
+              const stageLong = STAGE_LONG[rs.stage as LifecycleStage] ?? rs.stage;
               let baseTitle: string;
               if (isCohort) {
                 const strainList = rs.cohortBatches!.map(b => b.strain_name);
                 const preview = strainList.slice(0, 6).join(', ') + (strainList.length > 6 ? `, +${strainList.length - 6} more` : '');
-                baseTitle = `Cohort ${getCohortKey(rs.batch)} (cut ${rs.batch.clone_cut_date}) · ${cohortCount} strains · ${plantCount} plants · ${rs.stage}\nstrains: ${preview}`;
+                baseTitle = `Cohort ${getCohortKey(rs.batch)} (cut ${rs.batch.clone_cut_date}) · ${cohortCount} strains · ${plantCount} plants · ${stageLong}\nstrains: ${preview}`;
               } else {
-                baseTitle = `${rs.batch.batch_code} · ${rs.batch.strain_name} · ${rs.stage} · ${plantCount} plants${fromRoomCode ? ` · from ${fromRoomCode}` : ''}`;
+                baseTitle = `${rs.batch.batch_code} · ${rs.batch.strain_name} · ${stageLong} · ${plantCount} plants${fromRoomCode ? ` · from ${fromRoomCode}` : ''}`;
               }
               const titleParts = [baseTitle];
               if (urgencyReasons) titleParts.push(`urgency: ${urgencyReasons}`);
@@ -872,8 +874,11 @@ export function LabGantt({
                     </span>
                   )}
                   {rs.stage !== 'flower' && rs.stage !== 'veg' && rs.isCurrent && (
-                    <span className="bar-stage-badge cap" aria-hidden>
-                      {rs.stage}
+                    <span
+                      className="bar-stage-badge cap"
+                      aria-label={STAGE_LONG[rs.stage as LifecycleStage] ?? rs.stage}
+                    >
+                      {STAGE_SHORT[rs.stage as LifecycleStage] ?? rs.stage}
                     </span>
                   )}
                   <span className="bar-strain-name mono">

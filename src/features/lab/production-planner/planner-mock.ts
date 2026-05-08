@@ -56,6 +56,45 @@ export type LifecycleStage =
   | 'inventory'
   | 'closed';
 
+/**
+ * Display labels per stage. Aligned to Sostanza's Master Production
+ * Schedule column vocabulary (file 2):
+ *   Cloning · Vegetative · Flowering · Harvest/Drying · Drying/Trim ·
+ *   Trim/Curing · Curing/Sample · Testing · Packing/AFS
+ * Operators recognize their workflow step names; abbreviated dialect
+ * stays in tight cells (badges) and the canonical name lives in
+ * tooltips.
+ */
+export const STAGE_SHORT: Record<LifecycleStage, string> = {
+  clone: 'Clone',
+  veg: 'Veg',
+  flower: 'Flower',
+  harvest: 'Harvest',
+  drying: 'Drying',
+  trim: 'Trim',
+  cure: 'Cure',
+  test: 'Testing',
+  pack: 'Pack/AFS',
+  processing: 'Processing',
+  inventory: 'Inventory',
+  closed: 'Closed',
+};
+
+export const STAGE_LONG: Record<LifecycleStage, string> = {
+  clone: 'Cloning',
+  veg: 'Vegetative Phase',
+  flower: 'Flowering Phase',
+  harvest: 'Harvest / Drying Starts',
+  drying: 'Drying Ends / Trim Starts',
+  trim: 'Trim Ends / Curing Starts',
+  cure: 'Curing Ends (Sample Collected)',
+  test: 'Testing',
+  pack: 'Packing — Batch Ready for Sale',
+  processing: 'Post-Harvest Processing',
+  inventory: 'Bulk Available',
+  closed: 'Archived',
+};
+
 export interface BatchSegment {
   stage: LifecycleStage;
   room_id: string;

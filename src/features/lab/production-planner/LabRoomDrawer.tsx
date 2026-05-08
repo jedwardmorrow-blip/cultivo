@@ -2,6 +2,8 @@ import { useEffect, useMemo } from 'react';
 import type { CalendarRoom, StrainCultivationStats } from '@/features/production-planner/types';
 import type { Batch } from './planner-mock';
 import type { MotherLot } from './LabPlanCycleForm';
+import type { LifecycleStage } from './planner-mock';
+import { STAGE_SHORT } from './planner-mock';
 
 interface LabRoomDrawerProps {
   room: CalendarRoom | null;
@@ -194,7 +196,7 @@ function RoomPane({
                   <span className={`bar-dot dot-${b.current_stage}`} aria-hidden />
                   <span className="batch-code mono">{b.batch_code}</span>
                   <span className="batch-strain">{b.strain_name}</span>
-                  <span className="batch-stage cap mute">{b.current_stage}</span>
+                  <span className="batch-stage cap mute">{STAGE_SHORT[b.current_stage as LifecycleStage] ?? b.current_stage}</span>
                   <span className="batch-count num">×{currentSeg?.plant_count ?? 0}</span>
                 </div>
                 <div className="drawer-batch-meta">
@@ -300,7 +302,7 @@ function BatchPane({
           <span className="cap">Stage</span>
           <span className="strong">
             <span className={`bar-dot dot-${batch.current_stage}`} aria-hidden />{' '}
-            {batch.current_stage.toUpperCase()}
+            {(STAGE_SHORT[batch.current_stage as LifecycleStage] ?? batch.current_stage).toUpperCase()}
           </span>
         </div>
         <div className="identity-row">
