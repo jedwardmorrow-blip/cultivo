@@ -112,20 +112,63 @@ function RoomPane({
 
       {isMother ? (
         <div className="drawer-strain-list">
-          {room.strains.map((s) => (
-            <div key={s.strain_id} className="drawer-strain-row mother-row">
-              <div className="drawer-strain-head">
-                <span className="bar-dot dot-mother" aria-hidden />
-                <span className="strain-name">{s.strain_name}</span>
-                <span className="strain-stage cap mute">mother</span>
-                <span className="strain-count num">×{s.plant_count}</span>
+          {room.strains.map((s) => {
+            // Mother cutback workflow per file 2's "Mother Cutback"
+            // column. Sostanza target cadence is 16 days between cuts;
+            // longer indicates an overdue mom that should be cut now,
+            // shorter means the mom is still recovering. days_in_stage
+            // reads as days-since-last-cutback when stage_entered_at
+            // is stamped on each cutback event.
+            const CUTBACK_CADENCE = 16;
+            const daysSinceCut = s.days_in_stage ?? null;
+            const cutbackStatus =
+              daysSinceCut === null
+                ? null
+                : daysSinceCut >= CUTBACK_CADENCE
+                  ? 'ready'
+                  : 'recovering';
+            const daysToReady =
+              daysSinceCut !== null ? CUTBACK_CADENCE - daysSinceCut : null;
+            return (
+              <div key={s.strain_id} className="drawer-strain-row mother-row">
+                <div className="drawer-strain-head">
+                  <span className="bar-dot dot-mother" aria-hidden />
+                  <span className="strain-name">{s.strain_name}</span>
+                  <span className="strain-stage cap mute">mother</span>
+                  <span className="strain-count num">×{s.plant_count}</span>
+                </div>
+                <div className="drawer-strain-meta">
+                  <span>Established <span className="num">{s.earliest_planted_date ? fmtDateShort(s.earliest_planted_date) : '—'}</span></span>
+                  <span className="quarantine-pill" title="Mother establishment date is back-filled per data-lineage doctrine">model</span>
+                </div>
+                {cutbackStatus && (
+                  <div className="drawer-strain-meta drawer-mother-cutback">
+                    <span>
+                      Last cutback{' '}
+                      <span className="num">
+                        {daysSinceCut === 0 ? 'today' : `${daysSinceCut}d ago`}
+                      </span>
+                    </span>
+                    {cutbackStatus === 'ready' ? (
+                      <span
+                        className="data-source-pill live"
+                        title={`This mother is past the ${CUTBACK_CADENCE}-day cutback cadence — cuts can be taken today.`}
+                      >
+                        Ready to Cut
+                      </span>
+                    ) : (
+                      <span
+                        className="cap mute"
+                        title={`This mother is recovering from its last cutback. Next cuts can be taken in ${daysToReady} day${daysToReady === 1 ? '' : 's'} on the ${CUTBACK_CADENCE}-day cadence.`}
+                      >
+                        Recovering · {daysToReady}d
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="drawer-strain-meta">
-                <span>Established <span className="num">{s.earliest_planted_date ? fmtDateShort(s.earliest_planted_date) : '—'}</span></span>
-                <span className="quarantine-pill" title="Mother establishment date is back-filled per data-lineage doctrine">model</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : inRoom.length === 0 ? (
         <div className="drawer-empty">

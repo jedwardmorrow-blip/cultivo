@@ -1053,6 +1053,38 @@
   margin-right: 4px;
 }
 
+/* Mother cutback pill — inline status on the genetics library bar
+   surfacing whether any mom is ready for cuts now or how many days
+   until the next cutback per Sostanza's 16-day cadence. */
+.lab-prod-planner .mother-cutback-pill {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  padding: 0 6px;
+  border-radius: 1px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .mother-cutback-pill.is-ready {
+  color: var(--lab-canvas);
+  background: var(--lab-gold);
+  border: 1px solid var(--lab-gold);
+}
+.lab-prod-planner .mother-cutback-pill.is-recovering {
+  color: var(--lab-ink-3);
+  background: transparent;
+  border: 1px solid var(--lab-rule);
+}
+
+/* Mother-row drawer cutback row — third meta line under the
+   established / model pill row showing days since last cut and a
+   READY / RECOVERING pill. */
+.lab-prod-planner .drawer-mother-cutback {
+  margin-top: 4px;
+}
+
 /* ═════════ Production Calendar — 12-month forward roll-up ═════════
    Mirrors file 2's Pivot sheet (Production by month/strain) at the
    operator surface. Hairline grid Treatment A: 12 month cells with

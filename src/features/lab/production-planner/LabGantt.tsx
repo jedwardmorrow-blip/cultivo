@@ -523,27 +523,58 @@ export function LabGantt({
                       contains N strains, M total mothers." Click the
                       bar to open the drawer for the per-strain breakdown
                       with synthetic-mother quarantine treatment. */}
-                  {isMother && room.strains.length > 0 && (
-                    <div
-                      className="mother-bar"
-                      style={{ left: 0, width: totalWidth }}
-                      onClick={() => onRoomClick(room)}
-                      role="button"
-                      tabIndex={0}
-                      title={`${room.room_code} · ${room.strains.length} strains in genetics library · ${room.total_plants} mother plants total. Click to open the drawer for the full library.`}
-                    >
-                      <span className="bar-dot dot-mother" aria-hidden />
-                      <div className="mother-summary mono">
-                        <span className="mother-summary-label cap">Genetics library</span>
-                        <span className="mother-summary-num">{room.strains.length}</span>
-                        <span className="mother-summary-unit cap">strains</span>
-                        <span className="mother-summary-sep">·</span>
-                        <span className="mother-summary-num">{room.total_plants}</span>
-                        <span className="mother-summary-unit cap">mothers</span>
-                        <span className="mother-summary-cta cap">Open library →</span>
+                  {isMother && room.strains.length > 0 && (() => {
+                    // Cutback cadence summary — surfaces the mother
+                    // workflow per file 2's Mother Cutback column. We
+                    // take the most-recent days_in_stage across the
+                    // genetics library as a proxy for "the next mom
+                    // ready to cut." Sostanza target is 16d.
+                    const CUTBACK_CADENCE = 16;
+                    const dayValues = room.strains
+                      .map((s) => s.days_in_stage)
+                      .filter((d): d is number => typeof d === 'number');
+                    const minDays = dayValues.length > 0 ? Math.min(...dayValues) : null;
+                    const readyCount = dayValues.filter((d) => d >= CUTBACK_CADENCE).length;
+                    return (
+                      <div
+                        className="mother-bar"
+                        style={{ left: 0, width: totalWidth }}
+                        onClick={() => onRoomClick(room)}
+                        role="button"
+                        tabIndex={0}
+                        title={
+                          minDays !== null
+                            ? `${room.room_code} · ${room.strains.length} strain${room.strains.length === 1 ? '' : 's'} · ${room.total_plants} mothers · ${readyCount} ready to cut · next cutback in ${Math.max(0, CUTBACK_CADENCE - minDays)}d. Click to open the genetics library.`
+                            : `${room.room_code} · ${room.strains.length} strains · ${room.total_plants} mothers. Click to open the genetics library.`
+                        }
+                      >
+                        <span className="bar-dot dot-mother" aria-hidden />
+                        <div className="mother-summary mono">
+                          <span className="mother-summary-label cap">Genetics library</span>
+                          <span className="mother-summary-num">{room.strains.length}</span>
+                          <span className="mother-summary-unit cap">{room.strains.length === 1 ? 'strain' : 'strains'}</span>
+                          <span className="mother-summary-sep">·</span>
+                          <span className="mother-summary-num">{room.total_plants}</span>
+                          <span className="mother-summary-unit cap">mothers</span>
+                          {minDays !== null && (
+                            <>
+                              <span className="mother-summary-sep">·</span>
+                              {readyCount > 0 ? (
+                                <span className="mother-cutback-pill is-ready cap mono" title={`${readyCount} mother strain${readyCount === 1 ? '' : 's'} past the ${CUTBACK_CADENCE}-day cutback cadence`}>
+                                  {readyCount} ready to cut
+                                </span>
+                              ) : (
+                                <span className="mother-cutback-pill is-recovering cap mono" title={`Next cutback ready in ${CUTBACK_CADENCE - minDays} day${CUTBACK_CADENCE - minDays === 1 ? '' : 's'} on the ${CUTBACK_CADENCE}-day cadence`}>
+                                  Next cutback {CUTBACK_CADENCE - minDays}d
+                                </span>
+                              )}
+                            </>
+                          )}
+                          <span className="mother-summary-cta cap">Open library →</span>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Empty room verb-chip */}
                   {isEmpty && (
