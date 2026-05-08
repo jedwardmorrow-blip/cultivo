@@ -625,6 +625,14 @@ export function LabProductionPlanner() {
   // the operator surface so the demo viewer doesn't need to open a
   // separate report to see throughput cadence.
   const monthlyProduction = useMemo(() => {
+    type MonthContribution = {
+      batch_code: string;
+      strain_name: string;
+      room_code: string;
+      harvest_iso: string;
+      harvest_label: string;
+      grams: number;
+    };
     type MonthBucket = {
       key: string;       // YYYY-MM
       label: string;     // "MAY"
@@ -632,6 +640,7 @@ export function LabProductionPlanner() {
       year_short: string; // "26"
       harvest_count: number;
       total_grams: number;
+      contributions: MonthContribution[];
     };
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -646,9 +655,11 @@ export function LabProductionPlanner() {
         year_short: String(d.getFullYear()).slice(2),
         harvest_count: 0,
         total_grams: 0,
+        contributions: [],
       });
     }
     const bucketByKey = new Map(buckets.map((b) => [b.key, b]));
+    const roomById = new Map(rooms.map((r) => [r.room_id, r]));
     for (const b of batches) {
       const flowerSeg = b.segments.find((s) => s.stage === 'flower');
       if (!flowerSeg) continue;
@@ -657,11 +668,23 @@ export function LabProductionPlanner() {
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const bucket = bucketByKey.get(key);
       if (!bucket) continue;
+      const grams = b.forecast_yield_grams ?? flowerSeg.plant_count * 720;
       bucket.harvest_count++;
-      bucket.total_grams += b.forecast_yield_grams ?? flowerSeg.plant_count * 720;
+      bucket.total_grams += grams;
+      bucket.contributions.push({
+        batch_code: b.batch_code.split(' ')[0],
+        strain_name: b.strain_name,
+        room_code: roomById.get(flowerSeg.room_id)?.room_code ?? flowerSeg.room_id,
+        harvest_iso: harvestISO,
+        harvest_label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        grams,
+      });
+    }
+    for (const bucket of buckets) {
+      bucket.contributions.sort((a, b) => a.harvest_iso.localeCompare(b.harvest_iso));
     }
     return buckets;
-  }, [batches, harvestOverrides]);
+  }, [batches, rooms, harvestOverrides]);
 
   const monthlyMaxGrams = useMemo(
     () => Math.max(1, ...monthlyProduction.map((m) => m.total_grams)),
@@ -1167,7 +1190,17 @@ export function LabProductionPlanner() {
               <div
                 key={m.key}
                 className={`month-cell ${m.harvest_count === 0 ? 'is-empty' : ''} ${i === 0 ? 'is-current' : ''}`}
-                title={`${m.label} ${m.year_short} · ${m.harvest_count} harvest${m.harvest_count === 1 ? '' : 's'} · projected ${kg.toFixed(1)} kg`}
+                title={
+                  m.harvest_count === 0
+                    ? `${m.label} ${m.year_short} · no projected harvests`
+                    : [
+                        `${m.label} ${m.year_short} · ${m.harvest_count} harvest${m.harvest_count === 1 ? '' : 's'} · projected ${kg.toFixed(1)} kg`,
+                        '',
+                        ...m.contributions.map(
+                          (c) => `${c.harvest_label}  ${c.batch_code} · ${c.room_code} · ${c.strain_name} · ${(c.grams / 1000).toFixed(1)} kg`
+                        ),
+                      ].join('\n')
+                }
               >
                 <div className="month-bar-track" aria-hidden>
                   <div className="month-bar-fill" style={{ height: `${heightPct}%` }} />
