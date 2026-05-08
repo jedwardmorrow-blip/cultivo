@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { CalendarRoom, CalendarPlannedEntry, StrainCultivationStats } from '@/features/production-planner/types';
+import { plannedCyclesService } from '@/features/production-planner/services/plannedCyclesService';
 import { LabGantt } from './LabGantt';
 import { LabRoomDrawer } from './LabRoomDrawer';
 import { LabPlanCycleForm } from './LabPlanCycleForm';
@@ -136,8 +137,21 @@ export function LabProductionPlanner() {
   // Plan-form modal: which room to plan into, and (optional) seed a strain.
   const [planFormRoom, setPlanFormRoom] = useState<CalendarRoom | null>(null);
 
-  // Last-finalized confirmation banner.
-  const [lastFinalized, setLastFinalized] = useState<{ strain: string; room: string } | null>(null);
+  // Last-finalized confirmation banner. Mode 'persisted' = wrote to
+  // planned_cycles in prod, 'local' = client-state-only (mock/fallback),
+  // 'error' = service write failed and the optimistic entry was rolled back.
+  const [lastFinalized, setLastFinalized] = useState<
+    | { strain: string; room: string; mode: 'persisted' | 'local' | 'error'; message?: string }
+    | null
+  >(null);
+
+  // When the live fetch completes (or a refresh fires), seed local
+  // plannedByRoom with the canonical server state. Local edits in
+  // mock/fallback mode are not affected because data.plannedByRoom
+  // there comes from MOCK_PLANNED and is stable.
+  useEffect(() => {
+    setPlannedByRoom(data.plannedByRoom);
+  }, [data.plannedByRoom]);
 
   const handleRoomClick = useCallback((room: CalendarRoom) => {
     setDrawerRoomId(room.room_id);
@@ -282,18 +296,52 @@ export function LabProductionPlanner() {
   } | null>(null);
 
   const handleFinalize = useCallback(
-    (entry: CalendarPlannedEntry, roomId: string, roomCode: string) => {
+    async (entry: CalendarPlannedEntry, roomId: string, roomCode: string) => {
+      // Optimistic insert. The entry id from the form is a synthetic
+      // `lab-${Date.now()}` that the server will replace with a uuid on
+      // refresh; that's fine because refresh wipes plannedByRoom and
+      // reseeds from the canonical timeline.
       setPlannedByRoom((prev) => {
         const list = prev[roomId] ?? [];
         return { ...prev, [roomId]: [...list, entry] };
       });
-      setLastFinalized({ strain: entry.strain_name, room: roomCode });
       setPlanFormRoom(null);
       setViewMode('planning');
-      // Auto-clear the confirmation after a few seconds.
+
+      if (data.source === 'live') {
+        try {
+          await plannedCyclesService.create({
+            strain_id: entry.strain_id,
+            target_room_id: roomId,
+            planned_plant_count: entry.planned_plant_count,
+            flower_start_date: entry.flower_start_date,
+            estimated_harvest_date: entry.estimated_harvest_date,
+            clone_cut_date: entry.clone_cut_date,
+            veg_start_date: entry.veg_start_date,
+            forecast_yield_grams: entry.forecast_yield_grams,
+            forecast_price_per_gram: entry.forecast_price_per_gram,
+          });
+          setLastFinalized({ strain: entry.strain_name, room: roomCode, mode: 'persisted' });
+          await data.refresh();
+        } catch (err: any) {
+          // Roll back the optimistic entry.
+          setPlannedByRoom((prev) => {
+            const list = prev[roomId] ?? [];
+            return { ...prev, [roomId]: list.filter((c) => c.id !== entry.id) };
+          });
+          setLastFinalized({
+            strain: entry.strain_name,
+            room: roomCode,
+            mode: 'error',
+            message: err?.message ?? 'Save failed',
+          });
+        }
+      } else {
+        setLastFinalized({ strain: entry.strain_name, room: roomCode, mode: 'local' });
+      }
       window.setTimeout(() => setLastFinalized(null), 4500);
     },
-    []
+    [data]
   );
 
   // ── DERIVED KPI tiles ─────────────────────────────────────────
@@ -786,13 +834,29 @@ export function LabProductionPlanner() {
       </div>
 
       {lastFinalized && (
-        <div className="finalize-banner" role="status">
-          <span className="serial">FINALIZED</span>
+        <div
+          className={`finalize-banner ${lastFinalized.mode === 'error' ? 'alarm' : ''}`}
+          role="status"
+        >
+          <span className="serial">
+            {lastFinalized.mode === 'error' ? 'SAVE FAILED' : 'FINALIZED'}
+          </span>
           <span className="sep">·</span>
           <span>
-            <span className="strong">{lastFinalized.strain}</span> planned into {lastFinalized.room}
+            <span className="strong">{lastFinalized.strain}</span>{' '}
+            {lastFinalized.mode === 'error' ? 'rolled back from' : 'planned into'} {lastFinalized.room}
           </span>
-          <span className="cap mute">added to planning view</span>
+          {lastFinalized.mode === 'persisted' && (
+            <span className="cap mute">written to planned_cycles · live</span>
+          )}
+          {lastFinalized.mode === 'local' && (
+            <span className="cap mute">added to planning view · client only</span>
+          )}
+          {lastFinalized.mode === 'error' && lastFinalized.message && (
+            <span className="cap mute" title={lastFinalized.message}>
+              {lastFinalized.message.length > 60 ? lastFinalized.message.slice(0, 57) + '...' : lastFinalized.message}
+            </span>
+          )}
           <button className="banner-x" onClick={() => setLastFinalized(null)} aria-label="Dismiss">×</button>
         </div>
       )}

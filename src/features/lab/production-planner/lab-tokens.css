@@ -1198,6 +1198,13 @@
   letter-spacing: 0.04em;
 }
 .lab-prod-planner .finalize-banner .sep { color: var(--lab-ink-4); }
+.lab-prod-planner .finalize-banner.alarm {
+  background: rgba(197,106,106,0.10);
+  border-bottom-color: var(--lab-alarm);
+}
+.lab-prod-planner .finalize-banner.alarm .serial {
+  color: var(--lab-alarm);
+}
 .lab-prod-planner .finalize-banner .banner-x {
   margin-left: auto;
   background: transparent;

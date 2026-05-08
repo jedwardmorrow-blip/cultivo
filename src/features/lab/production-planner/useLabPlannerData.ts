@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type {
   CalendarRoom,
   CalendarRoomStrain,
   CalendarPlannedEntry,
+  PlannedCycleTimelineRow,
   StrainCultivationStats,
 } from '@/features/production-planner/types';
+import { plannedCyclesService } from '@/features/production-planner/services/plannedCyclesService';
 import type { Batch, BatchSegment, LifecycleStage } from './planner-mock';
 import {
   MOCK_BATCHES,
@@ -49,6 +51,12 @@ export interface LabPlannerData {
   motherLots: MotherLot[];
   error: string | null;
   loading: boolean;
+  /**
+   * Re-read live state. No-op in mock mode. Used by the surface after a
+   * successful planned_cycles write so the new row appears without a
+   * full reload.
+   */
+  refresh: () => Promise<void>;
 }
 
 const SYNTHETIC_MOTHER_BURST_START = new Date('2026-04-27T03:00:00Z').getTime();
@@ -103,6 +111,32 @@ function defaultStageDays(
   }
 }
 
+function plannedRowsToByRoom(
+  rows: PlannedCycleTimelineRow[]
+): Record<string, CalendarPlannedEntry[]> {
+  const out: Record<string, CalendarPlannedEntry[]> = {};
+  for (const r of rows) {
+    if (r.status === 'cancelled' || r.status === 'completed') continue;
+    const entry: CalendarPlannedEntry = {
+      id: r.cycle_id,
+      strain_id: r.strain_id,
+      strain_name: r.strain_name,
+      planned_plant_count: r.planned_plant_count,
+      clone_cut_date: r.clone_cut_date,
+      veg_start_date: r.veg_start_date,
+      flower_start_date: r.flower_start_date,
+      estimated_harvest_date: r.estimated_harvest_date,
+      status: r.status,
+      forecast_yield_grams: r.forecast_yield_grams,
+      forecast_price_per_gram: r.forecast_price_per_gram,
+    };
+    const list = out[r.room_id] ?? [];
+    list.push(entry);
+    out[r.room_id] = list;
+  }
+  return out;
+}
+
 interface RawLifecycleRow {
   batch_id: string;
   batch_code: string | null;
@@ -152,10 +186,17 @@ interface LiveAssembly {
   rooms: CalendarRoom[];
   strainStats: StrainCultivationStats[];
   motherLots: MotherLot[];
+  plannedByRoom: Record<string, CalendarPlannedEntry[]>;
 }
 
 async function fetchLive(): Promise<LiveAssembly> {
-  const [lifecycleRes, statsRes, roomsRes, motherRes] = await Promise.all([
+  // planned_cycles read is best-effort — an empty timeline (the current
+  // state at Cult per the doctrine v2 inspection) and a per-row failure
+  // both fall through to plannedByRoom = {}. Lifecycle/stats/rooms/mom
+  // failures still throw, since those drive the Gantt itself.
+  const plannedPromise = plannedCyclesService.getTimeline().catch(() => [] as PlannedCycleTimelineRow[]);
+
+  const [lifecycleRes, statsRes, roomsRes, motherRes, plannedRows] = await Promise.all([
     supabase.from('v_batch_lifecycle' as any)
       .select('batch_id, batch_code, strain_id, strain_name, room_id, room_code, lifecycle_state, stage, flower_plants, veg_plants, next_harvest_date, days_in_stage, age_days, confidence, harvest_date')
       .in('stage', ['cultivation', 'drying']),
@@ -166,12 +207,15 @@ async function fetchLive(): Promise<LiveAssembly> {
     supabase.from('plant_groups')
       .select('id, batch_registry_id, strain_id, grow_room_id, mother_plant_group_id, is_mother, plant_count, growth_stage, stage_entered_at, planted_date, estimated_harvest_date, created_at, source_type')
       .eq('is_mother', true),
+    plannedPromise,
   ]);
 
   if (lifecycleRes.error) throw new Error(`v_batch_lifecycle: ${lifecycleRes.error.message}`);
   if (statsRes.error) throw new Error(`v_strain_cultivation_stats: ${statsRes.error.message}`);
   if (roomsRes.error) throw new Error(`grow_rooms: ${roomsRes.error.message}`);
   if (motherRes.error) throw new Error(`plant_groups (mothers): ${motherRes.error.message}`);
+
+  const plannedByRoom = plannedRowsToByRoom(plannedRows);
 
   const lifecycleRows = ((lifecycleRes.data ?? []) as unknown) as RawLifecycleRow[];
   const strainStats = ((statsRes.data ?? []) as unknown) as StrainCultivationStats[];
@@ -393,11 +437,11 @@ async function fetchLive(): Promise<LiveAssembly> {
         ? Math.round((totalPlants / r.capacity_plants) * 100)
         : null,
       strains,
-      plannedCycles: [],
+      plannedCycles: plannedByRoom[r.id] ?? [],
     };
   });
 
-  return { batches, rooms, strainStats, motherLots };
+  return { batches, rooms, strainStats, motherLots, plannedByRoom };
 }
 
 function buildMockMotherLots(): MotherLot[] {
@@ -417,6 +461,7 @@ interface InternalState {
   loadedAt: Date;
   batches: Batch[];
   rooms: CalendarRoom[];
+  plannedByRoom: Record<string, CalendarPlannedEntry[]>;
   strainStats: StrainCultivationStats[];
   motherLots: MotherLot[];
   error: string | null;
@@ -429,6 +474,7 @@ function mockState(): InternalState {
     loadedAt: new Date(),
     batches: MOCK_BATCHES,
     rooms: MOCK_ROOMS,
+    plannedByRoom: MOCK_PLANNED,
     strainStats: MOCK_STRAIN_STATS,
     motherLots: buildMockMotherLots(),
     error: null,
@@ -442,6 +488,7 @@ function fallbackState(error: string | null, loading: boolean): InternalState {
     loadedAt: new Date(),
     batches: MOCK_BATCHES,
     rooms: MOCK_ROOMS,
+    plannedByRoom: MOCK_PLANNED,
     strainStats: MOCK_STRAIN_STATS,
     motherLots: buildMockMotherLots(),
     error,
@@ -456,47 +503,57 @@ export function useLabPlannerData(): LabPlannerData {
     isMockMode ? mockState() : fallbackState(null, true)
   );
 
+  const loadLive = useCallback(async (signal: { cancelled: boolean }) => {
+    setState(prev => ({ ...prev, loading: true }));
+    try {
+      const live = await fetchLive();
+      if (signal.cancelled) return;
+      if (live.batches.length === 0) {
+        setState(fallbackState(
+          'No batches in scope (cultivation/drying). Falling back to mock fixture.',
+          false
+        ));
+        return;
+      }
+      setState({
+        source: 'live',
+        loadedAt: new Date(),
+        batches: live.batches,
+        rooms: live.rooms,
+        plannedByRoom: live.plannedByRoom,
+        strainStats: live.strainStats,
+        motherLots: live.motherLots,
+        error: null,
+        loading: false,
+      });
+    } catch (err: any) {
+      if (signal.cancelled) return;
+      setState(fallbackState(err?.message ?? 'Live fetch failed', false));
+    }
+  }, []);
+
   useEffect(() => {
     if (isMockMode) return;
-    let cancelled = false;
-    setState(prev => ({ ...prev, loading: true }));
-    fetchLive()
-      .then(live => {
-        if (cancelled) return;
-        if (live.batches.length === 0) {
-          setState(fallbackState(
-            'No batches in scope (cultivation/drying). Falling back to mock fixture.',
-            false
-          ));
-          return;
-        }
-        setState({
-          source: 'live',
-          loadedAt: new Date(),
-          batches: live.batches,
-          rooms: live.rooms,
-          strainStats: live.strainStats,
-          motherLots: live.motherLots,
-          error: null,
-          loading: false,
-        });
-      })
-      .catch(err => {
-        if (cancelled) return;
-        setState(fallbackState(err?.message ?? 'Live fetch failed', false));
-      });
-    return () => { cancelled = true; };
-  }, [isMockMode]);
+    const signal = { cancelled: false };
+    loadLive(signal);
+    return () => { signal.cancelled = true; };
+  }, [isMockMode, loadLive]);
+
+  const refresh = useCallback(async () => {
+    if (isMockMode) return;
+    await loadLive({ cancelled: false });
+  }, [isMockMode, loadLive]);
 
   return {
     source: state.source,
     loadedAt: state.loadedAt,
     batches: state.batches,
     rooms: state.rooms,
-    plannedByRoom: MOCK_PLANNED,
+    plannedByRoom: state.plannedByRoom,
     strainStats: state.strainStats,
     motherLots: state.motherLots,
     error: state.error,
     loading: state.loading,
+    refresh,
   };
 }
