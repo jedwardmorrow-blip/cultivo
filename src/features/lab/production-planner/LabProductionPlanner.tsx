@@ -811,6 +811,68 @@ export function LabProductionPlanner() {
       });
     }
 
+    // Scheduling collisions — for each flower room, find consecutive
+    // flower segments that overlap (next batch starts before prior
+    // batch finishes). Surface the most imminent collision as a SEED
+    // observation; consolidate the rest into a "+N more" suffix so a
+    // multi-collision schedule does not flood the row with 6 separate
+    // observations. CTA opens the conflict room's drawer so the
+    // operator can decide which batch to shift.
+    type Collision = {
+      roomCode: string;
+      roomId: string;
+      overlapDays: number;
+      overlapStart: Date;
+      laterBatch: typeof batches[number];
+      earlierBatch: typeof batches[number];
+    };
+    const collisions: Collision[] = [];
+    for (const room of rooms) {
+      if (room.room_type !== 'flower') continue;
+      const segs: Array<{ start: Date; end: Date; batch: typeof batches[number] }> = [];
+      for (const b of batches) {
+        const fs = b.segments.find(s => s.stage === 'flower' && s.room_id === room.room_id);
+        if (!fs) continue;
+        segs.push({ start: new Date(fs.start), end: new Date(fs.end), batch: b });
+      }
+      segs.sort((a, b) => a.start.getTime() - b.start.getTime());
+      for (let i = 1; i < segs.length; i++) {
+        const prev = segs[i - 1];
+        const curr = segs[i];
+        const gapMs = curr.start.getTime() - prev.end.getTime();
+        if (gapMs >= 0) continue;
+        collisions.push({
+          roomCode: room.room_code,
+          roomId: room.room_id,
+          overlapDays: Math.round(-gapMs / 86400000),
+          overlapStart: curr.start,
+          laterBatch: curr.batch,
+          earlierBatch: prev.batch,
+        });
+      }
+    }
+    if (collisions.length > 0) {
+      collisions.sort((a, b) => a.overlapStart.getTime() - b.overlapStart.getTime());
+      const head = collisions[0];
+      const more = collisions.length - 1;
+      const dateLabel = head.overlapStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const moreSuffix = more > 0 ? `, +${more} more across the schedule` : '';
+      out.push({
+        status: 'bad',
+        entity: `${head.roomCode} · ${head.laterBatch.batch_code.split(' ')[0]} vs ${head.earlierBatch.batch_code.split(' ')[0]}`,
+        context: `${head.overlapDays}d overlap on ${dateLabel}, batch ${head.laterBatch.batch_code.split(' ')[0]} wants the room before batch ${head.earlierBatch.batch_code.split(' ')[0]} finishes${moreSuffix}`,
+        badge: { text: `OVERLAP ${head.overlapDays}d`, tone: 'bad' },
+        cta: 'OPEN ROOM →',
+        action: {
+          cta: 'OPEN ROOM →',
+          onClick: () => {
+            setDrawerRoomId(head.roomId);
+            setSelectedBatchId(head.laterBatch.batch_id);
+          },
+        },
+      });
+    }
+
     return out;
   }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats]);
 
