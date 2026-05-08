@@ -650,46 +650,113 @@ export function LabProductionPlanner() {
       });
     }
 
-    // Idle strain — pick any active batch's strain that hasn't been touched in a while.
-    const ehBatch = batches.find((b) => b.strain_name === "Earth's Healing");
-    if (ehBatch) {
+    // Stuck cohort alarm — drying-stage batches more than 100d past
+    // their clone-cut date. Real backend data-hygiene signal that also
+    // surfaces the WEEK STATUS alarm context.
+    const horizon100Ago = new Date(today);
+    horizon100Ago.setDate(horizon100Ago.getDate() - 100);
+    const stuckBatches = batches.filter((b) => {
+      if (b.current_stage !== 'drying') return false;
+      return new Date(b.clone_cut_date) <= horizon100Ago;
+    });
+    if (stuckBatches.length > 0) {
+      const sample = stuckBatches[0];
+      const stuckRoom = rooms.find((r) => r.room_id === sample.current_room_id);
+      const cohortKeys = new Set<string>();
+      for (const b of stuckBatches) {
+        const m = b.batch_code.match(/^(\d{6})/);
+        cohortKeys.add(`${b.current_room_id}:${m?.[1] ?? b.batch_id}`);
+      }
       out.push({
-        status: 'warn',
-        entity: ehBatch.strain_name.toUpperCase(),
-        context: 'cooled 28 days idle; mother room has 4 rootable cuts ready, last replant lined up vs avg.',
-        badge: { text: 'IDLE 28d', tone: 'warn' },
-        cta: 'OPEN STRAIN →',
+        status: 'bad',
+        entity: `${stuckRoom?.room_code ?? sample.current_room_id} · ${sample.strain_name.toUpperCase()}`,
+        context: `${stuckBatches.length} batch${stuckBatches.length === 1 ? '' : 'es'} in ${cohortKeys.size} cohort${cohortKeys.size === 1 ? '' : 's'} stuck more than 100d in drying, operator action required to release.`,
+        badge: { text: 'STUCK', tone: 'bad' },
+        cta: 'OPEN BATCH →',
         action: {
-          cta: 'OPEN STRAIN →',
+          cta: 'OPEN BATCH →',
           onClick: () => {
-            setDrawerRoomId(ehBatch.current_room_id);
-            setSelectedBatchId(ehBatch.batch_id);
+            setDrawerRoomId(sample.current_room_id);
+            setSelectedBatchId(sample.batch_id);
           },
         },
       });
     }
 
-    // Paced strain — Story Long Distance current cycle covers projected pull.
-    const sldBatch = batches.find((b) => b.strain_name === 'Story Long Distance');
-    if (sldBatch) {
+    // Mother room readiness — surface the next cutback window so the
+    // operator can plan cuts on cadence. Sostanza file 2 specifies a
+    // 16d cadence; we read days_in_stage off the genetics library.
+    const CUTBACK_CADENCE = 16;
+    const motherRoom = rooms.find((r) => r.room_type === 'mother' && r.strains && r.strains.length > 0);
+    if (motherRoom && motherRoom.strains) {
+      const days = motherRoom.strains
+        .map((s) => s.days_in_stage)
+        .filter((d): d is number => typeof d === 'number');
+      if (days.length > 0) {
+        const minDays = Math.min(...days);
+        const ready = days.filter((d) => d >= CUTBACK_CADENCE).length;
+        if (ready > 0) {
+          out.push({
+            status: 'warn',
+            entity: motherRoom.room_code,
+            context: `${ready} mother strain${ready === 1 ? '' : 's'} past the ${CUTBACK_CADENCE}d cutback cadence, cuts can be taken today.`,
+            badge: { text: 'READY TO CUT', tone: 'warn' },
+            cta: 'OPEN LIBRARY →',
+            action: {
+              cta: 'OPEN LIBRARY →',
+              onClick: () => setDrawerRoomId(motherRoom.room_id),
+            },
+          });
+        } else if (CUTBACK_CADENCE - minDays <= 7) {
+          const nextDays = CUTBACK_CADENCE - minDays;
+          out.push({
+            status: 'ok',
+            entity: motherRoom.room_code,
+            context: `${motherRoom.total_plants} mothers in rotation, next cutback in ${nextDays}d on the ${CUTBACK_CADENCE}d cadence.`,
+            badge: { text: `CUT IN ${nextDays}d`, tone: 'ok' },
+            cta: 'OPEN LIBRARY →',
+            action: {
+              cta: 'OPEN LIBRARY →',
+              onClick: () => setDrawerRoomId(motherRoom.room_id),
+            },
+          });
+        }
+      }
+    }
+
+    // Idle flower with unmatched demand — pull the demand signal
+    // forward into a planning prompt instead of letting UNMATCHED
+    // DEMAND remain a dead-end KPI. Suggests a flower-start date
+    // back-derived from clone+veg pipeline timing.
+    const idleFlower = rooms.find((r) => r.room_type === 'flower' && r.total_plants === 0);
+    const unmatched = strainStats.filter((s) => (s.demand_unassigned_units ?? 0) > 0);
+    if (idleFlower && unmatched.length > 0) {
+      const strain = unmatched[0];
+      const flowerStart = new Date(today);
+      flowerStart.setDate(flowerStart.getDate() + 35);
+      const flowerStartISO = flowerStart.toISOString().slice(0, 10);
       out.push({
-        status: 'ok',
-        entity: sldBatch.strain_name.toUpperCase(),
-        context: 'demand +14% MoM, mother count holds at 6, current cycle pacing covers projected pull.',
-        badge: { text: 'PACED', tone: 'ok' },
-        cta: 'OPEN STRAIN →',
+        status: 'warn',
+        entity: `${idleFlower.room_code} · ${strain.strain_name.toUpperCase()}`,
+        context: `flower room idle with unassigned demand for ${strain.strain_name}, a cycle started today flips ~${flowerStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.`,
+        badge: { text: 'IDLE', tone: 'warn' },
+        cta: 'PLAN A CYCLE →',
         action: {
-          cta: 'OPEN STRAIN →',
+          cta: 'PLAN A CYCLE →',
           onClick: () => {
-            setDrawerRoomId(sldBatch.current_room_id);
-            setSelectedBatchId(sldBatch.batch_id);
+            setPlanFormPrefill({
+              initialStrainId: strain.strain_id,
+              initialFlowerStart: flowerStartISO,
+              prefillReason: `${idleFlower.room_code} idle, ${strain.strain_name} demand unassigned`,
+            });
+            setPlanFormRoom(idleFlower);
           },
         },
       });
     }
 
     return out;
-  }, [batches, rooms, plannedByRoom, harvestOverrides]);
+  }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats]);
 
   const canvasClass =
     canvas === 'marketing' ? 'canvas-marketing' : '';
@@ -880,6 +947,16 @@ export function LabProductionPlanner() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="planner-legend cap mono" role="note" aria-label="Surface affordances">
+        <span className="planner-legend-label">LEGEND</span>
+        <span className="planner-legend-sep">·</span>
+        <span>click any room or batch to open detail</span>
+        <span className="planner-legend-sep">·</span>
+        <span>drag a flower-bar edge to shift harvest</span>
+        <span className="planner-legend-sep">·</span>
+        <span>plan a cycle on empty rooms</span>
       </div>
 
       {lastFinalized && (

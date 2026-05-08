@@ -1437,6 +1437,31 @@
   padding: 3px 10px;
 }
 
+/* ═════════ Surface legend strip ═════════
+   Static affordance hints rendered between FIG. 02 plate and the
+   Gantt body. Mono caps, hairline rule below, muted ink. The strip
+   surfaces the four interactions a cold visitor would otherwise have
+   to discover by accident. */
+.lab-prod-planner .planner-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--lab-ink-3);
+  border-bottom: 1px solid var(--lab-panel);
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+.lab-prod-planner .planner-legend-label {
+  color: var(--lab-gold);
+  font-weight: 600;
+}
+.lab-prod-planner .planner-legend-sep {
+  color: var(--lab-ink-4);
+}
+
 /* ═════════ Finalize banner ═════════ */
 .lab-prod-planner .finalize-banner {
   display: flex;
