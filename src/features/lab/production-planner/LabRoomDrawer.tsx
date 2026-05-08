@@ -394,6 +394,62 @@ function BatchPane({
         />
       </div>
 
+      {/* Plant attrition funnel — file 1 tracks # clones → # on 4L
+          → # on F-box → # plants harvested as four explicit
+          counts per batch. Surfacing the funnel in the drawer lets
+          the operator see retention through each stage at a glance.
+          Live (Cult) data only exposes flower_plants / veg_plants
+          today; clone and harvested counts render as "—" with a
+          no-capture tooltip until the corresponding write paths ship
+          per the cultops_planner_data_lineage v2 doctrine. */}
+      <div className="drawer-section-cap">
+        <span>Attrition</span>
+        <span className="cap mute">cuts → rooted → flower → harvest</span>
+      </div>
+      {(() => {
+        const stagePick = (stage: string): number | null => {
+          const seg = batch.segments.find((s) => s.stage === stage);
+          return seg?.plant_count ?? null;
+        };
+        const steps: Array<{ label: string; value: number | null; tooltip?: string }> = [
+          { label: 'Cuts', value: stagePick('clone'), tooltip: 'Clones cut from mothers (file 1: # clones).' },
+          { label: 'Rooted', value: stagePick('veg'), tooltip: 'Survivors transplanted to 4L pots (file 1: # on 4L).' },
+          { label: 'In Flower', value: stagePick('flower'), tooltip: 'Transferred to flower box (file 1: # on F-box).' },
+          { label: 'Harvested', value: stagePick('harvest') ?? stagePick('drying') ?? stagePick('trim') ?? stagePick('cure') ?? stagePick('pack'), tooltip: 'Plants brought down at harvest (file 1: # plants harvested).' },
+        ];
+        const retentions: Array<number | null> = steps.map((s, i) => {
+          if (i === 0) return null;
+          const prev = steps[i - 1].value;
+          if (prev === null || s.value === null || prev === 0) return null;
+          return Math.round((s.value / prev) * 100);
+        });
+        return (
+          <div className="drawer-funnel">
+            {steps.map((s, i) => (
+              <div key={s.label} className="drawer-funnel-step-wrap">
+                <div
+                  className={`drawer-funnel-step ${s.value === null ? 'is-empty' : ''}`}
+                  title={s.tooltip}
+                >
+                  <span className="drawer-funnel-num display">
+                    {s.value === null ? '—' : s.value.toLocaleString()}
+                  </span>
+                  <span className="drawer-funnel-label cap">{s.label}</span>
+                </div>
+                {i < steps.length - 1 && (
+                  <div className="drawer-funnel-link">
+                    <span className="drawer-funnel-arrow" aria-hidden>→</span>
+                    <span className="drawer-funnel-pct cap mono">
+                      {retentions[i + 1] !== null ? `${retentions[i + 1]}%` : '—'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* Strain hand-off */}
       {strainStats && (
         <>
