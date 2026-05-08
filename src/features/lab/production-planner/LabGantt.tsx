@@ -500,12 +500,27 @@ export function LabGantt({
             <span className="cap">Rooms</span>
             <span className="cap dim">{rooms.length}</span>
           </div>
-          {rooms.map((room) => {
+          {rooms.map((room, ri) => {
             const plannedCount = plannedByRoom[room.room_id]?.length ?? 0;
+            // Match the same "incoming" definition used by the
+            // PLAN A CYCLE chip suppression: a projected flower
+            // segment from an in-flight batch lands here within the
+            // visible window. When this fires, the cap shows
+            // "INCOMING" instead of "EMPTY" so the operator sees
+            // the room's true state, not a contradiction with the
+            // faint dashed projection bar in the same row.
+            const hasIncomingForCap = renderedSegments.some(rs =>
+              rs.roomIndex === ri && rs.stage === 'flower' && rs.isProjected && !rs.isCurrent
+            );
             const isEmptyRoom =
               room.room_type !== 'mother' &&
               room.total_plants === 0 &&
-              plannedCount === 0;
+              plannedCount === 0 &&
+              !hasIncomingForCap;
+            const isIncomingRoom =
+              room.room_type !== 'mother' &&
+              room.total_plants === 0 &&
+              hasIncomingForCap;
             // Yield × area math (file 2's per-row Production
             // formula). When square_footage is present we surface a
             // mono SQFT tag on the capacity row and put the full
@@ -525,6 +540,8 @@ export function LabGantt({
                 role="button"
                 tabIndex={0}
                 title={capTitle}
+                data-room-code={room.room_code}
+                data-room-id={room.room_id}
               >
                 <div className="cap-row-1">
                   <span className="room-code mono">{room.room_code}</span>
@@ -535,6 +552,14 @@ export function LabGantt({
                       title="No current batches and no planned cycles in this room. Open the drawer to plan a cycle."
                     >
                       Empty
+                    </span>
+                  )}
+                  {isIncomingRoom && (
+                    <span
+                      className="room-incoming-chip cap"
+                      title="This flower room is currently empty but a committed in-flight batch is on its way. The faint dashed bar in this row marks the projected flower segment."
+                    >
+                      Incoming
                     </span>
                   )}
                 </div>

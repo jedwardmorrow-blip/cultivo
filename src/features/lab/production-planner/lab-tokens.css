@@ -1074,6 +1074,18 @@
   border-radius: 1px;
   cursor: help;
 }
+.lab-prod-planner .room-incoming-chip {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lab-gold);
+  padding: 1px 5px 0;
+  border: 1px dashed var(--lab-gold);
+  border-radius: 1px;
+  cursor: help;
+}
 
 .lab-prod-planner .bar-strain-name {
   color: var(--lab-ink);
@@ -2540,6 +2552,58 @@
   bottom: 24px;
   right: 24px;
   width: 340px;
+}
+
+/* ── Drawer conflict banner — surfaces room-level overlap detail
+   when an OVERLAP SEED prompt opens this room's drawer. Closes the
+   loop from "system flagged a collision" to "here are the two
+   batches and how to resolve". */
+.lab-prod-planner .drawer-conflict-banner {
+  margin: 12px 0 4px;
+  padding: 10px 12px 12px;
+  border: 1px solid #c56a6a;
+  border-left-width: 3px;
+  background: rgba(197, 106, 106, 0.06);
+  border-radius: 1px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--lab-ink, #e8e0d4);
+}
+.lab-prod-planner .drawer-conflict-banner .conflict-banner-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lab-prod-planner .drawer-conflict-banner .conflict-badge {
+  background: #c56a6a;
+  color: var(--pv4-canvas-deep, #061a33);
+  padding: 2px 6px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  border-radius: 1px;
+}
+.lab-prod-planner .drawer-conflict-banner .conflict-when {
+  color: #c56a6a;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+}
+.lab-prod-planner .drawer-conflict-banner .conflict-banner-body {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+.lab-prod-planner .drawer-conflict-banner .conflict-banner-actions {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lab-ink-mute, rgba(232, 224, 212, 0.65));
+  line-height: 1.5;
+}
+.lab-prod-planner .drawer-conflict-banner .conflict-banner-more {
+  margin-top: 6px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 .sostanza-walkthrough .walkthrough-card-head {
   display: flex;

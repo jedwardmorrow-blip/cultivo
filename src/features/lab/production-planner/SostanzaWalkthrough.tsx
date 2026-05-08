@@ -53,8 +53,20 @@ const STEPS: Step[] = [
   {
     title: 'THE QUEUE',
     body:
-      'Top to bottom, MOTHER then CLONE then VEG then 4 FLOWER ROOMS then DRY TRIM CURE PACK, every batch flowing through 9 stages, click anything to drill in, drag a flower bar\'s right edge to shift harvest, plan a cycle on empty rooms',
+      'Top to bottom, mother then clone then veg then four flower rooms then drying, trim, cure, pack, every batch flowing through 9 stages, faint dashed bars are committed cycles still upstream of their landing room',
     targetSelector: '.gantt-shell',
+  },
+  {
+    title: 'BATCH DETAIL',
+    body:
+      'Click any bar to open its drawer, you get the 9-stage lifecycle progress, a plant attrition funnel reading 800 cuts to 360 harvested at your file 2 retention, strain stats with 22.4 kg per harvest at 800 g per square foot',
+    targetSelector: '[data-batch-id="sb-297"]',
+  },
+  {
+    title: 'QUEUE-AWARE PLANNING',
+    body:
+      'Click any flower room cap to open it, then click Plan a Cycle, the form pre-fills the flower-start date anchored to your predecessor harvest plus 3 day turnover, no manual calendar arithmetic',
+    targetSelector: '[data-room-code="FLW-03"]',
   },
 ];
 

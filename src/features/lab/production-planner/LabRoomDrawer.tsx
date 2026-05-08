@@ -75,6 +75,41 @@ function RoomPane({
   const isMother = room.room_type === 'mother';
   const inRoom = batches.filter((b) => b.current_room_id === room.room_id);
 
+  // Compute scheduling collisions involving this room. For each
+  // consecutive pair of flower segments in this room, find overlap.
+  // Surface a banner at the top of the pane when any conflict exists,
+  // closing the action loop for the operator who landed here from
+  // the OVERLAP SEED prompt.
+  type Conflict = {
+    overlapDays: number;
+    overlapDate: string;
+    earlierBatch: Batch;
+    laterBatch: Batch;
+  };
+  const conflicts: Conflict[] = [];
+  if (room.room_type === 'flower') {
+    const segs: Array<{ start: string; end: string; batch: Batch }> = [];
+    for (const b of batches) {
+      const fs = b.segments.find((s) => s.stage === 'flower' && s.room_id === room.room_id);
+      if (fs) segs.push({ start: fs.start, end: fs.end, batch: b });
+    }
+    segs.sort((a, b) => a.start.localeCompare(b.start));
+    for (let i = 1; i < segs.length; i++) {
+      const prev = segs[i - 1];
+      const curr = segs[i];
+      const days = Math.round(
+        (new Date(prev.end).getTime() - new Date(curr.start).getTime()) / 86400000
+      );
+      if (days <= 0) continue;
+      conflicts.push({
+        overlapDays: days,
+        overlapDate: fmtDateShort(curr.start),
+        earlierBatch: prev.batch,
+        laterBatch: curr.batch,
+      });
+    }
+  }
+
   return (
     <div className={`drawer-room-pane ${split ? 'split' : ''}`}>
       <div className="drawer-stamp">
@@ -106,6 +141,28 @@ function RoomPane({
           <span className="cap mute">{utilizationPct}% utilized</span>
         </div>
       </div>
+
+      {conflicts.length > 0 && (
+        <div className="drawer-conflict-banner" role="alert">
+          <div className="conflict-banner-head">
+            <span className="conflict-badge cap mono">
+              OVERLAP {conflicts[0].overlapDays}d
+            </span>
+            <span className="conflict-when cap mono">{conflicts[0].overlapDate}</span>
+          </div>
+          <div className="conflict-banner-body">
+            <span className="strong">Batch {conflicts[0].laterBatch.batch_code.split(' ')[0]}</span> wants {room.room_code} before <span className="strong">batch {conflicts[0].earlierBatch.batch_code.split(' ')[0]}</span> finishes harvest.
+          </div>
+          <div className="conflict-banner-actions cap mono">
+            Resolve by dragging batch {conflicts[0].earlierBatch.batch_code.split(' ')[0]}'s flower-bar right edge earlier, or shifting batch {conflicts[0].laterBatch.batch_code.split(' ')[0]}'s flower-start later
+          </div>
+          {conflicts.length > 1 && (
+            <div className="conflict-banner-more cap mute mono">
+              {conflicts.length - 1} more collision{conflicts.length - 1 === 1 ? '' : 's'} in this room
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="drawer-section-cap">
         <span>{isMother ? 'Genetics' : 'Batches'}</span>
