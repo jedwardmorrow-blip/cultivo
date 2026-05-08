@@ -3,6 +3,7 @@ import type { CalendarRoom, CalendarPlannedEntry, StrainCultivationStats } from 
 import { LabGantt } from './LabGantt';
 import { LabRoomDrawer } from './LabRoomDrawer';
 import { LabPlanCycleForm } from './LabPlanCycleForm';
+import { SostanzaWalkthrough } from './SostanzaWalkthrough';
 import type { Batch } from './planner-mock';
 import { useLabPlannerData } from './useLabPlannerData';
 import './lab-tokens.css';
@@ -1258,6 +1259,8 @@ export function LabProductionPlanner() {
           }}
         />
       )}
+
+      {isDemoFixture && <SostanzaWalkthrough />}
     </div>
   );
 }
