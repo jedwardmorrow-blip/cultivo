@@ -354,6 +354,90 @@ export function LabGantt({
     return m;
   }, [batches]);
 
+  // Cascade preview during drag. When the operator is shifting a
+  // harvest edge or a planned-cycle bar, project the downstream
+  // segments at their shifted positions and render them as ghost
+  // bars. Mark conflicts where the shift puts a segment into a room
+  // that another batch already occupies in the same window.
+  type CascadeGhost = {
+    stage: string;
+    roomIndex: number;
+    x: number;
+    w: number;
+    conflict: boolean;
+    deltaText: string;
+  };
+  const cascadePreview = useMemo<CascadeGhost[]>(() => {
+    if (!drag || drag.delta === 0) return [];
+    const out: CascadeGhost[] = [];
+    const deltaText = `${drag.delta > 0 ? '+' : ''}${drag.delta}d`;
+
+    const overlapsAnyOther = (selfBatchId: string, roomId: string, start: Date, end: Date) => {
+      return batches.some((other) => {
+        if (other.batch_id === selfBatchId) return false;
+        return other.segments.some((seg) => {
+          if (seg.room_id !== roomId) return false;
+          return new Date(seg.start) < end && new Date(seg.end) > start;
+        });
+      });
+    };
+
+    if (drag.target.kind === 'harvest') {
+      const batch = batchById.get(drag.target.id);
+      if (!batch) return out;
+      // Shift harvest, drying, trim, cure, test, pack. Skip clone, veg,
+      // flower because flower's shift is already shown by the
+      // displayW override on the live bar.
+      for (const seg of batch.segments) {
+        if (['clone', 'veg', 'flower'].includes(seg.stage)) continue;
+        const newStart = new Date(seg.start);
+        newStart.setDate(newStart.getDate() + drag.delta);
+        const newEnd = new Date(seg.end);
+        newEnd.setDate(newEnd.getDate() + drag.delta);
+        const ri = roomIndexById.get(seg.room_id);
+        if (ri === undefined) continue;
+        const x = daysBetween(startDate, newStart) * DAY_WIDTH;
+        const w = Math.max(8, daysBetween(newStart, newEnd) * DAY_WIDTH);
+        const conflict = overlapsAnyOther(batch.batch_id, seg.room_id, newStart, newEnd);
+        out.push({ stage: seg.stage, roomIndex: ri, x, w, conflict, deltaText });
+      }
+    } else if (drag.target.kind === 'planned') {
+      // Synthesize the cascade for a sliding planned cycle. Fixture
+      // post-harvest day counts mirror the Sostanza Master Production
+      // Schedule: harvest 1d, cleaning 4d, trim 10d (overlaps drying),
+      // cure 5d, test 14d, pack 1d.
+      const cycle = Object.values(plannedByRoom).flat().find((p) => p.id === drag.target.id);
+      if (!cycle) return out;
+      const baseFlowerStart = new Date(cycle.flower_start_date);
+      const newFlowerStart = new Date(baseFlowerStart);
+      newFlowerStart.setDate(newFlowerStart.getDate() + drag.delta);
+      const flowerDays = flowerDaysByStrain?.(cycle.strain_id) ?? 63;
+      const newHarvestStart = new Date(newFlowerStart);
+      newHarvestStart.setDate(newHarvestStart.getDate() + flowerDays);
+      const stages: Array<{ stage: string; roomCode: string; days: number; offsetFromHarvest: number }> = [
+        { stage: 'harvest', roomCode: drag.target.roomId, days: 1, offsetFromHarvest: 0 },
+        { stage: 'drying', roomCode: 'r-dry-01', days: 15, offsetFromHarvest: 5 },
+        { stage: 'trim', roomCode: 'r-trim-01', days: 10, offsetFromHarvest: 5 },
+        { stage: 'cure', roomCode: 'r-cure-01', days: 5, offsetFromHarvest: 15 },
+        { stage: 'test', roomCode: 'r-cure-01', days: 14, offsetFromHarvest: 20 },
+        { stage: 'pack', roomCode: 'r-pack-01', days: 1, offsetFromHarvest: 34 },
+      ];
+      for (const s of stages) {
+        const segStart = new Date(newHarvestStart);
+        segStart.setDate(segStart.getDate() + s.offsetFromHarvest);
+        const segEnd = new Date(segStart);
+        segEnd.setDate(segEnd.getDate() + s.days);
+        const ri = roomIndexById.get(s.roomCode);
+        if (ri === undefined) continue;
+        const x = daysBetween(startDate, segStart) * DAY_WIDTH;
+        const w = Math.max(8, daysBetween(segStart, segEnd) * DAY_WIDTH);
+        const conflict = overlapsAnyOther(cycle.id, s.roomCode, segStart, segEnd);
+        out.push({ stage: s.stage, roomIndex: ri, x, w, conflict, deltaText });
+      }
+    }
+    return out;
+  }, [drag, batchById, batches, roomIndexById, startDate, plannedByRoom, flowerDaysByStrain]);
+
   // Quarantine polarity inversion. Per the four-state lineage doctrine the
   // dotted-bottom + dotted-left-edge treatments mark "data lineage is
   // suspect." On Cult's live data ~95% of segments carry one of those
@@ -936,6 +1020,28 @@ export function LabGantt({
                 </div>
               );
             })}
+
+            {/* Cascade preview ghosts. Render during a non-zero drag to
+                show where the downstream segments would land at the new
+                date. Conflict ghosts mark rooms where an existing batch
+                already occupies the projected window. */}
+            {cascadePreview.map((g, i) => (
+              <div
+                key={`cascade-${i}`}
+                className={`cascade-ghost cap mono${g.conflict ? ' is-conflict' : ''}`}
+                style={{
+                  left: g.x,
+                  top: HEADER_HEIGHT + g.roomIndex * ROW_HEIGHT + 8,
+                  width: g.w,
+                  height: ROW_HEIGHT - 16,
+                }}
+                aria-hidden
+              >
+                <span className="cascade-ghost-stage">{g.stage}</span>
+                <span className="cascade-ghost-delta">{g.deltaText}</span>
+                {g.conflict && <span className="cascade-ghost-warn">conflict</span>}
+              </div>
+            ))}
 
             {/* Connector overlay: arrows between consecutive segments of the
                 same batch, when both end-of-prev and start-of-next are visible. */}
