@@ -276,9 +276,20 @@ function buildSostanzaRoom(
   capacity: number | null,
   square_footage: number | null
 ): CalendarRoom {
-  const inRoom = SOSTANZA_BATCHES.filter(
-    b => b.current_room_id === room_id && b.current_stage !== 'closed'
-  );
+  // Today anchor for filtering "actually currently in the room" vs
+  // "committed to land in the room later." A batch counts toward the
+  // room's live capacity only when its earliest segment (clone) has
+  // already been cut; future-committed cycles that have not started
+  // yet do not occupy any room. Mid-flight batches whose current
+  // segment has a future start (e.g., harvest in 3 days) still count
+  // because their prior segments have already physically placed them.
+  const todayISO = SOSTANZA_TODAY.toISOString().slice(0, 10);
+  const inRoom = SOSTANZA_BATCHES.filter(b => {
+    if (b.current_room_id !== room_id) return false;
+    if (b.current_stage === 'closed') return false;
+    if (b.segments[0] && b.segments[0].start > todayISO) return false;
+    return true;
+  });
   const strains: CalendarRoomStrain[] = inRoom.map(b => {
     const currentSeg = b.segments.find(s => s.is_current) ?? b.segments[0];
     return {

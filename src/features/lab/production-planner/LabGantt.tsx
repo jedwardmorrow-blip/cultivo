@@ -225,8 +225,19 @@ export function LabGantt({
   const renderedSegments = useMemo<RenderSegment[]>(() => {
     const out: RenderSegment[] = [];
     if (!Array.isArray(batches)) return out;
+    const todayISO = new Date().toISOString().slice(0, 10);
     for (const b of batches) {
       const isHighlighted = highlightedBatch === b.batch_id;
+      // Batch is "in flight" when its earliest segment (clone) has
+      // actually been cut, i.e., its first segment's start is in the
+      // past. Future-committed cycles whose clone cut hasn't happened
+      // yet do not qualify; their projections remain hidden in CURRENT
+      // view to avoid double-counting paper commitments as imminent
+      // reality. Batches mid-stage with a future-starting current
+      // segment (e.g., a harvest seg starting in 3 days) still count
+      // as in flight because the prior phases already happened.
+      const earliestSeg = b.segments[0];
+      const isInFlight = !!earliestSeg && earliestSeg.start <= todayISO;
       for (let i = 0; i < b.segments.length; i++) {
         const seg = b.segments[i];
 
@@ -245,8 +256,15 @@ export function LabGantt({
         // Doctrine: history hidden unless the batch is highlighted
         if (!seg.is_current && !seg.is_projected && !isHighlighted) continue;
 
-        // Doctrine: projections hidden in Current view
-        if (seg.is_projected && viewMode !== 'planning') continue;
+        // Doctrine: projections hidden in CURRENT view, EXCEPT for
+        // segments that belong to an in-flight batch whose downstream
+        // pipeline lands within the visible window. These render at
+        // low opacity ("incoming silhouette") so the operator can see
+        // the lineage from upstream stages into their destination
+        // rooms without flipping to PLANNING view.
+        const isImminentInFlightProjection =
+          seg.is_projected && isInFlight && viewMode !== 'planning';
+        if (seg.is_projected && viewMode !== 'planning' && !isImminentInFlightProjection) continue;
 
         const roomIdx = roomIndexById.get(seg.room_id);
         if (roomIdx === undefined) continue;
@@ -602,7 +620,15 @@ export function LabGantt({
             {rooms.map((room, ri) => {
               const planned = plannedByRoom[room.room_id] ?? [];
               const isMother = room.room_type === 'mother';
-              const isEmpty = !isMother && room.strains.length === 0 && planned.length === 0;
+              // Imminent incoming: a projected flower segment from an
+              // in-flight batch lands in this room within the visible
+              // window. If so, the room isn't truly "empty" — it has a
+              // committed cycle already on its way. Suppress the
+              // PLAN A CYCLE chip to avoid prompting a duplicate plan.
+              const hasIncoming = renderedSegments.some(rs =>
+                rs.roomIndex === ri && rs.stage === 'flower' && rs.isProjected && !rs.isCurrent
+              );
+              const isEmpty = !isMother && room.strains.length === 0 && planned.length === 0 && !hasIncoming;
               return (
                 <div
                   key={room.room_id}
@@ -1016,7 +1042,11 @@ export function LabGantt({
                       aria-label={`flips to ${toRoomCode} on ${toFlipDate}`}
                       title={`Destined for ${toRoomCode} on ${toFlipDate}`}
                     >
-                      →{toRoomCode} · {toFlipDate}
+                      {/* Tight bars (clone phase, narrow veg) drop the
+                          date and show only the room code. The full
+                          destination is in the title attribute and the
+                          drawer, so no information is lost. */}
+                      →{toRoomCode}{displayW >= 180 ? ` · ${toFlipDate}` : ''}
                     </span>
                   )}
                   {showCapturedChip && !isBatchQuarantined && rs.isCurrent && (
