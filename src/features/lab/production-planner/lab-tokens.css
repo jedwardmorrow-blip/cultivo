@@ -75,20 +75,6 @@
   --lab-surface-2:     var(--pv4-canvas-deeper);
 }
 
-/* Paper variant (Document mode) — for executive surfaces, weekly digests,
-   printable surfaces, marketing screenshots. Not the operator default. */
-.lab-prod-planner.canvas-paper {
-  --lab-canvas:        var(--pv4-paper);
-  --lab-surface:       #ECE2C7;
-  --lab-surface-2:     #E5D9B8;
-  --lab-ink:           var(--pv4-ink);
-  --lab-ink-2:         var(--pv4-ink-2);
-  --lab-ink-3:         var(--pv4-ink-3);
-  --lab-ink-4:         var(--pv4-ink-4);
-  --lab-panel:         var(--pv4-rule-ink);
-  --lab-panel-strong:  var(--pv4-rule-ink-strong);
-}
-
 /* ═════════ Layout primitives ═════════ */
 
 .lab-prod-planner {
@@ -345,15 +331,6 @@
 .lab-prod-planner .dot-gold  { background: var(--lab-gold); }
 .lab-prod-planner .dot-ink   { background: var(--lab-ink-3); }
 
-.lab-prod-planner .dot-pulse {
-  background: var(--lab-alarm);
-  animation: labPulse 2s ease-out infinite;
-}
-@keyframes labPulse {
-  0%   { opacity: 1; transform: scale(1); }
-  60%  { opacity: 0.55; transform: scale(2.2); }
-  100% { opacity: 0; transform: scale(2.8); }
-}
 .lab-prod-planner .dot-pulse-wrap {
   position: relative;
   display: inline-flex;
