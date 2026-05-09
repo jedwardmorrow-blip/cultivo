@@ -20,7 +20,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
  * visible behind the overlay.
  */
 
-const STORAGE_KEY = 'sostanza_walkthrough_seen_v1';
+const STORAGE_KEY = 'sostanza_walkthrough_seen_v2';
 
 interface Step {
   /** Section heading rendered in mono caps above the body. */
@@ -35,7 +35,7 @@ const STEPS: Step[] = [
   {
     title: 'THE INSTRUMENT',
     body:
-      "Sostanza's production planner, sized to your file 2 cadence, 18 batches across 11 rooms in a 4-room flower rotation, today centered with four weeks back and sixteen forward",
+      'Production planner sized for commercial cultivation, batches across mother, veg, flower, and post-harvest rooms, multi-strain cohorts grouped by flip date, today centered with four weeks back and sixteen forward',
     targetSelector: '.serial-plate',
   },
   {
@@ -53,19 +53,19 @@ const STEPS: Step[] = [
   {
     title: 'THE QUEUE',
     body:
-      'Top to bottom, mother then clone then veg then four flower rooms then drying, trim, cure, pack, every batch flowing through 9 stages, faint dashed bars are committed cycles still upstream of their landing room',
+      'Top to bottom, mother then clone then veg then your flower rotation then drying, trim, cure, pack, every batch flowing through nine stages, multi-strain cohorts collapse into a single bar with strain count overlaid, faint dashed bars are committed cycles still upstream of their landing room',
     targetSelector: '.gantt-shell',
   },
   {
     title: 'BATCH DETAIL',
     body:
-      'Click any bar to open its drawer, you get the 9-stage lifecycle progress, a plant attrition funnel reading 800 cuts to 360 harvested at your file 2 retention, strain stats with 22.4 kg per harvest at 800 g per square foot',
-    targetSelector: '[data-batch-id="sb-297"]',
+      'Click any bar to open its drawer, you get the nine-stage lifecycle progress, a plant attrition funnel from cuts to harvested, mother lineage, and strain stats with yield-per-square-foot and projected COA timing',
+    targetSelector: '.gantt-bar',
   },
   {
     title: 'QUEUE-AWARE PLANNING',
     body:
-      'Click any flower room cap to open it, then click Plan a Cycle, the form pre-fills the flower-start date anchored to your predecessor harvest plus 3 day turnover, no manual calendar arithmetic',
+      'Click any flower room cap to open it, then click Plan a Cycle, the cohort form lets you stage 1 to N strains at once, mom selectors filter to in-house genetics, the flower-start date pre-fills anchored to predecessor harvest plus 3 day turnover, no manual calendar arithmetic',
     targetSelector: '[data-room-code="FLW-03"]',
   },
 ];

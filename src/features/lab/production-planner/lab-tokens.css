@@ -1989,6 +1989,117 @@
   border-color: var(--lab-gold-paper);
 }
 
+/* ═════════ Cohort form (multi-strain plan editor) ═════════ */
+.lab-prod-planner .plan-form-cohort {
+  width: min(820px, 96vw);
+  max-height: 92vh;
+}
+.lab-prod-planner .plan-form-cohort-strains {
+  margin: 12px 0 14px 0;
+  padding: 10px 12px 12px 12px;
+  border: 1px solid var(--lab-ink-3);
+  background: var(--lab-paper);
+  border-radius: 2px;
+}
+.lab-prod-planner .cohort-strains-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--lab-ink-4);
+}
+.lab-prod-planner .cohort-strains-head .cap.strong {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--lab-ink);
+}
+.lab-prod-planner .cohort-strains-head .warn {
+  color: var(--lab-alarm);
+}
+.lab-prod-planner .cohort-strain-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lab-prod-planner .cohort-strain-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 70px 110px 70px 24px;
+  align-items: center;
+  gap: 8px;
+}
+.lab-prod-planner .cohort-strain-row-num {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  text-align: right;
+  color: var(--lab-ink-3);
+}
+.lab-prod-planner .cohort-strain-select {
+  min-width: 0;
+}
+.lab-prod-planner .cohort-strain-plants {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.lab-prod-planner .cohort-strain-mom {
+  min-width: 0;
+}
+.lab-prod-planner .cohort-strain-mom-warn {
+  font-size: 10px;
+  text-align: center;
+  letter-spacing: 0.06em;
+  padding: 4px 6px;
+  border: 1px solid var(--lab-alarm);
+  color: var(--lab-alarm);
+  border-radius: 1px;
+}
+.lab-prod-planner .cohort-strain-forecast {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  text-align: right;
+  color: var(--lab-ink-2);
+}
+.lab-prod-planner .cohort-strain-remove {
+  background: transparent;
+  border: 1px solid var(--lab-ink-4);
+  color: var(--lab-ink-3);
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 1px;
+}
+.lab-prod-planner .cohort-strain-remove:hover:not(:disabled) {
+  border-color: var(--lab-alarm);
+  color: var(--lab-alarm);
+}
+.lab-prod-planner .cohort-strain-remove:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.lab-prod-planner .cohort-add-strain {
+  margin-top: 10px;
+  background: transparent;
+  border: 1px dashed var(--lab-ink-3);
+  color: var(--lab-ink-2);
+  padding: 6px 12px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 1px;
+  width: 100%;
+}
+.lab-prod-planner .cohort-add-strain:hover:not(:disabled) {
+  border-color: var(--lab-gold);
+  color: var(--lab-gold);
+}
+.lab-prod-planner .cohort-add-strain:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ═════════ Drawer plan-cycle chip ═════════ */
 .lab-prod-planner .drawer-toolbar-actions {
   display: flex;

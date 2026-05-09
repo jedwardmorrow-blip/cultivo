@@ -2,7 +2,9 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import type { CalendarRoom, CalendarPlannedEntry, StrainCultivationStats } from '@/features/production-planner/types';
 import { LabGantt } from './LabGantt';
 import { LabRoomDrawer } from './LabRoomDrawer';
-import { LabPlanCycleForm } from './LabPlanCycleForm';
+import { LabPlanCohortForm } from './LabPlanCohortForm';
+import type { CohortPlanResult } from './LabPlanCohortForm';
+import type { LifecycleStage, BatchSegment } from './planner-mock';
 import { SostanzaWalkthrough } from './SostanzaWalkthrough';
 import type { Batch } from './planner-mock';
 import { useLabPlannerData } from './useLabPlannerData';
@@ -109,10 +111,16 @@ export function LabProductionPlanner() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
   const data = useLabPlannerData();
-  const batches: Batch[] = data.batches;
   const rooms: CalendarRoom[] = data.rooms;
   const strainStats = data.strainStats;
   const motherLots = data.motherLots;
+
+  // localBatches: in-memory cohort plans created via LabPlanCohortForm.
+  // Demo-mode only by contract (cultivo_planner_demo_to_prod_bridge): live
+  // mode will route the same submit through fn_plan_cycle once Phase 3 of
+  // the cycles unification migration ships. Cleared on data.source change.
+  const [localBatches, setLocalBatches] = useState<Batch[]>([]);
+  const batches: Batch[] = useMemo(() => [...data.batches, ...localBatches], [data.batches, localBatches]);
 
   const today = useMemo(() => new Date(), []);
   const liveTime = useMemo(() => formatLiveTime(today), [today]);
@@ -359,56 +367,125 @@ export function LabProductionPlanner() {
     prefillReason?: string;
   } | null>(null);
 
-  const handleFinalize = useCallback(
-    async (entry: CalendarPlannedEntry, roomId: string, roomCode: string) => {
-      // Optimistic insert. The entry id from the form is a synthetic
-      // `lab-${Date.now()}` that the server will replace with a uuid on
-      // refresh; that's fine because refresh wipes plannedByRoom and
-      // reseeds from the canonical timeline.
-      setPlannedByRoom((prev) => {
-        const list = prev[roomId] ?? [];
-        return { ...prev, [roomId]: [...list, entry] };
-      });
-      setPlanFormRoom(null);
-      setViewMode('planning');
+  const handleCohortFinalize = useCallback(
+    (cohort: CohortPlanResult) => {
+      // Multi-strain cohort plan: synthesizes one Batch per strain, all
+      // sharing flower_start_date, room, clone_cut_date so the YYMMDD
+      // prefix in batch_code matches across all rows. LabGantt's cohort
+      // grouping (keyed by roomIndex + YYMMDD prefix + stage) then
+      // renders these as a single cohort bar per stage with the strain
+      // count overlaid.
+      //
+      // Per cultivo_planner_demo_to_prod_bridge: this is the demo write
+      // path. Live mode (Phase 3 of cycles unification) will route the
+      // same payload through fn_plan_cycle which atomically inserts one
+      // cycles row in status=planning plus N batch_registry rows with
+      // mother_plant_group_ids populated.
 
-      if (data.source === 'live') {
-        try {
-          // Dynamic import keeps the demo bundle free of supabase deps.
-          const { plannedCyclesService } = await import('@/features/production-planner/services/plannedCyclesService');
-          await plannedCyclesService.create({
-            strain_id: entry.strain_id,
-            target_room_id: roomId,
-            planned_plant_count: entry.planned_plant_count,
-            flower_start_date: entry.flower_start_date,
-            estimated_harvest_date: entry.estimated_harvest_date,
-            clone_cut_date: entry.clone_cut_date,
-            veg_start_date: entry.veg_start_date,
-            forecast_yield_grams: entry.forecast_yield_grams,
-            forecast_price_per_gram: entry.forecast_price_per_gram,
-          });
-          setLastFinalized({ strain: entry.strain_name, room: roomCode, mode: 'persisted' });
-          await data.refresh();
-        } catch (err: any) {
-          // Roll back the optimistic entry.
-          setPlannedByRoom((prev) => {
-            const list = prev[roomId] ?? [];
-            return { ...prev, [roomId]: list.filter((c) => c.id !== entry.id) };
-          });
-          setLastFinalized({
-            strain: entry.strain_name,
-            room: roomCode,
-            mode: 'error',
-            message: err?.message ?? 'Save failed',
-          });
-        }
-      } else {
-        setLastFinalized({ strain: entry.strain_name, room: roomCode, mode: 'local' });
-      }
+      const yy = cohort.clone_cut_date.slice(2, 4);
+      const mm = cohort.clone_cut_date.slice(5, 7);
+      const dd = cohort.clone_cut_date.slice(8, 10);
+      const yymmdd = `${yy}${mm}${dd}`;
+
+      // Anchor batch_id to a stable timestamp so re-renders don't
+      // regenerate ids. All strains in this cohort share the prefix.
+      const cohortStamp = Date.now();
+
+      // Resolve the clone room: prefer the form's mom room if present,
+      // else fall back to MOM-01 by code, else the first mom-type room.
+      const cloneRoom =
+        rooms.find((r) => r.room_type === 'mother') ?? null;
+      const vegRoomFallback =
+        rooms.find((r) => r.room_type === 'veg' && r.room_code === 'VEG-02') ??
+        rooms.find((r) => r.room_type === 'veg') ??
+        null;
+
+      const newBatches: Batch[] = cohort.strains.map((strain, idx) => {
+        const stat = strainStatsById.get(strain.strain_id);
+        const flowerDays = stat?.flowering_time_days ?? cohort.flower_days;
+        const vegDays = stat?.veg_days_avg ?? 21;
+
+        const cloneStart = cohort.clone_cut_date;
+        const vegStart = (() => {
+          const d = new Date(cloneStart);
+          d.setDate(d.getDate() + 16);
+          return d.toISOString().slice(0, 10);
+        })();
+        const flowerStartISO = cohort.flower_start_date;
+        const harvestISO = (() => {
+          const d = new Date(flowerStartISO);
+          d.setDate(d.getDate() + flowerDays);
+          return d.toISOString().slice(0, 10);
+        })();
+
+        const todayISO = new Date().toISOString().slice(0, 10);
+        const isFutureClone = cloneStart > todayISO;
+
+        const segments: BatchSegment[] = [
+          {
+            stage: 'clone' as LifecycleStage,
+            room_id: cloneRoom?.room_id ?? 'r-mom-01',
+            start: cloneStart,
+            end: vegStart,
+            plant_count: strain.plant_count,
+            is_current: false,
+            is_projected: isFutureClone,
+          },
+          {
+            stage: 'veg' as LifecycleStage,
+            room_id: vegRoomFallback?.room_id ?? 'r-veg-01',
+            start: vegStart,
+            end: flowerStartISO,
+            plant_count: strain.plant_count,
+            is_current: false,
+            is_projected: true,
+          },
+          {
+            stage: 'flower' as LifecycleStage,
+            room_id: cohort.room_id,
+            start: flowerStartISO,
+            end: harvestISO,
+            plant_count: strain.plant_count,
+            is_current: false,
+            is_projected: true,
+          },
+        ];
+
+        return {
+          batch_id: `b-cohort-${cohortStamp}-${idx}-${strain.strain_id}`,
+          batch_code: `${yymmdd}-${strain.strain_abbrev}`,
+          strain_id: strain.strain_id,
+          strain_name: strain.strain_name,
+          strain_abbrev: strain.strain_abbrev,
+          clone_cut_date: cloneStart,
+          current_stage: 'clone' as LifecycleStage,
+          current_room_id: cloneRoom?.room_id ?? 'r-mom-01',
+          mom_plant_group_id: strain.mom_plant_group_id,
+          mom_strain_name: strain.mom_strain_name,
+          segments,
+          status: 'committed' as const,
+          forecast_yield_grams: strain.forecast_yield_grams,
+        };
+      });
+
+      setLocalBatches((prev) => [...prev, ...newBatches]);
+      setPlanFormRoom(null);
+      setPlanFormPrefill(null);
+      setViewMode('planning');
+      setLastFinalized({
+        strain: `${cohort.strains.length}-strain cohort · ${cohort.total_plants} plants`,
+        room: cohort.room_code,
+        mode: 'local',
+      });
       window.setTimeout(() => setLastFinalized(null), 4500);
     },
-    [data]
+    [rooms, strainStatsById]
   );
+
+  // Single-strain handleFinalize removed; cohort form is the only write
+  // path. Live mode will route handleCohortFinalize through fn_plan_cycle
+  // once Phase 3 of the cycles unification migration ships (see decisions
+  // row cycles_unification_long_term_path).
 
   // ── DERIVED KPI tiles ─────────────────────────────────────────
   // All six tiles derive from the live batch + plan + override state so
@@ -900,7 +977,12 @@ export function LabProductionPlanner() {
     return out;
   }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats]);
 
-  const isDemoFixture = data.source === 'sostanza';
+  // Demo chrome treatment fires for any fixture-mode source. Hides
+  // DEEP/MARKETING tabs, BUREAU PRODUCT NO. 01/CC-B stamps, and the
+  // OPEN LIBRARY CTA so cold viewers focus on the planner surface.
+  // Mock and sostanza sources both ship as standalone demo artifacts
+  // per the cultivo_planner_demo_to_prod_bridge contract.
+  const isDemoFixture = data.source === 'sostanza' || data.source === 'mock';
   const canvasClass =
     canvas === 'marketing' ? 'canvas-marketing' : '';
 
@@ -960,7 +1042,7 @@ export function LabProductionPlanner() {
           <span className="sep">·</span>
           <span>Production Planner</span>
           <span className="sep">·</span>
-          <span>{data.source === 'sostanza' ? 'Sostanza' : 'Cult Cannabis'}</span>
+          <span>{(data.source === 'sostanza' || data.source === 'mock') ? 'Sostanza' : 'Cult Cannabis'}</span>
           <span className="sep">·</span>
           <span>Week of {weekOf}</span>
         </div>
@@ -992,10 +1074,10 @@ export function LabProductionPlanner() {
             </span>
           ) : (
             <span
-              className="quarantine-pill"
-              title="This surface is operating on a mock fixture per the cultivo_planner_data_lineage doctrine. No values are operator-captured. Drop ?mock=1 to attempt the live wire."
+              className="data-source-pill live"
+              title={`Sostanza demo fixture. ${batches.length} batches across ${rooms.length} rooms with multi-strain cohorts (4-26 strains per flower room sharing a flip date). Mirrors the realistic shape of every commercial cultivation operation.`}
             >
-              Mock Fixture
+              Sostanza · Demo Fixture · {batches.length} batches
             </span>
           )}
           {!isDemoFixture && (
@@ -1241,7 +1323,7 @@ export function LabProductionPlanner() {
       />
 
       {planFormRoom && (
-        <LabPlanCycleForm
+        <LabPlanCohortForm
           room={planFormRoom}
           strainStats={strainStats}
           strainStatsById={strainStatsById}
@@ -1253,10 +1335,7 @@ export function LabProductionPlanner() {
             setPlanFormRoom(null);
             setPlanFormPrefill(null);
           }}
-          onFinalize={(entry, roomId, roomCode) => {
-            handleFinalize(entry, roomId, roomCode);
-            setPlanFormPrefill(null);
-          }}
+          onFinalize={handleCohortFinalize}
         />
       )}
 

@@ -310,7 +310,21 @@ export function LabGantt({
     const passThrough: RenderSegment[] = [];
     for (const seg of out) {
       const isMotherRoom = rooms[seg.roomIndex]?.room_type === 'mother';
-      if (!seg.isCurrent || seg.isProjected || isMotherRoom) {
+      // Eligibility for cohort grouping:
+      //   live cohort: segment is current and non-projected (existing rule)
+      //   planning cohort: flower-stage segment of a committed or draft batch
+      //
+      // Planning cohorts render as a single bar in the target flower room
+      // matching what cycles in status=planning will look like once Phase 3
+      // of the cycles unification migration ships. Clone and veg-stage
+      // segments of planning cohorts pass through as individual bars
+      // (mother room excludes grouping anyway; veg-stage individuals are
+      // useful for tracking cuts as they leave the mom room).
+      const isLiveCohort = seg.isCurrent && !seg.isProjected;
+      const isPlanningFlower =
+        seg.stage === 'flower' &&
+        (seg.batch.status === 'committed' || seg.batch.status === 'draft');
+      if ((!isLiveCohort && !isPlanningFlower) || isMotherRoom) {
         passThrough.push(seg);
         continue;
       }
