@@ -266,7 +266,13 @@ export function LabProductionPlanner() {
 
   // Mom planning surface mutations. All in-memory per the demo bridge
   // contract — Phase 5 RPCs (fn_hold_back_moms, fn_retire_mom) replace
-  // these closures in live mode.
+  // these closures in live mode. Each emits a momFeedback banner so the
+  // operator gets confirmation that the action captured.
+  const [momFeedback, setMomFeedback] = useState<{
+    kind: 'held-back' | 'retired' | 'intake';
+    summary: string;
+  } | null>(null);
+
   const handleHoldBack = useCallback((newGroup: MotherBatchGroup) => {
     setMotherBatchGroups((prev) => {
       const existingIdx = prev.findIndex((g) => g.group_prefix === newGroup.group_prefix);
@@ -276,21 +282,33 @@ export function LabProductionPlanner() {
       next[existingIdx] = merged;
       return next;
     });
+    const totalPlants = newGroup.moms.length;
+    const strainsCount = new Set(newGroup.moms.map((m) => m.strain_id)).size;
+    setMomFeedback({
+      kind: 'held-back',
+      summary: `${totalPlants} plant${totalPlants === 1 ? '' : 's'} · ${strainsCount} strain${strainsCount === 1 ? '' : 's'} · MBG ${newGroup.group_prefix} from ${newGroup.source_flower_room_code}`,
+    });
   }, []);
 
   const handleRetireMom = useCallback((groupPrefix: string, momId: string) => {
+    let retiredStrain = '';
     setMotherBatchGroups((prev) =>
-      prev.map((g) =>
-        g.group_prefix !== groupPrefix
-          ? g
-          : {
-              ...g,
-              moms: g.moms.map((m) =>
-                m.id === momId ? { ...m, retired: true, health: 'needs_replacement' as MotherHealth } : m
-              ),
-            }
-      )
+      prev.map((g) => {
+        if (g.group_prefix !== groupPrefix) return g;
+        return {
+          ...g,
+          moms: g.moms.map((m) => {
+            if (m.id !== momId) return m;
+            retiredStrain = m.strain_name;
+            return { ...m, retired: true, health: 'needs_replacement' as MotherHealth };
+          }),
+        };
+      })
     );
+    setMomFeedback({
+      kind: 'retired',
+      summary: `${retiredStrain || 'Mom'} · MBG ${groupPrefix} · removed from rotation`,
+    });
   }, []);
 
   const handleAddGenetics = useCallback((strainName: string) => {
@@ -317,6 +335,10 @@ export function LabProductionPlanner() {
       moms: [placeholder],
     };
     setMotherBatchGroups((prev) => [intake, ...prev]);
+    setMomFeedback({
+      kind: 'intake',
+      summary: `${strainName} · placeholder created in MOM-01 · awaiting first cut`,
+    });
   }, []);
 
   // Inline-edit on a planned bar: update plant count and/or flower start
@@ -1347,6 +1369,18 @@ export function LabProductionPlanner() {
             </span>
           )}
           <button className="banner-x" onClick={() => setLastFinalized(null)} aria-label="Dismiss">×</button>
+        </div>
+      )}
+
+      {momFeedback && (
+        <div className="finalize-banner" role="status">
+          <span className="serial">
+            {momFeedback.kind === 'held-back' ? 'HELD BACK' : momFeedback.kind === 'retired' ? 'RETIRED' : 'INTAKE'}
+          </span>
+          <span className="sep">·</span>
+          <span>{momFeedback.summary}</span>
+          <span className="cap mute">in-memory · client only</span>
+          <button className="banner-x" onClick={() => setMomFeedback(null)} aria-label="Dismiss">×</button>
         </div>
       )}
 

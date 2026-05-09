@@ -606,8 +606,15 @@ export function MomPlanningDrawer({
       }
     }
 
-    return Array.from(candByKey.values()).sort((a, b) => a.flipISO.localeCompare(b.flipISO));
-  }, [batches, plannedByRoom, rooms]);
+    // Filter out candidates whose source has already been held back: an MBG
+    // with matching group_prefix exists in the roster, so the operator's
+    // already captured this hold-back. Prevents the "did the action take?"
+    // confusion when the candidate card persists after confirm.
+    const existingPrefixes = new Set(motherBatchGroups.map((g) => g.group_prefix));
+    return Array.from(candByKey.values())
+      .filter((c) => !existingPrefixes.has(c.sourcePrefix))
+      .sort((a, b) => a.flipISO.localeCompare(b.flipISO));
+  }, [batches, plannedByRoom, rooms, motherBatchGroups]);
 
   // ── Replacements due: moms with health=needs_replacement OR exhausted rotations.
   const replacements = useMemo(() => {
