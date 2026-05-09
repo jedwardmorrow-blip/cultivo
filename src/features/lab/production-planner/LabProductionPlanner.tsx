@@ -271,6 +271,7 @@ export function LabProductionPlanner() {
   const [momFeedback, setMomFeedback] = useState<{
     kind: 'held-back' | 'retired' | 'intake';
     summary: string;
+    action?: { cta: string; onClick: () => void };
   } | null>(null);
 
   const handleHoldBack = useCallback((newGroup: MotherBatchGroup) => {
@@ -284,11 +285,32 @@ export function LabProductionPlanner() {
     });
     const totalPlants = newGroup.moms.length;
     const strainsCount = new Set(newGroup.moms.map((m) => m.strain_id)).size;
+    const heldStrain = newGroup.moms[0];
+    const destination =
+      rooms.find((r) => r.room_type === 'flower' && r.total_plants === 0) ??
+      rooms.find((r) => r.room_type === 'flower');
     setMomFeedback({
       kind: 'held-back',
       summary: `${totalPlants} plant${totalPlants === 1 ? '' : 's'} · ${strainsCount} strain${strainsCount === 1 ? '' : 's'} · MBG ${newGroup.group_prefix} from ${newGroup.source_flower_room_code}`,
+      action: heldStrain && destination ? {
+        cta: 'PLAN CYCLE →',
+        onClick: () => {
+          const stats = strainStatsById.get(heldStrain.strain_id) ?? null;
+          const today = new Date();
+          const flowerStart = new Date(today);
+          const offset = (stats?.veg_days_avg ?? 14) + 14;
+          flowerStart.setDate(flowerStart.getDate() + offset);
+          setPlanFormPrefill({
+            initialStrainId: heldStrain.strain_id,
+            initialFlowerStart: flowerStart.toISOString().slice(0, 10),
+            prefillReason: `MBG ${newGroup.group_prefix} held back, plan a cycle to use the clones`,
+          });
+          setPlanFormRoom(destination);
+          setMomFeedback(null);
+        },
+      } : undefined,
     });
-  }, []);
+  }, [rooms, strainStatsById]);
 
   const handleRetireMom = useCallback((groupPrefix: string, momId: string) => {
     let retiredStrain = '';
@@ -335,11 +357,19 @@ export function LabProductionPlanner() {
       moms: [placeholder],
     };
     setMotherBatchGroups((prev) => [intake, ...prev]);
+    const motherRoom = rooms.find((r) => r.room_type === 'mother');
     setMomFeedback({
       kind: 'intake',
       summary: `${strainName} · placeholder created in MOM-01 · awaiting first cut`,
+      action: motherRoom ? {
+        cta: 'OPEN MOM →',
+        onClick: () => {
+          setDrawerRoomId(motherRoom.room_id);
+          setMomFeedback(null);
+        },
+      } : undefined,
     });
-  }, []);
+  }, [rooms]);
 
   // Inline-edit on a planned bar: update plant count and/or flower start
   // (estimated harvest auto-derived). Lab-mock only — no service write.
@@ -680,11 +710,13 @@ export function LabProductionPlanner() {
     horizon100Ago.setDate(horizon100Ago.getDate() - 100);
     const stuckCohortKeys = new Set<string>();
     let stuckBatchTotal = 0;
+    let firstStuckBatch: typeof batches[number] | null = null;
     for (const b of batches) {
       if (b.current_stage !== 'drying') continue;
       const cutDate = new Date(b.clone_cut_date);
       if (cutDate > horizon100Ago) continue;
       stuckBatchTotal++;
+      if (!firstStuckBatch) firstStuckBatch = b;
       const m = b.batch_code.match(/^(\d{6})/);
       const key = `${b.current_room_id}:${m?.[1] ?? b.batch_id}`;
       stuckCohortKeys.add(key);
@@ -765,6 +797,7 @@ export function LabProductionPlanner() {
           ? readyRooms.slice(0, 2).map((r) => r.room_code).join(' + ') + (readyRooms.length > 2 ? '…' : '')
           : 'no idle rooms',
         spark: makeSpark(SPARK_SEEDS.rooms),
+        onClick: readyRooms.length > 0 ? () => handlePlanCycle(readyRooms[0]) : undefined,
       },
       {
         label: 'Cycles Planned',
@@ -778,9 +811,17 @@ export function LabProductionPlanner() {
         trend: statusTrend,
         tone: statusTone,
         spark: makeSpark(SPARK_SEEDS.status),
+        onClick: firstStuckBatch
+          ? () => {
+              setDrawerRoomId(firstStuckBatch!.current_room_id);
+              setSelectedBatchId(firstStuckBatch!.batch_id);
+            }
+          : statusLabel === 'PLAN' && readyRooms.length > 0
+            ? () => handlePlanCycle(readyRooms[0])
+            : undefined,
       },
     ];
-  }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats, strainStatsById]);
+  }, [batches, rooms, plannedByRoom, harvestOverrides, strainStats, strainStatsById, handlePlanCycle]);
 
   // ── DERIVED Monthly production roll-up ─────────────────────────
   // 12 months forward from today's month. Each batch contributes its
@@ -880,8 +921,13 @@ export function LabProductionPlanner() {
     // typical month" — a meaningful pacing signal for the operator without
     // inventing unit-conversion constants. Live mode replaces this with
     // per-month order-shape when order data exists.
+    // A single producing month compares only to itself, so the pacing
+    // delta would always read 0/100% — false signal. Require at least
+    // two months of production before publishing a baseline; otherwise
+    // expected_grams stays 0 and the UI shows a "no baseline yet"
+    // fallback instead of a misleading delta.
     const monthsWithProduction = buckets.filter((b) => b.total_grams > 0);
-    const avgGrams = monthsWithProduction.length === 0
+    const avgGrams = monthsWithProduction.length < 2
       ? 0
       : monthsWithProduction.reduce((s, b) => s + b.total_grams, 0) / monthsWithProduction.length;
     for (const bucket of buckets) {
@@ -1018,6 +1064,11 @@ export function LabProductionPlanner() {
             entity: motherRoom.room_code,
             context: `${ready} mother strain${ready === 1 ? '' : 's'} past the ${CUTBACK_CADENCE}d cutback cadence, cuts can be taken today`,
             badge: { text: 'READY TO CUT', tone: 'warn' },
+            cta: 'OPEN MOM →',
+            action: {
+              cta: 'OPEN MOM →',
+              onClick: () => setDrawerRoomId(motherRoom.room_id),
+            },
           });
         } else if (CUTBACK_CADENCE - minDays <= 7) {
           const nextDays = CUTBACK_CADENCE - minDays;
@@ -1026,6 +1077,11 @@ export function LabProductionPlanner() {
             entity: motherRoom.room_code,
             context: `${motherRoom.total_plants} mothers in rotation, next cutback ${nextDays}d on ${CUTBACK_CADENCE}d cadence`,
             badge: { text: `CUT IN ${nextDays}d`, tone: 'ok' },
+            cta: 'OPEN MOM →',
+            action: {
+              cta: 'OPEN MOM →',
+              onClick: () => setDrawerRoomId(motherRoom.room_id),
+            },
           });
         }
       }
@@ -1380,6 +1436,15 @@ export function LabProductionPlanner() {
           <span className="sep">·</span>
           <span>{momFeedback.summary}</span>
           <span className="cap mute">in-memory · client only</span>
+          {momFeedback.action && (
+            <button
+              type="button"
+              className="seed-cta"
+              onClick={momFeedback.action.onClick}
+            >
+              {momFeedback.action.cta}
+            </button>
+          )}
           <button className="banner-x" onClick={() => setMomFeedback(null)} aria-label="Dismiss">×</button>
         </div>
       )}
@@ -1486,7 +1551,11 @@ export function LabProductionPlanner() {
               <span className="sep">·</span>
               <span className="strong">{(expandedMonth.total_grams / 1000).toFixed(1)} kg projected</span>
               <span className="sep">·</span>
-              <span className="mute">12mo avg {(expandedMonth.expected_grams / 1000).toFixed(1)} kg</span>
+              <span className="mute">
+                {expandedMonth.expected_grams > 0
+                  ? `12mo avg ${(expandedMonth.expected_grams / 1000).toFixed(1)} kg`
+                  : 'baseline pending'}
+              </span>
               <button
                 type="button"
                 className="month-detail-close"
@@ -1532,12 +1601,22 @@ export function LabProductionPlanner() {
                 {(() => {
                   const projected = expandedMonth.total_grams;
                   const expected = expandedMonth.expected_grams;
+                  if (expected === 0) {
+                    return (
+                      <>
+                        <span className="num">{(projected / 1000).toFixed(1)} kg</span>
+                        <span className="mute">planned</span>
+                        <span className="sep">·</span>
+                        <span className="mute">no 12mo baseline yet, second producing month establishes pacing</span>
+                      </>
+                    );
+                  }
                   const delta = projected - expected;
-                  const pct = expected > 0 ? Math.round((projected / expected) * 100) : null;
+                  const pct = Math.round((projected / expected) * 100);
                   let tone = 'mom-tone-ok';
-                  if (pct !== null && pct < 90) tone = 'mom-tone-warn';
-                  if (pct !== null && pct < 75) tone = 'mom-tone-bad';
-                  if (pct !== null && pct > 130) tone = 'mom-tone-warn';
+                  if (pct < 90) tone = 'mom-tone-warn';
+                  if (pct < 75) tone = 'mom-tone-bad';
+                  if (pct > 130) tone = 'mom-tone-warn';
                   return (
                     <>
                       <span className="num">{(projected / 1000).toFixed(1)} kg</span>
@@ -1547,8 +1626,7 @@ export function LabProductionPlanner() {
                       <span className="mute">12mo avg</span>
                       <span className="sep">·</span>
                       <span className={`num ${tone}`}>
-                        {delta >= 0 ? '+' : ''}{(delta / 1000).toFixed(1)} kg
-                        {pct !== null ? ` (${pct}%)` : ''}
+                        {delta >= 0 ? '+' : ''}{(delta / 1000).toFixed(1)} kg ({pct}%)
                       </span>
                     </>
                   );

@@ -20,7 +20,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
  * visible behind the overlay.
  */
 
-const STORAGE_KEY = 'sostanza_walkthrough_seen_v3';
+const STORAGE_KEY = 'sostanza_walkthrough_seen_v4';
 
 interface Step {
   /** Section heading rendered in mono caps above the body. */
@@ -67,6 +67,12 @@ const STEPS: Step[] = [
     body:
       'Click any flower room cap to open it, then click Plan a Batch Group, the form lets you stage 1 to N strains at once, mom selectors filter to in-house genetics, the flower-start date pre-fills anchored to predecessor harvest plus 3 day turnover, no manual calendar arithmetic',
     targetSelector: '[data-room-code="FLW-03"]',
+  },
+  {
+    title: 'UPSTREAM MOM SUPPLY',
+    body:
+      'Click MOM-01 to open the mother room, action queue surfaces hold-backs ready for upcoming flips and replacements due on declining moms, demand horizon shows cuts demanded against cuts available six months forward, roster lists every batch group with per-mom health, age, and rotations remaining',
+    targetSelector: '[data-room-code="MOM-01"]',
   },
 ];
 

@@ -617,18 +617,26 @@ export function MomPlanningDrawer({
   }, [batches, plannedByRoom, rooms, motherBatchGroups]);
 
   // ── Replacements due: moms with health=needs_replacement OR exhausted rotations.
+  // Sorted by severity: audit-flagged needs_replacement first (explicit operator
+  // signal), then budget-exhausted. Within each tier, the most over-quota mom
+  // (highest cuts_taken / cuts_max ratio) sorts first so the riskiest line shows
+  // at the top of the queue.
   const replacements = useMemo(() => {
-    const out: Array<{ group: MotherBatchGroup; mom: MotherIndividual; reason: string }> = [];
+    const out: Array<{ group: MotherBatchGroup; mom: MotherIndividual; reason: string; severity: number }> = [];
     for (const g of motherBatchGroups) {
       for (const m of g.moms) {
         if (m.retired) continue;
+        const ratio = m.cuts_max_rotations > 0
+          ? m.cuts_taken_lifetime / m.cuts_max_rotations
+          : 0;
         if (m.health === 'needs_replacement') {
-          out.push({ group: g, mom: m, reason: 'Audit flagged needs_replacement' });
+          out.push({ group: g, mom: m, reason: 'Audit flagged needs_replacement', severity: 100 + ratio });
         } else if (m.cuts_taken_lifetime >= m.cuts_max_rotations) {
-          out.push({ group: g, mom: m, reason: 'Lifetime cut budget exhausted' });
+          out.push({ group: g, mom: m, reason: 'Lifetime cut budget exhausted', severity: ratio });
         }
       }
     }
+    out.sort((a, b) => b.severity - a.severity);
     return out;
   }, [motherBatchGroups]);
 
