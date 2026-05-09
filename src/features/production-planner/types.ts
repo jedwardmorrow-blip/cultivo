@@ -54,6 +54,25 @@ export interface StrainCultivationStats {
   order_count: number | null;
   conversion_confidence: string | null;
   conversion_sessions: number | null;
+  /**
+   * Historical clone-rooting success rate (0..1). Operator-collected
+   * statistic, NOT a system-applied haircut. The Plan a Batch Group
+   * form displays this as informational context — operators decide
+   * their own buffer when sizing cuts. Once Cultivo collects real
+   * propagation data over time, this fills in from observed outcomes.
+   */
+  historical_rooting_success_rate?: number | null;
+  /**
+   * Historical veg-to-flower survival rate (0..1). Same semantics as
+   * historical_rooting_success_rate — displayed, not auto-applied.
+   */
+  historical_veg_to_flower_survival_rate?: number | null;
+  /**
+   * Typical cuts a mature mom produces per cutback session (50-90
+   * range depending on strain vigor). Operator-collected over time;
+   * mocked for demo.
+   */
+  cuts_per_session_per_mom?: number | null;
 }
 
 /** Aggregated room data for the calendar timeline */

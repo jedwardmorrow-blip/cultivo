@@ -195,9 +195,32 @@ interface BatchSeed {
   status?: 'active' | 'committed' | 'draft' | 'completed';
 }
 
-const CLONE_DAYS = 14;
-const VEG_DAYS = 21;
-const FLOWER_DAYS = 63;
+/**
+ * Cycle constants. Pulled into a config object so a future tenant
+ * settings table can override them per facility — different tenants
+ * run different clone+veg lengths. CLONE_DAYS=7 + VEG_DAYS=28 = 35d
+ * total clone-to-flower-ready, matching Cult Cannabis veg duration
+ * (verified against strains.veg_days_avg in fonreynkfeqywshijqpi).
+ *
+ * NOT enforced as a hard rule — this is operator-default cadence,
+ * not a system-wide constraint. Operators decide successor staging
+ * via the Plan a Batch Group form.
+ */
+export interface CycleConfig {
+  clone_days: number;
+  veg_days: number;
+  flower_days: number;
+}
+
+export const DEFAULT_CYCLE_CONFIG: CycleConfig = {
+  clone_days: 7,
+  veg_days: 28,
+  flower_days: 63,
+};
+
+const CLONE_DAYS = DEFAULT_CYCLE_CONFIG.clone_days;
+const VEG_DAYS = DEFAULT_CYCLE_CONFIG.veg_days;
+const FLOWER_DAYS = DEFAULT_CYCLE_CONFIG.flower_days;
 
 function buildBatch(seed: BatchSeed): Batch {
   const cloneStart = -seed.cloneDaysAgo; // cloneDaysAgo positive → cloneStart negative (past)
@@ -283,25 +306,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-bd', strain_name: 'Blue Dream', strain_abbrev: 'BD',
     cloneDaysAgo: 95, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
+    plant_count: 22, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
   },
   {
     strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', strain_abbrev: 'GG4',
     cloneDaysAgo: 95, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
+    plant_count: 22, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
   },
   {
     strain_id: 's-icc', strain_name: 'Ice Cream Cake', strain_abbrev: 'ICC',
     cloneDaysAgo: 95, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
+    plant_count: 22, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
   },
   {
     strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
     cloneDaysAgo: 95, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
+    plant_count: 22, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
   },
 
   // ── FLW-02 batch group (260211) · mid-late flower, 11d to harvest ──
@@ -309,25 +332,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', strain_abbrev: 'HSC',
     cloneDaysAgo: 87, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
-    plant_count: 75, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
+    plant_count: 22, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
   },
   {
     strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
     cloneDaysAgo: 87, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
-    plant_count: 75, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
+    plant_count: 22, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
   },
   {
     strain_id: 's-caz', strain_name: 'Chile Azul', strain_abbrev: 'CAZ',
     cloneDaysAgo: 87, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
-    plant_count: 75, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
+    plant_count: 22, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
   },
   {
     strain_id: 's-pap', strain_name: 'Papaya', strain_abbrev: 'PAP',
     cloneDaysAgo: 87, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
-    plant_count: 75, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
+    plant_count: 22, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
   },
 
   // ── FLW-03 batch group (260219) · mid-flower, 19d to harvest ──────
@@ -335,25 +358,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', strain_abbrev: 'PBB',
     cloneDaysAgo: 79, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
-    plant_count: 75, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
+    plant_count: 22, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
   },
   {
     strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
     cloneDaysAgo: 79, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
-    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+    plant_count: 22, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
   },
   {
     strain_id: 's-bm', strain_name: 'Black Maple', strain_abbrev: 'BM',
     cloneDaysAgo: 79, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
-    plant_count: 75, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
+    plant_count: 22, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
   },
   {
     strain_id: 's-stp', strain_name: 'Stay Puft', strain_abbrev: 'STP',
     cloneDaysAgo: 79, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
-    plant_count: 75, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
+    plant_count: 22, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
   },
 
   // ── FLW-04 batch group (260227) · mid-flower, 27d to harvest ──────
@@ -361,25 +384,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
     cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
-    plant_count: 75, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
+    plant_count: 22, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
   },
   {
     strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', strain_abbrev: 'HSC',
     cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
-    plant_count: 75, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
+    plant_count: 22, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
   },
   {
     strain_id: 's-bd', strain_name: 'Blue Dream', strain_abbrev: 'BD',
     cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
-    plant_count: 75, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
+    plant_count: 22, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
   },
   {
     strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', strain_abbrev: 'GG4',
     cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
-    plant_count: 75, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
+    plant_count: 22, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
   },
 
   // ── FLW-05 batch group (260307) · early flower, 35d to harvest ────
@@ -387,25 +410,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
     cloneDaysAgo: 63, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
-    plant_count: 75, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
+    plant_count: 29, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
   },
   {
     strain_id: 's-caz', strain_name: 'Chile Azul', strain_abbrev: 'CAZ',
     cloneDaysAgo: 63, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
-    plant_count: 75, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
+    plant_count: 29, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
   },
   {
     strain_id: 's-pap', strain_name: 'Papaya', strain_abbrev: 'PAP',
     cloneDaysAgo: 63, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
-    plant_count: 75, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
+    plant_count: 29, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
   },
   {
     strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', strain_abbrev: 'PBB',
     cloneDaysAgo: 63, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
-    plant_count: 75, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
+    plant_count: 29, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
   },
 
   // ── FLW-06 batch group (260315) · early flower, 43d to harvest ────
@@ -413,25 +436,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
     cloneDaysAgo: 55, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
-    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+    plant_count: 45, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
   },
   {
     strain_id: 's-bm', strain_name: 'Black Maple', strain_abbrev: 'BM',
     cloneDaysAgo: 55, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
-    plant_count: 75, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
+    plant_count: 45, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
   },
   {
     strain_id: 's-stp', strain_name: 'Stay Puft', strain_abbrev: 'STP',
     cloneDaysAgo: 55, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
-    plant_count: 75, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
+    plant_count: 45, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
   },
   {
     strain_id: 's-icc', strain_name: 'Ice Cream Cake', strain_abbrev: 'ICC',
     cloneDaysAgo: 55, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
-    plant_count: 75, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
+    plant_count: 45, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
   },
 
   // ── FLW-07 batch group (260323) · early flower, 51d to harvest ────
@@ -439,31 +462,31 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
     cloneDaysAgo: 47, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
-    plant_count: 60, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
+    plant_count: 36, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
   },
   {
     strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', strain_abbrev: 'HSC',
     cloneDaysAgo: 47, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
-    plant_count: 60, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
+    plant_count: 36, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
   },
   {
     strain_id: 's-bd', strain_name: 'Blue Dream', strain_abbrev: 'BD',
     cloneDaysAgo: 47, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
-    plant_count: 60, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
+    plant_count: 36, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
   },
   {
     strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', strain_abbrev: 'GG4',
     cloneDaysAgo: 47, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
-    plant_count: 60, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
+    plant_count: 36, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
   },
   {
     strain_id: 's-pap', strain_name: 'Papaya', strain_abbrev: 'PAP',
     cloneDaysAgo: 47, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
-    plant_count: 60, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
+    plant_count: 36, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
   },
 
   // ── FLW-08 batch group (260331) · just-flipped, 59d to harvest ────
@@ -471,25 +494,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
     cloneDaysAgo: 39, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
-    plant_count: 75, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
+    plant_count: 45, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
   },
   {
     strain_id: 's-caz', strain_name: 'Chile Azul', strain_abbrev: 'CAZ',
     cloneDaysAgo: 39, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
-    plant_count: 75, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
+    plant_count: 45, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
   },
   {
     strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', strain_abbrev: 'PBB',
     cloneDaysAgo: 39, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
-    plant_count: 75, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
+    plant_count: 45, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
   },
   {
     strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
     cloneDaysAgo: 39, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
-    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+    plant_count: 45, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
   },
 
   // ── VEG-01 batch group (260415) · mid-veg in-flight ───────────────
@@ -500,25 +523,25 @@ const SEEDS: BatchSeed[] = [
     strain_id: 's-bm', strain_name: 'Black Maple', strain_abbrev: 'BM',
     cloneDaysAgo: 24, current_stage: 'veg',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
+    plant_count: 22, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
   },
   {
     strain_id: 's-stp', strain_name: 'Stay Puft', strain_abbrev: 'STP',
     cloneDaysAgo: 24, current_stage: 'veg',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
+    plant_count: 22, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
   },
   {
     strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
     cloneDaysAgo: 24, current_stage: 'veg',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+    plant_count: 22, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
   },
   {
     strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
     cloneDaysAgo: 24, current_stage: 'veg',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 75, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
+    plant_count: 22, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
   },
 ];
 
@@ -533,7 +556,8 @@ function buildRoom(
   room_name: string,
   room_code: string,
   room_type: string,
-  capacity: number | null
+  capacity: number | null,
+  square_footage: number | null
 ): CalendarRoom {
   const inRoom = MOCK_BATCHES.filter((b) => b.current_room_id === room_id && b.current_stage !== 'closed');
   const strains: CalendarRoomStrain[] = inRoom.map((b) => {
@@ -558,7 +582,7 @@ function buildRoom(
     room_code,
     room_type,
     capacity_plants: capacity,
-    square_footage: null,
+    square_footage,
     total_plants,
     strain_count: strains.length,
     capacity_utilization_pct: capacity ? Math.round((total_plants / capacity) * 100) : null,
@@ -567,26 +591,195 @@ function buildRoom(
   };
 }
 
-// Mother room is special: surface the mother strains as room.strains so the
-// existing mother-bar render and the plan-form's MotherLot derivation continue
-// to work. These are NOT batches; they are the genetics library.
-function motherRoom(): CalendarRoom {
-  // Mom population covering the 12-strain pool. Papaya is intentionally
-  // absent so the form's "no mother in MOM-01 → external sourcing" branch
-  // stays exercised when an operator plans Papaya.
-  const motherStrains: CalendarRoomStrain[] = [
-    { strain_id: 's-bd', strain_name: 'Blue Dream', plant_count: 3, growth_stage: 'mother', earliest_planted_date: offsetDate(-380), estimated_harvest_date: null, stage_entered_at: offsetDate(-21), days_in_stage: 21, is_mother: true },
-    { strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', plant_count: 3, growth_stage: 'mother', earliest_planted_date: offsetDate(-350), estimated_harvest_date: null, stage_entered_at: offsetDate(-21), days_in_stage: 21, is_mother: true },
-    { strain_id: 's-icc', strain_name: 'Ice Cream Cake', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-300), estimated_harvest_date: null, stage_entered_at: offsetDate(-14), days_in_stage: 14, is_mother: true },
-    { strain_id: 's-mm', strain_name: 'Magic Marker', plant_count: 3, growth_stage: 'mother', earliest_planted_date: offsetDate(-320), estimated_harvest_date: null, stage_entered_at: offsetDate(-21), days_in_stage: 21, is_mother: true },
-    { strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-280), estimated_harvest_date: null, stage_entered_at: offsetDate(-14), days_in_stage: 14, is_mother: true },
-    { strain_id: 's-ssl', strain_name: 'Singapore Sling', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-260), estimated_harvest_date: null, stage_entered_at: offsetDate(-14), days_in_stage: 14, is_mother: true },
-    { strain_id: 's-caz', strain_name: 'Chile Azul', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-300), estimated_harvest_date: null, stage_entered_at: offsetDate(-14), days_in_stage: 14, is_mother: true },
-    { strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-240), estimated_harvest_date: null, stage_entered_at: offsetDate(-14), days_in_stage: 14, is_mother: true },
-    { strain_id: 's-g41', strain_name: 'Gelato 41', plant_count: 3, growth_stage: 'mother', earliest_planted_date: offsetDate(-310), estimated_harvest_date: null, stage_entered_at: offsetDate(-21), days_in_stage: 21, is_mother: true },
-    { strain_id: 's-bm', strain_name: 'Black Maple', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-220), estimated_harvest_date: null, stage_entered_at: offsetDate(-14), days_in_stage: 14, is_mother: true },
-    { strain_id: 's-stp', strain_name: 'Stay Puft', plant_count: 2, growth_stage: 'mother', earliest_planted_date: offsetDate(-280), estimated_harvest_date: null, stage_entered_at: offsetDate(-21), days_in_stage: 21, is_mother: true },
+/**
+ * Mother types. Mother batch groups inherit cohort identity from a
+ * source flower batch group: when a flower batch group transitions
+ * veg→flower, 2 plants per strain are held back as moms. Those held-
+ * back plants form a Mother Batch Group, sharing the YYMMDD prefix
+ * of their source flower batch group.
+ *
+ * Within a group, individual moms have their own health, age, cuts
+ * taken, and last-cut date — they're tracked separately because moms
+ * within the same group can degrade at different rates. The form's
+ * mom selector groups moms by their batch group for UX purposes
+ * (operators select a group, cuts available are summed across the
+ * group's individual moms), but per-mom audit history is preserved.
+ *
+ * Live mapping (Phase 4 of cycles unification):
+ *   - Mother batch group identity = (room_id, source_flower_cycle_id)
+ *   - Individual mom = plant_groups row WHERE is_mother=true
+ *   - cuts_taken_lifetime = count of batch_registry rows that linked
+ *     to this plant_groups.id via mother_plant_group_ids
+ *   - last_cut_date = max(batch_registry.clone_date) for those linkages
+ *   - health = new column on plant_groups (audit-captured)
+ */
+export type MotherHealth = 'healthy' | 'declining' | 'needs_replacement';
+
+export interface MotherIndividual {
+  /** Stable mom id; matches plant_groups.id in live mode. */
+  id: string;
+  strain_id: string;
+  strain_name: string;
+  /** When the cut was taken from a parent (clone-cut date of source). */
+  planted_date: string;
+  /** When this plant was held back as a mom (= source flower flip date). */
+  became_mom_date: string;
+  /** Last time cuts were taken from this individual mom. */
+  last_cut_date: string | null;
+  /** Lifetime number of cutback sessions performed on this mom. */
+  cuts_taken_lifetime: number;
+  /** Operator-set rotation cap. After cuts_max_rotations sessions, mom is exhausted. */
+  cuts_max_rotations: number;
+  /** Operator-captured health from the mother audit. */
+  health: MotherHealth;
+  /** Operator marked retired (e.g., culled, replaced). Excluded from cut allocation. */
+  retired: boolean;
+}
+
+export interface MotherBatchGroup {
+  /** YYMMDD prefix matching the source flower batch group. */
+  group_prefix: string;
+  /** Room code where these moms reside (typically MOM-01). */
+  room_code: string;
+  /** Cohort label, e.g., "MBG · 260203 (FLW-01 source)". */
+  label: string;
+  /** Source flower batch group these moms were held back from. */
+  source_flower_room_code: string;
+  /** When the group's clone cuts were taken (= source flower batch group's clone-cut date). */
+  cut_date: string;
+  /** When held back as moms (= source flower batch group's flower-flip date). */
+  became_moms_date: string;
+  /** Individual moms in this group. */
+  moms: MotherIndividual[];
+}
+
+/**
+ * Build the demo's mother batch groups. Three groups sourced from the
+ * three oldest flower batch groups in the fixture (FLW-01 / FLW-02 /
+ * FLW-03). Each group has the source flower batch group's strains ×
+ * 2 moms per strain. Cut histories are mocked plausibly — moms haven't
+ * been heavily worked yet (0-2 lifetime rotations), some declining,
+ * one needs replacement so the operator-action surface stays
+ * exercised.
+ */
+function buildMotherBatchGroups(): MotherBatchGroup[] {
+  // Source flower batch groups (must match SEEDS above).
+  const sources = [
+    { prefix: '260203', cloneDaysAgo: 95, flowerRoom: 'FLW-01', strains: [
+      { strain_id: 's-bd', strain_name: 'Blue Dream' },
+      { strain_id: 's-gg4', strain_name: 'Gorilla Glue #4' },
+      { strain_id: 's-icc', strain_name: 'Ice Cream Cake' },
+      { strain_id: 's-mm', strain_name: 'Magic Marker' },
+    ] },
+    { prefix: '260211', cloneDaysAgo: 87, flowerRoom: 'FLW-02', strains: [
+      { strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone' },
+      { strain_id: 's-ssl', strain_name: 'Singapore Sling' },
+      { strain_id: 's-caz', strain_name: 'Chile Azul' },
+      { strain_id: 's-pap', strain_name: 'Papaya' },
+    ] },
+    { prefix: '260219', cloneDaysAgo: 79, flowerRoom: 'FLW-03', strains: [
+      { strain_id: 's-pbb', strain_name: 'Peanut Butter Breath' },
+      { strain_id: 's-g41', strain_name: 'Gelato 41' },
+      { strain_id: 's-bm', strain_name: 'Black Maple' },
+      { strain_id: 's-stp', strain_name: 'Stay Puft' },
+    ] },
   ];
+
+  // Per-mom variation table: index 0 is the "A" mom (healthier on average),
+  // index 1 is the "B" mom (some declining or needing replacement). Cut
+  // histories vary so the demo shows non-uniform cut tracking within a
+  // group. cloneDaysAgoRelative is days_ago_at_cut_event for the mom's
+  // most recent cut session.
+  const variants = [
+    [
+      { health: 'healthy' as MotherHealth, cuts_taken: 1, last_cut_days_ago: 28 },
+      { health: 'healthy' as MotherHealth, cuts_taken: 1, last_cut_days_ago: 28 },
+    ],
+    [
+      { health: 'healthy' as MotherHealth, cuts_taken: 2, last_cut_days_ago: 14 },
+      { health: 'declining' as MotherHealth, cuts_taken: 2, last_cut_days_ago: 14 },
+    ],
+    [
+      { health: 'declining' as MotherHealth, cuts_taken: 1, last_cut_days_ago: 21 },
+      { health: 'needs_replacement' as MotherHealth, cuts_taken: 3, last_cut_days_ago: 7 },
+    ],
+  ];
+
+  return sources.map((src, srcIdx) => {
+    const cutDate = offsetDate(-src.cloneDaysAgo);
+    const becameMomsDate = offsetDate(-src.cloneDaysAgo + 35);
+    const moms: MotherIndividual[] = [];
+    src.strains.forEach((strain, strainIdx) => {
+      // 2 moms per strain in the group.
+      for (let i = 0; i < 2; i++) {
+        const v = variants[(srcIdx + strainIdx + i) % variants.length][i];
+        const lastCutDate = v.cuts_taken > 0
+          ? offsetDate(-v.last_cut_days_ago)
+          : null;
+        moms.push({
+          id: `mom-${src.prefix}-${strain.strain_id}-${i === 0 ? 'A' : 'B'}`,
+          strain_id: strain.strain_id,
+          strain_name: strain.strain_name,
+          planted_date: cutDate,
+          became_mom_date: becameMomsDate,
+          last_cut_date: lastCutDate,
+          cuts_taken_lifetime: v.cuts_taken,
+          cuts_max_rotations: 4,
+          health: v.health,
+          retired: false,
+        });
+      }
+    });
+    return {
+      group_prefix: src.prefix,
+      room_code: 'MOM-01',
+      label: `MBG · ${src.prefix} (${src.flowerRoom} source)`,
+      source_flower_room_code: src.flowerRoom,
+      cut_date: cutDate,
+      became_moms_date: becameMomsDate,
+      moms,
+    };
+  });
+}
+
+export const MOCK_MOTHER_BATCH_GROUPS: MotherBatchGroup[] = buildMotherBatchGroups();
+
+// Mother room is special: surface the mother strains as room.strains so the
+// existing mother-bar render continues to work. These are NOT batches; they
+// are the genetics library. Per-strain plant_count rolls up from all moms
+// across all mother batch groups.
+function motherRoom(): CalendarRoom {
+  const byStrain = new Map<string, { strain_id: string; strain_name: string; plant_count: number; earliest_planted: string; latest_stage_entered: string }>();
+  for (const mbg of MOCK_MOTHER_BATCH_GROUPS) {
+    for (const mom of mbg.moms) {
+      if (mom.retired) continue;
+      const existing = byStrain.get(mom.strain_id);
+      if (!existing) {
+        byStrain.set(mom.strain_id, {
+          strain_id: mom.strain_id,
+          strain_name: mom.strain_name,
+          plant_count: 1,
+          earliest_planted: mom.planted_date,
+          latest_stage_entered: mom.became_mom_date,
+        });
+      } else {
+        existing.plant_count += 1;
+        if (mom.planted_date < existing.earliest_planted) existing.earliest_planted = mom.planted_date;
+        if (mom.became_mom_date > existing.latest_stage_entered) existing.latest_stage_entered = mom.became_mom_date;
+      }
+    }
+  }
+  const motherStrains: CalendarRoomStrain[] = Array.from(byStrain.values()).map(s => ({
+    strain_id: s.strain_id,
+    strain_name: s.strain_name,
+    plant_count: s.plant_count,
+    growth_stage: 'mother',
+    earliest_planted_date: s.earliest_planted,
+    estimated_harvest_date: null,
+    stage_entered_at: s.latest_stage_entered,
+    days_in_stage: 0,
+    is_mother: true,
+  }));
   const total = motherStrains.reduce((a, s) => a + s.plant_count, 0);
   return {
     room_id: 'r-mom-01',
@@ -603,18 +796,23 @@ function motherRoom(): CalendarRoom {
   };
 }
 
+// Room sqft from grow_rooms in fonreynkfeqywshijqpi (verified 2026-05-09):
+// FLW-01..04 → 352 sqft, FLW-05 → 469 sqft, FLW-06..08 → 720 sqft.
+// MOM-01 and VEG-01..02 sqft are NULL in prod (operator hasn't captured).
+// Mocked here; quarantine treatment per cultivo_planner_data_lineage
+// applies once the live mode reads NULL from grow_rooms.
 export const MOCK_ROOMS: CalendarRoom[] = [
   motherRoom(),
-  buildRoom('r-veg-01', 'Veg Room 1', 'VEG-01', 'veg', 360),
-  buildRoom('r-veg-02', 'Veg Room 2', 'VEG-02', 'veg', 360),
-  buildRoom('r-flw-01', 'Flower Room 1', 'FLW-01', 'flower', 360),
-  buildRoom('r-flw-02', 'Flower Room 2', 'FLW-02', 'flower', 360),
-  buildRoom('r-flw-03', 'Flower Room 3', 'FLW-03', 'flower', 360),
-  buildRoom('r-flw-04', 'Flower Room 4', 'FLW-04', 'flower', 360),
-  buildRoom('r-flw-05', 'Flower Room 5', 'FLW-05', 'flower', 360),
-  buildRoom('r-flw-06', 'Flower Room 6', 'FLW-06', 'flower', 360),
-  buildRoom('r-flw-07', 'Flower Room 7', 'FLW-07', 'flower', 360),
-  buildRoom('r-flw-08', 'Flower Room 8', 'FLW-08', 'flower', 360),
+  buildRoom('r-veg-01', 'Veg Room 1', 'VEG-01', 'veg', 360, 220),
+  buildRoom('r-veg-02', 'Veg Room 2', 'VEG-02', 'veg', 360, 220),
+  buildRoom('r-flw-01', 'Flower Room 1', 'FLW-01', 'flower', 88, 352),
+  buildRoom('r-flw-02', 'Flower Room 2', 'FLW-02', 'flower', 88, 352),
+  buildRoom('r-flw-03', 'Flower Room 3', 'FLW-03', 'flower', 88, 352),
+  buildRoom('r-flw-04', 'Flower Room 4', 'FLW-04', 'flower', 88, 352),
+  buildRoom('r-flw-05', 'Flower Room 5', 'FLW-05', 'flower', 117, 469),
+  buildRoom('r-flw-06', 'Flower Room 6', 'FLW-06', 'flower', 180, 720),
+  buildRoom('r-flw-07', 'Flower Room 7', 'FLW-07', 'flower', 180, 720),
+  buildRoom('r-flw-08', 'Flower Room 8', 'FLW-08', 'flower', 180, 720),
 ];
 
 // Legacy planned-cycle export still needed for the form's Finalize path.
@@ -622,54 +820,89 @@ export const MOCK_ROOMS: CalendarRoom[] = [
 export const MOCK_PLANNED: Record<string, import('@/features/production-planner/types').CalendarPlannedEntry[]> = {};
 
 // Strain stats for the drawer + form (unchanged from earlier milestone).
-function statRow(
-  strain_id: string,
-  strain_name: string,
-  flowering_time_days: number,
-  veg_days_avg: number,
-  feed_group: 'A' | 'B' | 'C',
-  flowering_time_class: 'short' | 'medium' | 'long',
-  big_bud: number,
-  trim_per_hr: number,
-  yield_per_sqft: number,
-  rosin_pct: number,
-  thc: number,
-  terps: number,
-  demand_total: number,
-  demand_unassigned: number
-): StrainCultivationStats {
+interface StatRowInput {
+  strain_id: string;
+  strain_name: string;
+  flowering_time_days: number;
+  veg_days_avg: number;
+  feed_group: 'A' | 'B' | 'C';
+  flowering_time_class: 'short' | 'medium' | 'long';
+  big_bud: number;
+  trim_per_hr: number;
+  /** g/sqft yield (operator's working unit; range 55-78 around 65 avg). */
+  yield_per_sqft: number;
+  rosin_pct: number;
+  thc: number;
+  terps: number;
+  demand_total: number;
+  demand_unassigned: number;
+  /** Historical rooting rate, displayed not auto-applied. */
+  rooting: number;
+  /** Historical veg→flower survival rate, displayed not auto-applied. */
+  vegToFlower: number;
+  /** Cuts per cutback session per mom, 50-90 range. */
+  cutsPerSession: number;
+}
+
+function statRow(input: StatRowInput): StrainCultivationStats {
   return {
-    strain_id, strain_name, display_name: strain_name,
-    dominance_type: 'hybrid', category: 'flower', is_active: true,
-    flowering_time_days, veg_days_avg, feed_group, flowering_time_class,
-    harvest_count: 8, avg_wet_weight_per_plant_g: 720,
+    strain_id: input.strain_id,
+    strain_name: input.strain_name,
+    display_name: input.strain_name,
+    dominance_type: 'hybrid',
+    category: 'flower',
+    is_active: true,
+    flowering_time_days: input.flowering_time_days,
+    veg_days_avg: input.veg_days_avg,
+    feed_group: input.feed_group,
+    flowering_time_class: input.flowering_time_class,
+    harvest_count: 8,
+    // Per-plant yield derived from yield/sqft × 4 sqft per plant (typical
+    // commercial density). Cult uses ~4 sqft per plant in flower rooms.
+    avg_wet_weight_per_plant_g: Math.round(input.yield_per_sqft * 4),
     last_harvest_date: offsetDate(-21),
-    avg_wet_g_per_sqft: yield_per_sqft,
-    avg_big_bud_pct: big_bud, avg_small_bud_pct: 100 - big_bud - 18,
-    avg_trim_pct: 14, avg_waste_pct: 4,
-    avg_trim_grams_per_hour: trim_per_hr, trim_session_count: 12,
-    avg_rosin_yield_pct: rosin_pct, press_run_count: 6,
-    avg_thc_pct: thc, avg_total_terpenes_mg_g: terps, coa_count: 4,
-    demand_total_units: demand_total, demand_unassigned_units: demand_unassigned,
-    order_count: 22, conversion_confidence: 'high', conversion_sessions: 18,
+    avg_wet_g_per_sqft: input.yield_per_sqft,
+    avg_big_bud_pct: input.big_bud,
+    avg_small_bud_pct: 100 - input.big_bud - 18,
+    avg_trim_pct: 14,
+    avg_waste_pct: 4,
+    avg_trim_grams_per_hour: input.trim_per_hr,
+    trim_session_count: 12,
+    avg_rosin_yield_pct: input.rosin_pct,
+    press_run_count: 6,
+    avg_thc_pct: input.thc,
+    avg_total_terpenes_mg_g: input.terps,
+    coa_count: 4,
+    demand_total_units: input.demand_total,
+    demand_unassigned_units: input.demand_unassigned,
+    order_count: 22,
+    conversion_confidence: 'high',
+    conversion_sessions: 18,
+    historical_rooting_success_rate: input.rooting,
+    historical_veg_to_flower_survival_rate: input.vegToFlower,
+    cuts_per_session_per_mom: input.cutsPerSession,
   };
 }
 
 // 12 strains, all verified against batch_registry.strain in cult prod
-// (project fonreynkfeqywshijqpi). Yield, THC, terpene, and demand
-// numbers are plausible-shape placeholders for the demo, not operator
-// captures.
+// (project fonreynkfeqywshijqpi). Yield centered around 65 g/sqft
+// with strain-specific variation (range 55-78). Flowering times match
+// strains.flowering_time_days from prod (Black Maple/Stay Puft 60d,
+// Chile Azul 87d outlier, Papaya 70d, others 63d). Veg days = 28
+// matches strains.veg_days_avg in prod. Historical rooting + survival
+// rates are mocked operator-collected statistics, displayed in the
+// form as context — NOT auto-applied to plant counts.
 export const MOCK_STRAIN_STATS: StrainCultivationStats[] = [
-  statRow('s-bd',  'Blue Dream',           63, 21, 'B', 'medium', 60, 360, 920, 4.5, 22.0, 18, 1200, 240),
-  statRow('s-gg4', 'Gorilla Glue #4',      63, 21, 'B', 'medium', 65, 380, 945, 4.7, 25.5, 21,  980, 180),
-  statRow('s-icc', 'Ice Cream Cake',       70, 24, 'A', 'long',   64, 340, 920, 5.0, 26.4, 24,  880, 320),
-  statRow('s-mm',  'Magic Marker',         63, 21, 'B', 'medium', 66, 380, 944, 4.6, 29.1, 24,  600, 140),
-  statRow('s-hsc', 'Hawaiian Snowcone',    63, 21, 'A', 'medium', 65, 360, 942, 4.7, 28.2, 22,  540, 120),
-  statRow('s-ssl', 'Singapore Sling',      63, 21, 'B', 'medium', 62, 350, 908, 4.3, 27.1, 20,  360,  60),
-  statRow('s-caz', 'Chile Azul',           63, 21, 'B', 'medium', 67, 370, 936, 4.5, 28.6, 23,  480,  80),
-  statRow('s-pap', 'Papaya',               56, 18, 'B', 'short',  65, 380, 940, 4.2, 22.6, 26,  480, 120),
-  statRow('s-pbb', 'Peanut Butter Breath', 63, 21, 'B', 'medium', 62, 350, 902, 4.6, 27.2, 23,  540,  60),
-  statRow('s-g41', 'Gelato 41',            56, 18, 'B', 'short',  68, 400, 980, 4.4, 27.8, 22,  720, 180),
-  statRow('s-bm',  'Black Maple',          63, 21, 'B', 'medium', 64, 360, 920, 4.4, 28.4, 22,  420, 100),
-  statRow('s-stp', 'Stay Puft',            63, 21, 'B', 'medium', 63, 360, 916, 4.4, 28.0, 21,  480,  80),
+  statRow({ strain_id: 's-bd',  strain_name: 'Blue Dream',           flowering_time_days: 63, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 60, trim_per_hr: 360, yield_per_sqft: 55, rosin_pct: 4.5, thc: 22.0, terps: 18, demand_total: 1200, demand_unassigned: 240, rooting: 0.78, vegToFlower: 0.93, cutsPerSession: 65 }),
+  statRow({ strain_id: 's-gg4', strain_name: 'Gorilla Glue #4',      flowering_time_days: 63, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 65, trim_per_hr: 380, yield_per_sqft: 78, rosin_pct: 4.7, thc: 25.5, terps: 21, demand_total: 980,  demand_unassigned: 180, rooting: 0.74, vegToFlower: 0.91, cutsPerSession: 80 }),
+  statRow({ strain_id: 's-icc', strain_name: 'Ice Cream Cake',       flowering_time_days: 63, veg_days_avg: 28, feed_group: 'A', flowering_time_class: 'medium', big_bud: 64, trim_per_hr: 340, yield_per_sqft: 72, rosin_pct: 5.0, thc: 26.4, terps: 24, demand_total: 880,  demand_unassigned: 320, rooting: 0.70, vegToFlower: 0.89, cutsPerSession: 75 }),
+  statRow({ strain_id: 's-mm',  strain_name: 'Magic Marker',         flowering_time_days: 63, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 66, trim_per_hr: 380, yield_per_sqft: 68, rosin_pct: 4.6, thc: 29.1, terps: 24, demand_total: 600,  demand_unassigned: 140, rooting: 0.72, vegToFlower: 0.91, cutsPerSession: 70 }),
+  statRow({ strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone',    flowering_time_days: 63, veg_days_avg: 28, feed_group: 'A', flowering_time_class: 'medium', big_bud: 65, trim_per_hr: 360, yield_per_sqft: 58, rosin_pct: 4.7, thc: 28.2, terps: 22, demand_total: 540,  demand_unassigned: 120, rooting: 0.68, vegToFlower: 0.88, cutsPerSession: 55 }),
+  statRow({ strain_id: 's-ssl', strain_name: 'Singapore Sling',      flowering_time_days: 63, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 62, trim_per_hr: 350, yield_per_sqft: 62, rosin_pct: 4.3, thc: 27.1, terps: 20, demand_total: 360,  demand_unassigned: 60,  rooting: 0.71, vegToFlower: 0.90, cutsPerSession: 60 }),
+  statRow({ strain_id: 's-caz', strain_name: 'Chile Azul',           flowering_time_days: 87, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'long',   big_bud: 67, trim_per_hr: 370, yield_per_sqft: 65, rosin_pct: 4.5, thc: 28.6, terps: 23, demand_total: 480,  demand_unassigned: 80,  rooting: 0.69, vegToFlower: 0.87, cutsPerSession: 60 }),
+  statRow({ strain_id: 's-pap', strain_name: 'Papaya',               flowering_time_days: 70, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 65, trim_per_hr: 380, yield_per_sqft: 70, rosin_pct: 4.2, thc: 22.6, terps: 26, demand_total: 480,  demand_unassigned: 120, rooting: 0.75, vegToFlower: 0.92, cutsPerSession: 75 }),
+  statRow({ strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', flowering_time_days: 63, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 62, trim_per_hr: 350, yield_per_sqft: 64, rosin_pct: 4.6, thc: 27.2, terps: 23, demand_total: 540,  demand_unassigned: 60,  rooting: 0.73, vegToFlower: 0.91, cutsPerSession: 65 }),
+  statRow({ strain_id: 's-g41', strain_name: 'Gelato 41',            flowering_time_days: 63, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 68, trim_per_hr: 400, yield_per_sqft: 75, rosin_pct: 4.4, thc: 27.8, terps: 22, demand_total: 720,  demand_unassigned: 180, rooting: 0.77, vegToFlower: 0.93, cutsPerSession: 85 }),
+  statRow({ strain_id: 's-bm',  strain_name: 'Black Maple',          flowering_time_days: 60, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 64, trim_per_hr: 360, yield_per_sqft: 60, rosin_pct: 4.4, thc: 28.4, terps: 22, demand_total: 420,  demand_unassigned: 100, rooting: 0.72, vegToFlower: 0.90, cutsPerSession: 60 }),
+  statRow({ strain_id: 's-stp', strain_name: 'Stay Puft',            flowering_time_days: 60, veg_days_avg: 28, feed_group: 'B', flowering_time_class: 'medium', big_bud: 63, trim_per_hr: 360, yield_per_sqft: 66, rosin_pct: 4.4, thc: 28.0, terps: 21, demand_total: 480,  demand_unassigned: 80,  rooting: 0.70, vegToFlower: 0.89, cutsPerSession: 65 }),
 ];

@@ -5,6 +5,7 @@ import { LabRoomDrawer } from './LabRoomDrawer';
 import { LabPlanCohortForm } from './LabPlanCohortForm';
 import type { CohortPlanResult } from './LabPlanCohortForm';
 import type { LifecycleStage, BatchSegment } from './planner-mock';
+import { DEFAULT_CYCLE_CONFIG } from './planner-mock';
 import { SostanzaWalkthrough } from './SostanzaWalkthrough';
 import type { Batch } from './planner-mock';
 import { useLabPlannerData } from './useLabPlannerData';
@@ -114,6 +115,7 @@ export function LabProductionPlanner() {
   const rooms: CalendarRoom[] = data.rooms;
   const strainStats = data.strainStats;
   const motherLots = data.motherLots;
+  const motherBatchGroups = data.motherBatchGroups;
 
   // localBatches: in-memory cohort plans created via LabPlanCohortForm.
   // Demo-mode only by contract (cultivo_planner_demo_to_prod_bridge): live
@@ -1336,6 +1338,9 @@ export function LabProductionPlanner() {
           strainStats={strainStats}
           strainStatsById={strainStatsById}
           motherLots={motherLots}
+          motherBatchGroups={motherBatchGroups}
+          existingBatches={batches}
+          cycleConfig={DEFAULT_CYCLE_CONFIG}
           initialStrainId={planFormPrefill?.initialStrainId}
           initialFlowerStart={planFormPrefill?.initialFlowerStart}
           prefillReason={planFormPrefill?.prefillReason}

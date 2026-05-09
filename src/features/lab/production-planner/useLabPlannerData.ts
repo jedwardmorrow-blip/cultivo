@@ -20,6 +20,8 @@ import {
   SOSTANZA_STRAIN_STATS,
   SOSTANZA_MOTHER_LOTS,
 } from './sostanza-mock';
+import { MOCK_MOTHER_BATCH_GROUPS } from './planner-mock';
+import type { MotherBatchGroup } from './planner-mock';
 import type { MotherLot } from './LabPlanCycleForm';
 
 /**
@@ -62,7 +64,15 @@ export interface LabPlannerData {
   rooms: CalendarRoom[];
   plannedByRoom: Record<string, CalendarPlannedEntry[]>;
   strainStats: StrainCultivationStats[];
+  /** Legacy flat mom list. Used by Sostanza fixture and live fallback. */
   motherLots: MotherLot[];
+  /**
+   * Mother batch groups (mom moms organized by source flower batch group).
+   * Empty in Sostanza mode (Pink Kush monoculture) and in live mode until
+   * Phase 4 of the cycles unification migration adds the schema linkage.
+   * The Plan a Batch Group form prefers this structure when populated.
+   */
+  motherBatchGroups: MotherBatchGroup[];
   error: string | null;
   loading: boolean;
   /**
@@ -216,6 +226,7 @@ interface LiveAssembly {
   rooms: CalendarRoom[];
   strainStats: StrainCultivationStats[];
   motherLots: MotherLot[];
+  motherBatchGroups: MotherBatchGroup[];
   plannedByRoom: Record<string, CalendarPlannedEntry[]>;
 }
 
@@ -481,7 +492,14 @@ async function fetchLive(): Promise<LiveAssembly> {
     };
   });
 
-  return { batches, rooms, strainStats, motherLots, plannedByRoom };
+  // Live motherBatchGroups population deferred to Phase 4 of the cycles
+  // unification migration (mother-source linkage requires the cycles
+  // table to track which flower batch group a mom was held back from).
+  // Until then, live mode falls back to the flat motherLots list and
+  // the form degrades gracefully.
+  const motherBatchGroups: MotherBatchGroup[] = [];
+
+  return { batches, rooms, strainStats, motherLots, motherBatchGroups, plannedByRoom };
 }
 
 function buildMockMotherLots(): MotherLot[] {
@@ -504,6 +522,7 @@ interface InternalState {
   plannedByRoom: Record<string, CalendarPlannedEntry[]>;
   strainStats: StrainCultivationStats[];
   motherLots: MotherLot[];
+  motherBatchGroups: MotherBatchGroup[];
   error: string | null;
   loading: boolean;
 }
@@ -517,6 +536,7 @@ function mockState(): InternalState {
     plannedByRoom: MOCK_PLANNED,
     strainStats: MOCK_STRAIN_STATS,
     motherLots: buildMockMotherLots(),
+    motherBatchGroups: MOCK_MOTHER_BATCH_GROUPS,
     error: null,
     loading: false,
   };
@@ -531,6 +551,7 @@ function sostanzaState(): InternalState {
     plannedByRoom: SOSTANZA_PLANNED,
     strainStats: SOSTANZA_STRAIN_STATS,
     motherLots: SOSTANZA_MOTHER_LOTS,
+    motherBatchGroups: [],
     error: null,
     loading: false,
   };
@@ -545,6 +566,7 @@ function fallbackState(error: string | null, loading: boolean): InternalState {
     plannedByRoom: MOCK_PLANNED,
     strainStats: MOCK_STRAIN_STATS,
     motherLots: buildMockMotherLots(),
+    motherBatchGroups: MOCK_MOTHER_BATCH_GROUPS,
     error,
     loading,
   };
@@ -579,6 +601,7 @@ export function useLabPlannerData(): LabPlannerData {
         plannedByRoom: live.plannedByRoom,
         strainStats: live.strainStats,
         motherLots: live.motherLots,
+        motherBatchGroups: live.motherBatchGroups,
         error: null,
         loading: false,
       });
@@ -608,6 +631,7 @@ export function useLabPlannerData(): LabPlannerData {
     plannedByRoom: state.plannedByRoom,
     strainStats: state.strainStats,
     motherLots: state.motherLots,
+    motherBatchGroups: state.motherBatchGroups,
     error: state.error,
     loading: state.loading,
     refresh,
