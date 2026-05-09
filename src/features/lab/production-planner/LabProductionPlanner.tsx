@@ -937,9 +937,17 @@ export function LabProductionPlanner() {
         segs.push({ start: new Date(fs.start), end: new Date(fs.end), batch: b });
       }
       segs.sort((a, b) => a.start.getTime() - b.start.getTime());
+      const cohortKey = (b: typeof batches[number]) => {
+        const m = b.batch_code.match(/^(\d{6})/);
+        return m ? m[1] : b.batch_id;
+      };
       for (let i = 1; i < segs.length; i++) {
         const prev = segs[i - 1];
         const curr = segs[i];
+        // Skip pair-wise comparison within the same cohort: strains
+        // sharing (room, clone-cut prefix) flip and harvest together by
+        // design, not as a scheduling collision.
+        if (cohortKey(prev.batch) === cohortKey(curr.batch)) continue;
         const gapMs = curr.start.getTime() - prev.end.getTime();
         if (gapMs >= 0) continue;
         collisions.push({
