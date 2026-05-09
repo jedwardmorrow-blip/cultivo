@@ -124,7 +124,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 18px 24px 14px;
+  padding: 22px 24px 20px;
   border-bottom: 1px solid var(--lab-panel);
 }
 
@@ -223,7 +223,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 24px;
+  padding: 14px 24px;
   border-top: 1px solid var(--lab-panel);
   border-bottom: 1px solid var(--lab-panel);
   font-family: var(--font-mono);
@@ -256,7 +256,7 @@
 }
 
 .lab-prod-planner .kpi {
-  padding: 16px 20px 14px;
+  padding: 20px 20px 18px;
   border-right: 1px solid var(--lab-panel);
   display: flex;
   flex-direction: column;
@@ -372,7 +372,7 @@
   grid-template-columns: 110px 1fr;
   gap: 24px;
   align-items: start;
-  padding: 14px 24px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--lab-panel-strong);
 }
 
@@ -1122,9 +1122,9 @@
   font-size: 0.5rem;
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: var(--lab-gold);
-  background: rgba(201,162,75,0.10);
-  border: 1px solid rgba(201,162,75,0.28);
+  color: var(--lab-ink-3);
+  background: transparent;
+  border: 1px solid var(--lab-ink-4);
   padding: 0 4px;
   border-radius: 1px;
   flex-shrink: 0;
@@ -1361,9 +1361,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px dashed var(--lab-gold);
-  border-bottom: 1px dashed var(--lab-gold);
-  background: rgba(201,162,75,0.04);
+  border-top: 1px dashed var(--lab-ink-4);
+  border-bottom: 1px dashed var(--lab-ink-4);
+  background: transparent;
   pointer-events: auto;
   z-index: 1;
 }
@@ -1377,7 +1377,7 @@
   font-size: 0.5625rem;
   font-weight: 600;
   letter-spacing: 0.14em;
-  color: var(--lab-gold);
+  color: var(--lab-ink-3);
   text-transform: uppercase;
   white-space: nowrap;
   padding: 0 4px;
@@ -1548,7 +1548,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 24px;
+  padding: 12px 24px;
   font-size: 10px;
   letter-spacing: 0.06em;
   color: var(--lab-ink-3);

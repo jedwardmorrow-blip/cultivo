@@ -257,14 +257,22 @@ export function LabGantt({
         if (!seg.is_current && !seg.is_projected && !isHighlighted) continue;
 
         // Doctrine: projections hidden in CURRENT view, EXCEPT for
-        // segments that belong to an in-flight batch whose downstream
-        // pipeline lands within the visible window. These render at
-        // low opacity ("incoming silhouette") so the operator can see
-        // the lineage from upstream stages into their destination
-        // rooms without flipping to PLANNING view.
-        const isImminentInFlightProjection =
-          seg.is_projected && isInFlight && viewMode !== 'planning';
-        if (seg.is_projected && viewMode !== 'planning' && !isImminentInFlightProjection) continue;
+        // flower segments belonging to in-flight batches that have
+        // not yet landed in their destination room. These render as
+        // faint dashed "incoming" bars so the operator sees which
+        // upstream batch is destined for which flower room without
+        // flipping to PLANNING view. Post-harvest projections (drying,
+        // trim, cure, test, pack) intentionally do NOT render here —
+        // including them quadruples the bar count and the SEED row
+        // already surfaces stuck cohorts. Operator can switch to
+        // PLANNING view or highlight a specific batch for the full
+        // downstream pipeline.
+        const isIncomingFlowerProjection =
+          seg.is_projected
+          && seg.stage === 'flower'
+          && isInFlight
+          && viewMode !== 'planning';
+        if (seg.is_projected && viewMode !== 'planning' && !isIncomingFlowerProjection && !isHighlighted) continue;
 
         const roomIdx = roomIndexById.get(seg.room_id);
         if (roomIdx === undefined) continue;
