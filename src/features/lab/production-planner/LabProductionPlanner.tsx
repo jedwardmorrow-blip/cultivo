@@ -775,7 +775,7 @@ export function LabProductionPlanner() {
       out.push({
         status: 'bad',
         entity: `${stuckRoom?.room_code ?? sample.current_room_id} · ${sample.strain_name.toUpperCase()}`,
-        context: `${stuckBatches.length} batch${stuckBatches.length === 1 ? '' : 'es'} in ${cohortKeys.size} cohort${cohortKeys.size === 1 ? '' : 's'} stuck more than 100d in drying, operator action required to release.`,
+        context: `${stuckBatches.length} batch${stuckBatches.length === 1 ? '' : 'es'} stuck >100d in drying, action required to release`,
         badge: { text: 'STUCK', tone: 'bad' },
         cta: 'OPEN BATCH →',
         action: {
@@ -812,7 +812,7 @@ export function LabProductionPlanner() {
           out.push({
             status: 'ok',
             entity: motherRoom.room_code,
-            context: `${motherRoom.total_plants} mothers in rotation, next cutback in ${nextDays}d on the ${CUTBACK_CADENCE}d cadence`,
+            context: `${motherRoom.total_plants} mothers in rotation, next cutback ${nextDays}d on ${CUTBACK_CADENCE}d cadence`,
             badge: { text: `CUT IN ${nextDays}d`, tone: 'ok' },
           });
         }
@@ -884,7 +884,7 @@ export function LabProductionPlanner() {
       out.push({
         status: 'bad',
         entity: `${head.roomCode} · ${head.laterBatch.batch_code.split(' ')[0]} vs ${head.earlierBatch.batch_code.split(' ')[0]}`,
-        context: `${head.overlapDays}d overlap on ${dateLabel}, batch ${head.laterBatch.batch_code.split(' ')[0]} wants the room before batch ${head.earlierBatch.batch_code.split(' ')[0]} finishes${moreSuffix}`,
+        context: `${head.overlapDays}d overlap ${dateLabel}, batch ${head.laterBatch.batch_code.split(' ')[0]} wants room before ${head.earlierBatch.batch_code.split(' ')[0]} finishes${moreSuffix}`,
         badge: { text: `OVERLAP ${head.overlapDays}d`, tone: 'bad' },
         cta: 'OPEN ROOM →',
         action: {
