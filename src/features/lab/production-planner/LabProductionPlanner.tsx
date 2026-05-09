@@ -473,7 +473,7 @@ export function LabProductionPlanner() {
       setPlanFormPrefill(null);
       setViewMode('planning');
       setLastFinalized({
-        strain: `${cohort.strains.length}-strain cohort · ${cohort.total_plants} plants`,
+        strain: `${cohort.strains.length}-strain batch group · ${cohort.total_plants} plants`,
         room: cohort.room_code,
         mode: 'local',
       });
@@ -615,7 +615,7 @@ export function LabProductionPlanner() {
     let statusTone: Kpi['tone'] = 'ink';
     if (stuckCohortCount > 0) {
       statusLabel = 'ALARM';
-      statusTrend = `${stuckCohortCount} ${stuckCohortCount === 1 ? 'cohort' : 'cohorts'} stuck >100d (${stuckBatchTotal} batches)`;
+      statusTrend = `${stuckCohortCount} ${stuckCohortCount === 1 ? 'batch group' : 'batch groups'} stuck >100d (${stuckBatchTotal} batches)`;
       statusTone = 'alarm' as const;
     } else if (overdueDrags.length > 0) {
       statusLabel = 'WARN';

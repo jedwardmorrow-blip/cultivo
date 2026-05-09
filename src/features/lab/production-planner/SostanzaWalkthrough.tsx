@@ -20,7 +20,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
  * visible behind the overlay.
  */
 
-const STORAGE_KEY = 'sostanza_walkthrough_seen_v2';
+const STORAGE_KEY = 'sostanza_walkthrough_seen_v3';
 
 interface Step {
   /** Section heading rendered in mono caps above the body. */
@@ -35,7 +35,7 @@ const STEPS: Step[] = [
   {
     title: 'THE INSTRUMENT',
     body:
-      'Production planner sized for commercial cultivation, batches across mother, veg, flower, and post-harvest rooms, multi-strain cohorts grouped by flip date, today centered with four weeks back and sixteen forward',
+      'Production planner sized for commercial cultivation, batches across mother, veg, flower, and post-harvest rooms, multi-strain batch groups grouped by flip date, today centered with four weeks back and sixteen forward',
     targetSelector: '.serial-plate',
   },
   {
@@ -47,13 +47,13 @@ const STEPS: Step[] = [
   {
     title: 'SYNTHESIZED OBSERVATIONS',
     body:
-      'Live synthesis of what needs attention, stuck cohorts, cutback timing, scheduling collisions, each prompt carries a CTA that opens the right detail',
+      'Live synthesis of what needs attention, stuck batch groups, cutback timing, scheduling collisions, each prompt carries a CTA that opens the right detail',
     targetSelector: '.seed-row',
   },
   {
     title: 'THE QUEUE',
     body:
-      'Top to bottom, mother then clone then veg then your flower rotation then drying, trim, cure, pack, every batch flowing through nine stages, multi-strain cohorts collapse into a single bar with strain count overlaid, faint dashed bars are committed cycles still upstream of their landing room',
+      'Top to bottom, mother then clone then veg then your flower rotation then drying, trim, cure, pack, every batch flowing through nine stages, multi-strain batch groups collapse into a single bar with strain count overlaid, faint dashed bars are committed cycles still upstream of their landing room',
     targetSelector: '.gantt-shell',
   },
   {
@@ -65,7 +65,7 @@ const STEPS: Step[] = [
   {
     title: 'QUEUE-AWARE PLANNING',
     body:
-      'Click any flower room cap to open it, then click Plan a Cycle, the cohort form lets you stage 1 to N strains at once, mom selectors filter to in-house genetics, the flower-start date pre-fills anchored to predecessor harvest plus 3 day turnover, no manual calendar arithmetic',
+      'Click any flower room cap to open it, then click Plan a Batch Group, the form lets you stage 1 to N strains at once, mom selectors filter to in-house genetics, the flower-start date pre-fills anchored to predecessor harvest plus 3 day turnover, no manual calendar arithmetic',
     targetSelector: '[data-room-code="FLW-03"]',
   },
 ];

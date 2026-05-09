@@ -183,12 +183,30 @@ export function LabGantt({
     windowEnd.setDate(windowEnd.getDate() + totalDays);
     rooms.forEach((room, ri) => {
       if (room.room_type !== 'flower') return;
-      const segs = batches
-        .map((b) => b.segments.find((s) => s.stage === 'flower' && s.room_id === room.room_id))
-        .filter((s): s is NonNullable<typeof s> => !!s)
-        .map((s) => ({ start: new Date(s.start), end: new Date(s.end) }))
-        .filter((s) => s.end >= startDate && s.start <= windowEnd)
-        .sort((a, b) => a.start.getTime() - b.start.getTime());
+      // Dedupe per batch group: one entry per (room, YYMMDD prefix) so
+      // strains within the same group don't pairwise-overlap with each
+      // other. Same-room same-prefix strains share start+end by design.
+      const byCohort = new Map<string, { start: Date; end: Date }>();
+      for (const b of batches) {
+        const seg = b.segments.find((s) => s.stage === 'flower' && s.room_id === room.room_id);
+        if (!seg) continue;
+        const start = new Date(seg.start);
+        const end = new Date(seg.end);
+        if (end < startDate || start > windowEnd) continue;
+        const m = b.batch_code.match(/^(\d{6})/);
+        const key = m ? m[1] : b.batch_id;
+        const prior = byCohort.get(key);
+        if (!prior) {
+          byCohort.set(key, { start, end });
+        } else {
+          // Should match within a group, but be defensive: take min start, max end.
+          if (start < prior.start) prior.start = start;
+          if (end > prior.end) prior.end = end;
+        }
+      }
+      const segs = Array.from(byCohort.values()).sort(
+        (a, b) => a.start.getTime() - b.start.getTime()
+      );
       for (let i = 1; i < segs.length; i++) {
         const prev = segs[i - 1];
         const curr = segs[i];
@@ -310,21 +328,22 @@ export function LabGantt({
     const passThrough: RenderSegment[] = [];
     for (const seg of out) {
       const isMotherRoom = rooms[seg.roomIndex]?.room_type === 'mother';
-      // Eligibility for cohort grouping:
-      //   live cohort: segment is current and non-projected (existing rule)
-      //   planning cohort: flower-stage segment of a committed or draft batch
-      //
-      // Planning cohorts render as a single bar in the target flower room
-      // matching what cycles in status=planning will look like once Phase 3
-      // of the cycles unification migration ships. Clone and veg-stage
-      // segments of planning cohorts pass through as individual bars
-      // (mother room excludes grouping anyway; veg-stage individuals are
-      // useful for tracking cuts as they leave the mom room).
-      const isLiveCohort = seg.isCurrent && !seg.isProjected;
-      const isPlanningFlower =
-        seg.stage === 'flower' &&
-        (seg.batch.status === 'committed' || seg.batch.status === 'draft');
-      if ((!isLiveCohort && !isPlanningFlower) || isMotherRoom) {
+      // Eligibility for batch-group grouping:
+      //   - Mother room: never group (genetics library, not batches).
+      //   - Flower stage: always group when ≥2 batches share (room, YYMMDD).
+      //     This covers active flower batch groups, projected flower
+      //     segments of upstream veg/clone batches, and committed planning
+      //     groups in one rule.
+      //   - Clone or veg stage: group only the current operational unit
+      //     (is_current && !is_projected). Other clone/veg segments pass
+      //     through as individual bars.
+      if (isMotherRoom) {
+        passThrough.push(seg);
+        continue;
+      }
+      const isLiveNonFlower = seg.isCurrent && !seg.isProjected && seg.stage !== 'flower';
+      const isFlower = seg.stage === 'flower';
+      if (!isLiveNonFlower && !isFlower) {
         passThrough.push(seg);
         continue;
       }
@@ -1030,7 +1049,7 @@ export function LabGantt({
               if (isCohort) {
                 const strainList = rs.cohortBatches!.map(b => b.strain_name);
                 const preview = strainList.slice(0, 6).join(', ') + (strainList.length > 6 ? `, +${strainList.length - 6} more` : '');
-                baseTitle = `Cohort ${getCohortKey(rs.batch)} (cut ${rs.batch.clone_cut_date}) · ${cohortCount} strains · ${plantCount} plants · ${stageLong}\nstrains: ${preview}`;
+                baseTitle = `Batch group ${getCohortKey(rs.batch)} (cut ${rs.batch.clone_cut_date}) · ${cohortCount} strains · ${plantCount} plants · ${stageLong}\nstrains: ${preview}`;
               } else {
                 baseTitle = `${rs.batch.batch_code} · ${rs.batch.strain_name} · ${stageLong} · ${plantCount} plants${fromRoomCode ? ` · from ${fromRoomCode}` : ''}`;
               }
@@ -1067,7 +1086,7 @@ export function LabGantt({
                   )}
                   <span className={`bar-dot dot-${rs.stage}`} aria-hidden />
                   {isCohort && (
-                    <span className="bar-cohort-count mono" aria-label={`${cohortCount} batches in cohort`}>
+                    <span className="bar-cohort-count mono" aria-label={`${cohortCount} batches in batch group`}>
                       {cohortCount}×
                     </span>
                   )}

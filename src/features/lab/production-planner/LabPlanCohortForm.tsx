@@ -267,11 +267,11 @@ export function LabPlanCohortForm({
   return (
     <>
       <div className="plan-form-scrim" onClick={onCancel} aria-hidden />
-      <div className="plan-form plan-form-cohort" role="dialog" aria-label="Plan a cohort">
+      <div className="plan-form plan-form-cohort" role="dialog" aria-label="Plan a batch group">
         <div className="plan-form-stamp">
           <span className="serial">FIG. 04</span>
           <span className="sep">·</span>
-          <span>Plan a Cohort</span>
+          <span>Plan a Batch Group</span>
           <span className="sep">·</span>
           <span className="strong">{room.room_code}</span>
           <span className="sep">·</span>
@@ -317,7 +317,7 @@ export function LabPlanCohortForm({
 
           <div className="plan-form-cohort-strains">
             <div className="cohort-strains-head">
-              <span className="cap strong">Cohort composition</span>
+              <span className="cap strong">Batch group composition</span>
               <span className="cap mute">{totalPlants} total plants {overCapacity && <span className="warn"> · over capacity {room.capacity_plants}</span>}</span>
             </div>
 
@@ -400,14 +400,14 @@ export function LabPlanCohortForm({
           </div>
 
           <div className="plan-form-manifest">
-            <div className="manifest-cap">Cohort Manifest</div>
+            <div className="manifest-cap">Batch Group Manifest</div>
             <div className="manifest-grid">
               <div className="manifest-row">
                 <span className="cap">Room</span>
                 <span className="num">{room.room_code}</span>
               </div>
               <div className="manifest-row">
-                <span className="cap">Cohort label</span>
+                <span className="cap">Batch group label</span>
                 <span className="num">{room.room_code}-{(derived?.cloneCut ?? '').replace(/-/g, '').slice(2)}</span>
               </div>
               <div className="manifest-row">
@@ -453,7 +453,7 @@ export function LabPlanCohortForm({
             </div>
             <div className="manifest-prose">
               <span className="cap mute">
-                live mapping · posts to fn_plan_cycle once Phase 3 ships · cohort renders as one planning bar in the gantt
+                live mapping · posts to fn_plan_cycle once Phase 3 ships · batch group renders as one planning bar in the gantt
               </span>
             </div>
           </div>
@@ -469,7 +469,7 @@ export function LabPlanCohortForm({
             disabled={!canFinalize}
             onClick={handleFinalize}
           >
-            Finalize cohort →
+            Finalize batch group →
           </button>
         </div>
       </div>

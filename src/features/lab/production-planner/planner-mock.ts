@@ -195,8 +195,8 @@ interface BatchSeed {
   status?: 'active' | 'committed' | 'draft' | 'completed';
 }
 
-const CLONE_DAYS = 16;
-const VEG_DAYS = 30;
+const CLONE_DAYS = 14;
+const VEG_DAYS = 21;
 const FLOWER_DAYS = 63;
 
 function buildBatch(seed: BatchSeed): Batch {
@@ -263,109 +263,262 @@ function buildBatch(seed: BatchSeed): Batch {
 
 // Curated multi-strain fixture, drawn entirely from real Cult Cannabis
 // strain names verified against batch_registry in fonreynkfeqywshijqpi.
-// Disciplined scope: 12 strains, 8 flower rooms, 3 cohort scenarios so
-// the multi-strain story reads cleanly without the noise of a 21-strain
-// soup. Sostanza-grade simplicity, Cultivo-grade realism.
+// Every flower room runs a multi-strain batch group (4-5 strains
+// sharing a clone-cut date). Strains repeat across rooms at different
+// cohort dates exactly like real cultivation: Magic Marker shows up
+// in three different flower rooms at three different prefixes.
 //
-// Cohort scenarios:
-//   1. FLW-04 · 4-strain hero cohort, mid-flower (cloneDaysAgo 60).
-//      Magic Marker / Hawaiian Snowcone / Singapore Sling / Chile Azul.
-//      The headline multi-strain visual.
-//   2. VEG-01 · 3-strain veg cohort (cloneDaysAgo 18) destined to flip
-//      into FLW-08 once empty. Papaya / Peanut Butter Breath / Gelato 41.
-//      Surfaces the queue-aware story.
-//   3. FLW-03 · committed future plan, single-strain (cloneDaysAgo -7).
-//      Stay Puft. Reads as a planning-status bar in the Gantt.
+// Cycle staggering: 8 flower batch groups separated by ~8 days, so
+// harvests cascade roughly weekly. One in-flight veg batch group in
+// VEG-01 demonstrates the queue without prescribing a successor cadence
+// (operators decide cycle timing themselves via the Plan a Batch Group
+// form). VEG-02 and clone-stage capacity in MOM-01 are open for
+// hand-planning.
 //
-// Single-strain contrast rooms (so cohort grouping is the obvious
-// signal, not the default): FLW-01 Blue Dream late-flower, FLW-02
-// Gorilla Glue #4 mid-flower, FLW-06 Ice Cream Cake early-flower.
-// Black Maple fresh clones in MOM-01 destined for FLW-07.
+// Batch numbers follow YYMMDD-STRAIN_ABBREV where YYMMDD is the
+// shared clone-cut date for every strain in the batch group.
 const SEEDS: BatchSeed[] = [
-  // FLW-01 · Blue Dream late-flower (single-strain, harvest urgency)
+  // ── FLW-01 batch group (260203) · late-flower, 3d to harvest ──────
   {
     strain_id: 's-bd', strain_name: 'Blue Dream', strain_abbrev: 'BD',
     cloneDaysAgo: 95, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
-    plant_count: 320, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
+    plant_count: 75, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
   },
-  // FLW-02 · Gorilla Glue #4 mid-flower (single-strain)
   {
     strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', strain_abbrev: 'GG4',
-    cloneDaysAgo: 70, current_stage: 'flower',
-    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
-    plant_count: 240, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
+    cloneDaysAgo: 95, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
   },
-
-  // FLW-04 · 4-strain hero cohort, mid-flower (cloneDaysAgo 60)
+  {
+    strain_id: 's-icc', strain_name: 'Ice Cream Cake', strain_abbrev: 'ICC',
+    cloneDaysAgo: 95, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
+  },
   {
     strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
-    cloneDaysAgo: 60, current_stage: 'flower',
+    cloneDaysAgo: 95, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
+  },
+
+  // ── FLW-02 batch group (260211) · mid-late flower, 11d to harvest ──
+  {
+    strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', strain_abbrev: 'HSC',
+    cloneDaysAgo: 87, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
+    plant_count: 75, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
+  },
+  {
+    strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
+    cloneDaysAgo: 87, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
+    plant_count: 75, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
+  },
+  {
+    strain_id: 's-caz', strain_name: 'Chile Azul', strain_abbrev: 'CAZ',
+    cloneDaysAgo: 87, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
+    plant_count: 75, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
+  },
+  {
+    strain_id: 's-pap', strain_name: 'Papaya', strain_abbrev: 'PAP',
+    cloneDaysAgo: 87, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-02',
+    plant_count: 75, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
+  },
+
+  // ── FLW-03 batch group (260219) · mid-flower, 19d to harvest ──────
+  {
+    strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', strain_abbrev: 'PBB',
+    cloneDaysAgo: 79, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
+    plant_count: 75, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
+  },
+  {
+    strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
+    cloneDaysAgo: 79, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
+    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+  },
+  {
+    strain_id: 's-bm', strain_name: 'Black Maple', strain_abbrev: 'BM',
+    cloneDaysAgo: 79, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
+    plant_count: 75, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
+  },
+  {
+    strain_id: 's-stp', strain_name: 'Stay Puft', strain_abbrev: 'STP',
+    cloneDaysAgo: 79, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
+    plant_count: 75, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
+  },
+
+  // ── FLW-04 batch group (260227) · mid-flower, 27d to harvest ──────
+  {
+    strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
+    cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
     plant_count: 75, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
   },
   {
     strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', strain_abbrev: 'HSC',
-    cloneDaysAgo: 60, current_stage: 'flower',
+    cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
-    plant_count: 60, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
+    plant_count: 75, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
   },
   {
-    strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
-    cloneDaysAgo: 60, current_stage: 'flower',
+    strain_id: 's-bd', strain_name: 'Blue Dream', strain_abbrev: 'BD',
+    cloneDaysAgo: 71, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
+    plant_count: 75, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
+  },
+  {
+    strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', strain_abbrev: 'GG4',
+    cloneDaysAgo: 71, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
+    plant_count: 75, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
+  },
+
+  // ── FLW-05 batch group (260307) · early flower, 35d to harvest ────
+  {
+    strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
+    cloneDaysAgo: 63, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
     plant_count: 75, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
   },
   {
     strain_id: 's-caz', strain_name: 'Chile Azul', strain_abbrev: 'CAZ',
-    cloneDaysAgo: 60, current_stage: 'flower',
-    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-04',
-    plant_count: 60, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
+    cloneDaysAgo: 63, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
+    plant_count: 75, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
   },
-
-  // FLW-06 · Ice Cream Cake early-flower (single-strain)
-  {
-    strain_id: 's-icc', strain_name: 'Ice Cream Cake', strain_abbrev: 'ICC',
-    cloneDaysAgo: 40, current_stage: 'flower',
-    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
-    plant_count: 200, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
-  },
-
-  // VEG-01 · 3-strain veg cohort, destined for FLW-08 (cloneDaysAgo 18)
   {
     strain_id: 's-pap', strain_name: 'Papaya', strain_abbrev: 'PAP',
-    cloneDaysAgo: 18, current_stage: 'veg',
-    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
-    plant_count: 60, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
+    cloneDaysAgo: 63, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
+    plant_count: 75, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
   },
   {
     strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', strain_abbrev: 'PBB',
-    cloneDaysAgo: 18, current_stage: 'veg',
+    cloneDaysAgo: 63, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-05',
+    plant_count: 75, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
+  },
+
+  // ── FLW-06 batch group (260315) · early flower, 43d to harvest ────
+  {
+    strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
+    cloneDaysAgo: 55, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
+    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+  },
+  {
+    strain_id: 's-bm', strain_name: 'Black Maple', strain_abbrev: 'BM',
+    cloneDaysAgo: 55, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
+    plant_count: 75, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
+  },
+  {
+    strain_id: 's-stp', strain_name: 'Stay Puft', strain_abbrev: 'STP',
+    cloneDaysAgo: 55, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
+    plant_count: 75, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
+  },
+  {
+    strain_id: 's-icc', strain_name: 'Ice Cream Cake', strain_abbrev: 'ICC',
+    cloneDaysAgo: 55, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-06',
+    plant_count: 75, mom_plant_group_id: 's-icc', mom_strain_name: 'Ice Cream Cake',
+  },
+
+  // ── FLW-07 batch group (260323) · early flower, 51d to harvest ────
+  {
+    strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
+    cloneDaysAgo: 47, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
+    plant_count: 60, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
+  },
+  {
+    strain_id: 's-hsc', strain_name: 'Hawaiian Snowcone', strain_abbrev: 'HSC',
+    cloneDaysAgo: 47, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
+    plant_count: 60, mom_plant_group_id: 's-hsc', mom_strain_name: 'Hawaiian Snowcone',
+  },
+  {
+    strain_id: 's-bd', strain_name: 'Blue Dream', strain_abbrev: 'BD',
+    cloneDaysAgo: 47, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
+    plant_count: 60, mom_plant_group_id: 's-bd', mom_strain_name: 'Blue Dream',
+  },
+  {
+    strain_id: 's-gg4', strain_name: 'Gorilla Glue #4', strain_abbrev: 'GG4',
+    cloneDaysAgo: 47, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
+    plant_count: 60, mom_plant_group_id: 's-gg4', mom_strain_name: 'Gorilla Glue #4',
+  },
+  {
+    strain_id: 's-pap', strain_name: 'Papaya', strain_abbrev: 'PAP',
+    cloneDaysAgo: 47, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
+    plant_count: 60, mom_plant_group_id: null, mom_strain_name: 'External clone vendor',
+  },
+
+  // ── FLW-08 batch group (260331) · just-flipped, 59d to harvest ────
+  {
+    strain_id: 's-ssl', strain_name: 'Singapore Sling', strain_abbrev: 'SSL',
+    cloneDaysAgo: 39, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
-    plant_count: 90, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
+    plant_count: 75, mom_plant_group_id: 's-ssl', mom_strain_name: 'Singapore Sling',
+  },
+  {
+    strain_id: 's-caz', strain_name: 'Chile Azul', strain_abbrev: 'CAZ',
+    cloneDaysAgo: 39, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
+    plant_count: 75, mom_plant_group_id: 's-caz', mom_strain_name: 'Chile Azul',
+  },
+  {
+    strain_id: 's-pbb', strain_name: 'Peanut Butter Breath', strain_abbrev: 'PBB',
+    cloneDaysAgo: 39, current_stage: 'flower',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
+    plant_count: 75, mom_plant_group_id: 's-pbb', mom_strain_name: 'Peanut Butter Breath',
   },
   {
     strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
-    cloneDaysAgo: 18, current_stage: 'veg',
+    cloneDaysAgo: 39, current_stage: 'flower',
     clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-08',
     plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
   },
 
-  // MOM-01 · fresh Black Maple clones, destined for FLW-07
+  // ── VEG-01 batch group (260415) · mid-veg in-flight ───────────────
+  // Single in-flight veg group so the queue concept is visible. Successor
+  // assignment is left to the operator to plan via the form, not driven
+  // by a system-wide cycle constraint.
   {
     strain_id: 's-bm', strain_name: 'Black Maple', strain_abbrev: 'BM',
-    cloneDaysAgo: 8, current_stage: 'clone',
-    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-07',
-    plant_count: 180, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
+    cloneDaysAgo: 24, current_stage: 'veg',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-bm', mom_strain_name: 'Black Maple',
   },
-
-  // Committed future plan · Stay Puft, planning to land in FLW-03
   {
     strain_id: 's-stp', strain_name: 'Stay Puft', strain_abbrev: 'STP',
-    cloneDaysAgo: -7, current_stage: 'clone',
-    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-03',
-    plant_count: 200, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
-    status: 'committed',
+    cloneDaysAgo: 24, current_stage: 'veg',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-stp', mom_strain_name: 'Stay Puft',
+  },
+  {
+    strain_id: 's-g41', strain_name: 'Gelato 41', strain_abbrev: 'G41',
+    cloneDaysAgo: 24, current_stage: 'veg',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-g41', mom_strain_name: 'Gelato 41',
+  },
+  {
+    strain_id: 's-mm', strain_name: 'Magic Marker', strain_abbrev: 'MM',
+    cloneDaysAgo: 24, current_stage: 'veg',
+    clone_room_id: 'r-mom-01', veg_room_id: 'r-veg-01', flower_room_id: 'r-flw-01',
+    plant_count: 75, mom_plant_group_id: 's-mm', mom_strain_name: 'Magic Marker',
   },
 ];
 
