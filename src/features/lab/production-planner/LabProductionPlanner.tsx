@@ -4,8 +4,9 @@ import { LabGantt } from './LabGantt';
 import { LabRoomDrawer } from './LabRoomDrawer';
 import { LabPlanCohortForm } from './LabPlanCohortForm';
 import type { CohortPlanResult } from './LabPlanCohortForm';
-import type { LifecycleStage, BatchSegment } from './planner-mock';
-import { DEFAULT_CYCLE_CONFIG } from './planner-mock';
+import { MomPlanningDrawer } from './MomPlanningDrawer';
+import type { LifecycleStage, BatchSegment, MotherBatchGroup, MotherIndividual, MotherHealth } from './planner-mock';
+import { CycleConfigProvider } from './CycleConfigContext';
 import { SostanzaWalkthrough } from './SostanzaWalkthrough';
 import type { Batch } from './planner-mock';
 import { useLabPlannerData } from './useLabPlannerData';
@@ -115,7 +116,14 @@ export function LabProductionPlanner() {
   const rooms: CalendarRoom[] = data.rooms;
   const strainStats = data.strainStats;
   const motherLots = data.motherLots;
-  const motherBatchGroups = data.motherBatchGroups;
+
+  // Mother batch groups are state, not derived. The mom planning drawer
+  // mutates this in-session via hold-back and retire actions; demo writes
+  // never reach Supabase. Re-seeded on data.source change.
+  const [motherBatchGroups, setMotherBatchGroups] = useState<MotherBatchGroup[]>(data.motherBatchGroups);
+  useEffect(() => {
+    setMotherBatchGroups(data.motherBatchGroups);
+  }, [data.motherBatchGroups]);
 
   // localBatches: in-memory cohort plans created via LabPlanCohortForm.
   // Demo-mode only by contract (cultivo_planner_demo_to_prod_bridge): live
@@ -254,6 +262,61 @@ export function LabProductionPlanner() {
   const handleDrawerClose = useCallback(() => {
     setDrawerRoomId(null);
     setSelectedStrainId(null);
+  }, []);
+
+  // Mom planning surface mutations. All in-memory per the demo bridge
+  // contract — Phase 5 RPCs (fn_hold_back_moms, fn_retire_mom) replace
+  // these closures in live mode.
+  const handleHoldBack = useCallback((newGroup: MotherBatchGroup) => {
+    setMotherBatchGroups((prev) => {
+      const existingIdx = prev.findIndex((g) => g.group_prefix === newGroup.group_prefix);
+      if (existingIdx === -1) return [newGroup, ...prev];
+      const merged = { ...prev[existingIdx], moms: [...prev[existingIdx].moms, ...newGroup.moms] };
+      const next = [...prev];
+      next[existingIdx] = merged;
+      return next;
+    });
+  }, []);
+
+  const handleRetireMom = useCallback((groupPrefix: string, momId: string) => {
+    setMotherBatchGroups((prev) =>
+      prev.map((g) =>
+        g.group_prefix !== groupPrefix
+          ? g
+          : {
+              ...g,
+              moms: g.moms.map((m) =>
+                m.id === momId ? { ...m, retired: true, health: 'needs_replacement' as MotherHealth } : m
+              ),
+            }
+      )
+    );
+  }, []);
+
+  const handleAddGenetics = useCallback((strainName: string) => {
+    const stamp = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+    const placeholder: MotherIndividual = {
+      id: `intake-${stamp}-${strainName.toLowerCase().replace(/\s+/g, '-').slice(0, 18)}`,
+      strain_id: `intake-${strainName.toLowerCase().replace(/\s+/g, '-').slice(0, 24)}`,
+      strain_name: strainName,
+      planted_date: new Date().toISOString().slice(0, 10),
+      became_mom_date: new Date().toISOString().slice(0, 10),
+      last_cut_date: null,
+      cuts_taken_lifetime: 0,
+      cuts_max_rotations: 4,
+      health: 'healthy',
+      retired: false,
+    };
+    const intake: MotherBatchGroup = {
+      group_prefix: `INTAKE-${stamp}`,
+      room_code: 'MOM-01',
+      label: `Intake · ${strainName}`,
+      source_flower_room_code: '—',
+      cut_date: new Date().toISOString().slice(0, 10),
+      became_moms_date: new Date().toISOString().slice(0, 10),
+      moms: [placeholder],
+    };
+    setMotherBatchGroups((prev) => [intake, ...prev]);
   }, []);
 
   // Inline-edit on a planned bar: update plant count and/or flower start
@@ -707,11 +770,18 @@ export function LabProductionPlanner() {
   const monthlyProduction = useMemo(() => {
     type MonthContribution = {
       batch_code: string;
+      strain_id: string;
       strain_name: string;
       room_code: string;
       harvest_iso: string;
       harvest_label: string;
       grams: number;
+    };
+    type MonthStrainSegment = {
+      strain_id: string;
+      strain_name: string;
+      grams: number;
+      hue: number;
     };
     type MonthBucket = {
       key: string;       // YYYY-MM
@@ -721,6 +791,8 @@ export function LabProductionPlanner() {
       harvest_count: number;
       total_grams: number;
       contributions: MonthContribution[];
+      per_strain: MonthStrainSegment[];
+      expected_grams: number;
     };
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -736,10 +808,19 @@ export function LabProductionPlanner() {
         harvest_count: 0,
         total_grams: 0,
         contributions: [],
+        per_strain: [],
+        expected_grams: 0,
       });
     }
     const bucketByKey = new Map(buckets.map((b) => [b.key, b]));
     const roomById = new Map(rooms.map((r) => [r.room_id, r]));
+    // Stable hue per strain_id. Spread across the wheel but with low saturation
+    // so the stacked bars read as instrument segments, not toy candy.
+    const strainHue = (sid: string) => {
+      let h = 0;
+      for (let i = 0; i < sid.length; i++) h = (h * 31 + sid.charCodeAt(i)) | 0;
+      return Math.abs(h) % 360;
+    };
     for (const b of batches) {
       const flowerSeg = b.segments.find((s) => s.stage === 'flower');
       if (!flowerSeg) continue;
@@ -753,18 +834,48 @@ export function LabProductionPlanner() {
       bucket.total_grams += grams;
       bucket.contributions.push({
         batch_code: b.batch_code.split(' ')[0],
+        strain_id: b.strain_id,
         strain_name: b.strain_name,
         room_code: roomById.get(flowerSeg.room_id)?.room_code ?? flowerSeg.room_id,
         harvest_iso: harvestISO,
         harvest_label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         grams,
       });
+      const seg = bucket.per_strain.find((s) => s.strain_id === b.strain_id);
+      if (seg) {
+        seg.grams += grams;
+      } else {
+        bucket.per_strain.push({
+          strain_id: b.strain_id,
+          strain_name: b.strain_name,
+          grams,
+          hue: strainHue(b.strain_id),
+        });
+      }
     }
+    // Demand baseline = rolling average of forecast production across the
+    // 12-month window. Coverage on a given month reads as "above or below
+    // typical month" — a meaningful pacing signal for the operator without
+    // inventing unit-conversion constants. Live mode replaces this with
+    // per-month order-shape when order data exists.
+    const monthsWithProduction = buckets.filter((b) => b.total_grams > 0);
+    const avgGrams = monthsWithProduction.length === 0
+      ? 0
+      : monthsWithProduction.reduce((s, b) => s + b.total_grams, 0) / monthsWithProduction.length;
     for (const bucket of buckets) {
+      bucket.expected_grams = avgGrams;
       bucket.contributions.sort((a, b) => a.harvest_iso.localeCompare(b.harvest_iso));
+      bucket.per_strain.sort((a, b) => b.grams - a.grams);
     }
     return buckets;
   }, [batches, rooms, harvestOverrides]);
+
+  // Click-to-expand month detail panel state. null = no month expanded.
+  const [expandedMonthKey, setExpandedMonthKey] = useState<string | null>(null);
+  const expandedMonth = useMemo(
+    () => (expandedMonthKey ? monthlyProduction.find((m) => m.key === expandedMonthKey) ?? null : null),
+    [expandedMonthKey, monthlyProduction]
+  );
 
   const monthlyMaxGrams = useMemo(
     () => Math.max(1, ...monthlyProduction.map((m) => m.total_grams)),
@@ -997,6 +1108,7 @@ export function LabProductionPlanner() {
     canvas === 'marketing' ? 'canvas-marketing' : '';
 
   return (
+    <CycleConfigProvider>
     <div className={`lab-prod-planner ${canvasClass}`.trim()}>
       {/* ── Masthead ──────────────────────────────────────────────── */}
       <div className="masthead">
@@ -1279,24 +1391,37 @@ export function LabProductionPlanner() {
               ? Math.max(8, (m.total_grams / monthlyMaxGrams) * 100)
               : 0;
             const kg = m.total_grams / 1000;
+            const isExpanded = m.key === expandedMonthKey;
             return (
-              <div
+              <button
+                type="button"
                 key={m.key}
-                className={`month-cell ${m.harvest_count === 0 ? 'is-empty' : ''} ${i === 0 ? 'is-current' : ''}`}
-                title={
-                  m.harvest_count === 0
-                    ? `${m.label} ${m.year_short} · no projected harvests`
-                    : [
-                        `${m.label} ${m.year_short} · ${m.harvest_count} harvest${m.harvest_count === 1 ? '' : 's'} · projected ${kg.toFixed(1)} kg`,
-                        '',
-                        ...m.contributions.map(
-                          (c) => `${c.harvest_label}  ${c.batch_code} · ${c.room_code} · ${c.strain_name} · ${(c.grams / 1000).toFixed(1)} kg`
-                        ),
-                      ].join('\n')
-                }
+                className={`month-cell ${m.harvest_count === 0 ? 'is-empty' : ''} ${i === 0 ? 'is-current' : ''} ${isExpanded ? 'is-expanded' : ''}`}
+                aria-expanded={isExpanded}
+                aria-label={`${m.label} ${m.year_short} · ${m.harvest_count} harvests · ${kg.toFixed(1)} kg`}
+                onClick={() => {
+                  if (m.harvest_count === 0) return;
+                  setExpandedMonthKey(isExpanded ? null : m.key);
+                }}
               >
                 <div className="month-bar-track" aria-hidden>
-                  <div className="month-bar-fill" style={{ height: `${heightPct}%` }} />
+                  <div className="month-bar-fill" style={{ height: `${heightPct}%` }}>
+                    {m.per_strain.map((seg) => {
+                      const segPct = m.total_grams > 0 ? (seg.grams / m.total_grams) * 100 : 0;
+                      return (
+                        <div
+                          key={seg.strain_id}
+                          className="month-bar-segment"
+                          style={{
+                            height: `${segPct}%`,
+                            background: `hsla(${seg.hue}, 38%, 56%, 0.55)`,
+                            borderTop: `1px solid hsla(${seg.hue}, 48%, 64%, 0.85)`,
+                          }}
+                          title={`${seg.strain_name} · ${(seg.grams / 1000).toFixed(2)} kg`}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="month-cell-foot">
                   <span className="month-label cap mono">
@@ -1311,26 +1436,125 @@ export function LabProductionPlanner() {
                       : `${m.harvest_count} harvest${m.harvest_count === 1 ? '' : 's'}`}
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
+
+        {expandedMonth && expandedMonth.harvest_count > 0 && (
+          <div className="month-detail-panel" role="region" aria-label={`${expandedMonth.label} ${expandedMonth.year_short} detail`}>
+            <header className="month-detail-head cap mono">
+              <span className="serial">FIG. PIVOT</span>
+              <span className="sep">·</span>
+              <span className="strong">{expandedMonth.label} {expandedMonth.year_short}</span>
+              <span className="sep">·</span>
+              <span>{expandedMonth.harvest_count} harvest{expandedMonth.harvest_count === 1 ? '' : 's'}</span>
+              <span className="sep">·</span>
+              <span className="strong">{(expandedMonth.total_grams / 1000).toFixed(1)} kg projected</span>
+              <span className="sep">·</span>
+              <span className="mute">12mo avg {(expandedMonth.expected_grams / 1000).toFixed(1)} kg</span>
+              <button
+                type="button"
+                className="month-detail-close"
+                onClick={() => setExpandedMonthKey(null)}
+                aria-label="Close month detail"
+              >×</button>
+            </header>
+            <div className="month-detail-body">
+              <div className="month-detail-strains">
+                <div className="month-detail-strain-head cap mono">
+                  <span>STRAIN</span>
+                  <span>KG</span>
+                  <span>SOURCE BATCH GROUPS</span>
+                </div>
+                {expandedMonth.per_strain.map((seg) => {
+                  const contribs = expandedMonth.contributions.filter((c) => c.strain_id === seg.strain_id);
+                  return (
+                    <div key={seg.strain_id} className="month-detail-strain-row">
+                      <span className="month-detail-strain-name">
+                        <span
+                          className="month-detail-swatch"
+                          style={{ background: `hsla(${seg.hue}, 38%, 56%, 0.85)` }}
+                          aria-hidden
+                        />
+                        {seg.strain_name}
+                      </span>
+                      <span className="month-detail-kg num">{(seg.grams / 1000).toFixed(2)} kg</span>
+                      <span className="month-detail-contribs cap mono mute">
+                        {contribs
+                          .map((c) => {
+                            const roomShort = c.room_code && c.room_code.length <= 8 ? c.room_code : '';
+                            return [c.batch_code, roomShort, c.harvest_label].filter(Boolean).join(' ');
+                          })
+                          .join(' · ')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="month-detail-coverage cap mono">
+                <span className="strong">PACING</span>
+                <span className="sep">·</span>
+                {(() => {
+                  const projected = expandedMonth.total_grams;
+                  const expected = expandedMonth.expected_grams;
+                  const delta = projected - expected;
+                  const pct = expected > 0 ? Math.round((projected / expected) * 100) : null;
+                  let tone = 'mom-tone-ok';
+                  if (pct !== null && pct < 90) tone = 'mom-tone-warn';
+                  if (pct !== null && pct < 75) tone = 'mom-tone-bad';
+                  if (pct !== null && pct > 130) tone = 'mom-tone-warn';
+                  return (
+                    <>
+                      <span className="num">{(projected / 1000).toFixed(1)} kg</span>
+                      <span className="mute">planned</span>
+                      <span className="sep">·</span>
+                      <span className="num">{(expected / 1000).toFixed(1)} kg</span>
+                      <span className="mute">12mo avg</span>
+                      <span className="sep">·</span>
+                      <span className={`num ${tone}`}>
+                        {delta >= 0 ? '+' : ''}{(delta / 1000).toFixed(1)} kg
+                        {pct !== null ? ` (${pct}%)` : ''}
+                      </span>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
-      <LabRoomDrawer
-        room={drawerRoom}
-        rooms={rooms}
-        batches={batches}
-        selectedBatchId={selectedBatchId}
-        strainStatsById={strainStatsById}
-        motherLots={motherLots}
-        onClose={handleDrawerClose}
-        onSelectBatch={(id) => setSelectedBatchId(id === '' ? null : id)}
-        onPlanCycle={(room) => {
-          setDrawerRoomId(null);
-          handlePlanCycle(room);
-        }}
-      />
+      {drawerRoom && drawerRoom.room_type === 'mother' ? (
+        <MomPlanningDrawer
+          open={true}
+          room={drawerRoom}
+          batches={batches}
+          plannedByRoom={plannedByRoom}
+          strainStats={strainStats}
+          motherBatchGroups={motherBatchGroups}
+          rooms={rooms}
+          onClose={handleDrawerClose}
+          onHoldBack={handleHoldBack}
+          onRetireMom={handleRetireMom}
+          onAddGenetics={handleAddGenetics}
+        />
+      ) : (
+        <LabRoomDrawer
+          room={drawerRoom}
+          rooms={rooms}
+          batches={batches}
+          selectedBatchId={selectedBatchId}
+          strainStatsById={strainStatsById}
+          motherLots={motherLots}
+          onClose={handleDrawerClose}
+          onSelectBatch={(id) => setSelectedBatchId(id === '' ? null : id)}
+          onPlanCycle={(room) => {
+            setDrawerRoomId(null);
+            handlePlanCycle(room);
+          }}
+        />
+      )}
 
       {planFormRoom && (
         <LabPlanCohortForm
@@ -1340,7 +1564,6 @@ export function LabProductionPlanner() {
           motherLots={motherLots}
           motherBatchGroups={motherBatchGroups}
           existingBatches={batches}
-          cycleConfig={DEFAULT_CYCLE_CONFIG}
           initialStrainId={planFormPrefill?.initialStrainId}
           initialFlowerStart={planFormPrefill?.initialFlowerStart}
           prefillReason={planFormPrefill?.prefillReason}
@@ -1354,6 +1577,7 @@ export function LabProductionPlanner() {
 
       {isDemoFixture && <SostanzaWalkthrough />}
     </div>
+    </CycleConfigProvider>
   );
 }
 

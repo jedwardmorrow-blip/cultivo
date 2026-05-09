@@ -3,8 +3,9 @@ import type {
   CalendarRoom,
   StrainCultivationStats,
 } from '@/features/production-planner/types';
-import type { Batch, MotherBatchGroup, MotherHealth, CycleConfig } from './planner-mock';
+import type { Batch, MotherBatchGroup, MotherHealth } from './planner-mock';
 import type { MotherLot } from './LabPlanCycleForm';
+import { useCycleConfig } from './CycleConfigContext';
 
 /**
  * Operator's allocation from a single Mother Batch Group for one strain.
@@ -55,8 +56,6 @@ interface LabPlanCohortFormProps {
   motherBatchGroups: MotherBatchGroup[];
   /** All existing batches in the planner; used to compute pipeline window. */
   existingBatches: Batch[];
-  /** Cycle constants for derivation; tenant-configurable in live mode. */
-  cycleConfig: CycleConfig;
   initialStrainId?: string;
   initialFlowerStart?: string;
   prefillReason?: string;
@@ -119,13 +118,13 @@ export function LabPlanCohortForm({
   motherLots,
   motherBatchGroups,
   existingBatches,
-  cycleConfig,
   initialStrainId,
   initialFlowerStart,
   prefillReason,
   onCancel,
   onFinalize,
 }: LabPlanCohortFormProps) {
+  const cycleConfig = useCycleConfig();
   const today = useMemo(() => new Date(), []);
 
   const defaultFlowerStart = useMemo(() => {
