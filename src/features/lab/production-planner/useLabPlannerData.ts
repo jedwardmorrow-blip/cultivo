@@ -19,6 +19,7 @@ import {
   SOSTANZA_PLANNED,
   SOSTANZA_STRAIN_STATS,
   SOSTANZA_MOTHER_LOTS,
+  SOSTANZA_MOTHER_BATCH_GROUPS,
 } from './sostanza-mock';
 import { MOCK_MOTHER_BATCH_GROUPS } from './planner-mock';
 import type { MotherBatchGroup } from './planner-mock';
@@ -551,7 +552,7 @@ function sostanzaState(): InternalState {
     plannedByRoom: SOSTANZA_PLANNED,
     strainStats: SOSTANZA_STRAIN_STATS,
     motherLots: SOSTANZA_MOTHER_LOTS,
-    motherBatchGroups: [],
+    motherBatchGroups: SOSTANZA_MOTHER_BATCH_GROUPS,
     error: null,
     loading: false,
   };

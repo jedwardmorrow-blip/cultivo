@@ -1,5 +1,5 @@
 import type { CalendarRoom, CalendarRoomStrain, StrainCultivationStats } from '@/features/production-planner/types';
-import type { Batch, BatchSegment, LifecycleStage } from './planner-mock';
+import type { Batch, BatchSegment, LifecycleStage, MotherBatchGroup, MotherIndividual, MotherHealth } from './planner-mock';
 import type { MotherLot } from './LabPlanCycleForm';
 
 /**
@@ -420,6 +420,111 @@ export const SOSTANZA_MOTHER_LOTS: MotherLot[] = [
     synthetic: false,
   },
 ];
+
+/**
+ * Sostanza Mother Batch Groups. 24 Pink Kush moms split across three
+ * generational MBGs reflecting how a continuous-flow operation actually
+ * carries genetics: an oldest cohort that's worked through most of its
+ * rotation budget, a middle cohort in steady state, and a newest cohort
+ * recently held back from a flower flip.
+ *
+ * cuts_max_rotations = 24 (Sostanza-tenant default reflecting their
+ * 16-day cutback cadence — moms here are intentionally long-running).
+ *
+ * Each MBG sources from a real prior FLW-* batch flip in their rotation,
+ * so the cohort prefix and source room are continuous with the gantt's
+ * historical batches (288/289/290 etc. are completed at -278/-308/-338d).
+ */
+function buildSostanzaMotherBatchGroups(): MotherBatchGroup[] {
+  // Three generations of Pink Kush moms: oldest sourced from a flip ~445d
+  // ago, middle from ~325d ago, newest from ~110d ago. 6 + 10 + 8 = 24.
+  type GenSeed = {
+    prefix: string;
+    sourceRoom: string;
+    becameMomDaysAgo: number;
+    moms: Array<{ health: MotherHealth; cuts_taken: number; last_cut_days_ago: number }>;
+  };
+  const generations: GenSeed[] = [
+    {
+      // Oldest cohort, ~445d old, mostly worked through their rotation budget.
+      prefix: '250120',
+      sourceRoom: 'FLW-04',
+      becameMomDaysAgo: 445,
+      moms: [
+        { health: 'declining', cuts_taken: 19, last_cut_days_ago: 12 },
+        { health: 'declining', cuts_taken: 18, last_cut_days_ago: 12 },
+        { health: 'needs_replacement', cuts_taken: 22, last_cut_days_ago: 28 },
+        { health: 'declining', cuts_taken: 17, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 16, last_cut_days_ago: 12 },
+        { health: 'declining', cuts_taken: 18, last_cut_days_ago: 12 },
+      ],
+    },
+    {
+      // Middle cohort, ~325d old, steady state.
+      prefix: '250520',
+      sourceRoom: 'FLW-01',
+      becameMomDaysAgo: 325,
+      moms: [
+        { health: 'healthy', cuts_taken: 12, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 11, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 12, last_cut_days_ago: 12 },
+        { health: 'declining', cuts_taken: 13, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 10, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 11, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 12, last_cut_days_ago: 12 },
+        { health: 'declining', cuts_taken: 13, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 10, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 11, last_cut_days_ago: 12 },
+      ],
+    },
+    {
+      // Newest cohort, ~110d old, fresh.
+      prefix: '251220',
+      sourceRoom: 'FLW-02',
+      becameMomDaysAgo: 110,
+      moms: [
+        { health: 'healthy', cuts_taken: 4, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 3, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 4, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 3, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 4, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 3, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 4, last_cut_days_ago: 12 },
+        { health: 'healthy', cuts_taken: 3, last_cut_days_ago: 12 },
+      ],
+    },
+  ];
+
+  // Sostanza cycle = 18d clone + 14d veg = 32d cut-to-flip.
+  const SOSTANZA_CUT_OFFSET_DAYS = 32;
+  return generations.map((g) => {
+    const becameMomsDate = offsetDate(-g.becameMomDaysAgo);
+    const cutDate = offsetDate(-g.becameMomDaysAgo - SOSTANZA_CUT_OFFSET_DAYS);
+    const moms: MotherIndividual[] = g.moms.map((m, i) => ({
+      id: `mom-${g.prefix}-pk-${String.fromCharCode(65 + i)}`,
+      strain_id: 's-pk',
+      strain_name: 'Pink Kush',
+      planted_date: cutDate,
+      became_mom_date: becameMomsDate,
+      last_cut_date: m.cuts_taken > 0 ? offsetDate(-m.last_cut_days_ago) : null,
+      cuts_taken_lifetime: m.cuts_taken,
+      cuts_max_rotations: 24,
+      health: m.health,
+      retired: false,
+    }));
+    return {
+      group_prefix: g.prefix,
+      room_code: 'MOM-01',
+      label: `MBG · ${g.prefix} (${g.sourceRoom} source)`,
+      source_flower_room_code: g.sourceRoom,
+      cut_date: cutDate,
+      became_moms_date: becameMomsDate,
+      moms,
+    };
+  });
+}
+
+export const SOSTANZA_MOTHER_BATCH_GROUPS: MotherBatchGroup[] = buildSostanzaMotherBatchGroups();
 
 /**
  * Operator roster from file 3's Production Calendar. Not yet rendered
