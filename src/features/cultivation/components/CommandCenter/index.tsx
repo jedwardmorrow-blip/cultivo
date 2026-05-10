@@ -228,7 +228,7 @@ function RoomCard({ room, tasks, isFeatured, onClick }: {
         <div className="rm-top">
           <span className="d d-muted" />
           <span className="rm-code">{room.code}</span>
-          <span className="rm-type">{room.type}</span>
+          <span className="rm-type" data-stage={room.type}>{room.type}</span>
         </div>
         <span className="rm-stats" style={{ marginTop: 'auto', color: 'var(--op-ink-4)' }}>Empty</span>
       </button>
@@ -255,7 +255,7 @@ function RoomCard({ room, tasks, isFeatured, onClick }: {
       <div className="rm-top">
         <span className={`d ${dotClass}`} />
         <span className="rm-code">{room.code}</span>
-        <span className="rm-type">{room.type}</span>
+        <span className="rm-type" data-stage={room.type}>{room.type}</span>
         {urgLabel ? (
           <span className="rm-urg" style={{ color: urgencyColor(room.urgency) }}>{urgLabel}</span>
         ) : null}

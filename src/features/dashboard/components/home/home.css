@@ -88,6 +88,32 @@
   border-radius: 50%;
   display: inline-block;
 }
+/* Section icon — small tinted square anchoring a section header.
+   Optional. Pass an icon ReactNode to Section's icon prop and the
+   square renders before the label. Tone follows --op-line / --accent
+   in working-instrument and --pv4-gold in V4 Bureau. */
+.home-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--op-line-strong);
+  background: var(--op-canvas);
+  color: var(--accent);
+  border-radius: var(--r-xs, 4px);
+  flex-shrink: 0;
+}
+.home-section-icon > svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 1.6;
+}
+.bureau-dashboard .home-section-icon {
+  border-color: rgba(201, 162, 75, 0.40);
+  background: rgba(201, 162, 75, 0.06);
+  color: var(--pv4-gold);
+}
 .home-section-marker.ok { background: var(--status-ok); }
 .home-section-marker.warn { background: var(--status-warn); }
 .home-section-marker.bad { background: var(--status-bad); }
@@ -152,6 +178,73 @@
 .home-cell-marker.ok { background: var(--status-ok); }
 .home-cell-marker.warn { background: var(--status-warn); }
 .home-cell-marker.bad { background: var(--status-bad); }
+
+/* Cell label is flex; the text expands to push the optional delta chip right. */
+.home-cell-label-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Delta chip — small directional trend pill in the cell label row.
+   Auto-computed from spark data in Cell.tsx (first vs last). Tone uses
+   working-instrument status palette: ok-green positive, bad-red negative,
+   ink-3 neutral for flat. Reads as a quick directional glance on top of
+   the sparkline; together they answer "by how much, in which direction." */
+.home-cell-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--op-line-strong);
+  background: var(--op-canvas);
+  color: var(--op-ink-3);
+  flex-shrink: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+.home-cell-delta.positive {
+  color: var(--status-ok);
+  border-color: rgba(110, 170, 141, 0.45);
+}
+.home-cell-delta.negative {
+  color: var(--status-bad);
+  border-color: rgba(197, 106, 106, 0.45);
+}
+.home-cell-delta.neutral {
+  color: var(--op-ink-3);
+  border-color: var(--op-line-strong);
+}
+.home-cell-delta-glyph {
+  font-size: 8px;
+  line-height: 1;
+}
+
+/* V4 Bureau dialect — delta chip uses gold/paper tokens to match Bureau plate */
+.bureau-dashboard .home-cell-delta {
+  background: transparent;
+  border-color: rgba(201, 162, 75, 0.32);
+  color: var(--pv4-paper-mute);
+}
+.bureau-dashboard .home-cell-delta.positive {
+  color: var(--pv4-gold);
+  border-color: rgba(201, 162, 75, 0.55);
+}
+.bureau-dashboard .home-cell-delta.negative {
+  color: var(--status-bad);
+  border-color: rgba(197, 106, 106, 0.55);
+}
+.bureau-dashboard .home-cell-delta.neutral {
+  color: var(--pv4-paper-faint);
+  border-color: rgba(201, 162, 75, 0.20);
+}
 
 .home-cell-primary-row {
   display: flex;

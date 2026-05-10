@@ -1,3 +1,4 @@
+import { DollarSign, Wallet, BarChart2, Building2, GitBranch, Beaker, Truck, AlertTriangle } from 'lucide-react';
 import { useHomeData } from '../../hooks/useHomeData';
 import { Section } from './Section';
 import { Cell, type CellMarker } from './Cell';
@@ -94,7 +95,7 @@ export function Home() {
       <StageFlowRibbon data={d} />
 
       <div className="home-grid-top">
-      <Section label="Revenue" cellCount={5}>
+      <Section label="Revenue" cellCount={5} icon={<DollarSign />}>
         <Cell
           label="BOOKED MTD"
           primary={fmtUSD(d.revenue.bookedMTD)}
@@ -146,7 +147,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Cash" cellCount={5} severity={cashSev}>
+      <Section label="Cash" cellCount={5} severity={cashSev} icon={<Wallet />}>
         <PendingCell
           label="CASH MTD"
           meta={{
@@ -202,7 +203,7 @@ export function Home() {
 
       </div>
 
-      <Section label="Coverage" cellCount={5} severity={coverageSev}>
+      <Section label="Coverage" cellCount={5} severity={coverageSev} icon={<BarChart2 />}>
         <Cell
           label="SOLD NOT DELIVERED"
           primary={fmtUSD(d.coverage.soldNotDeliveredUSD)}
@@ -248,11 +249,11 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Facility" className="facility-section">
+      <Section label="Facility" className="facility-section" icon={<Building2 />}>
         <FloorPlanCanvas />
       </Section>
 
-      <Section label="Pipeline" cellCount={5} severity={pipelineSev}>
+      <Section label="Pipeline" cellCount={5} severity={pipelineSev} icon={<GitBranch />}>
         <Cell
           label="NEXT HARVEST"
           primary={
@@ -318,7 +319,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Conversion" cellCount={4}>
+      <Section label="Conversion" cellCount={4} icon={<Beaker />}>
         <Cell
           label="BINNED"
           primary={fmtLbs(d.conversion.binnedLbs)}
@@ -349,7 +350,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Fulfillment" cellCount={5} severity={fulfillmentSev}>
+      <Section label="Fulfillment" cellCount={5} severity={fulfillmentSev} icon={<Truck />}>
         <Cell
           label="OPEN ORDERS"
           primary={fmtUSD(d.fulfillment.openUSD)}
@@ -398,7 +399,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Exceptions" cellCount={5} severity={exceptionsSev}>
+      <Section label="Exceptions" cellCount={5} severity={exceptionsSev} icon={<AlertTriangle />}>
         <Cell
           label="ROOMS ATTENTION"
           primary={fmtCount(d.exceptions.roomsAttention)}

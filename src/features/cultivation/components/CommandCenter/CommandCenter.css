@@ -86,7 +86,43 @@
 .cmd .rm.featured:hover { background: var(--op-surface-2); }
 .cmd .rm-top { display: flex; align-items: center; gap: 8px; }
 .cmd .rm-code { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--op-ink); }
-.cmd .rm-type { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--op-ink-3); }
+/* Stage pill — small colored pill replacing the plain mono-label rm-type.
+   Stage color is the tint, full saturation in text + 12% alpha background.
+   The 6px stage dot still sits to the left, so the pill is the secondary
+   identifier. In grid-of-rooms layouts this makes the stage scannable at
+   a glance without losing the dot's compactness. */
+.cmd .rm-type {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--op-line-strong);
+  background: var(--op-canvas);
+  line-height: 1.5;
+}
+.cmd .rm-type[data-stage="flower"] {
+  color: var(--stage-flower);
+  background: rgba(244, 63, 94, 0.08);
+  border-color: rgba(244, 63, 94, 0.32);
+}
+.cmd .rm-type[data-stage="veg"] {
+  color: var(--stage-veg);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+.cmd .rm-type[data-stage="clone"] {
+  color: var(--stage-clone);
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.32);
+}
+.cmd .rm-type[data-stage="mother"] {
+  color: var(--stage-mother);
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.32);
+}
 .cmd .rm-urg { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 .cmd .rm-big { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--op-ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
 .cmd .rm.featured .rm-big { font-size: 32px; }
