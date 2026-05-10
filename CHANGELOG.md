@@ -4,6 +4,42 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-05-09 - PinLoginPage · V4 Bureau dialect port (Tier 3 worker, light)
+
+**Type:** Feature — Worker auth / Design system
+**Status:** ✅ Tier 3 of three-tier validation. SalesInventoryView (Tier 2 instrument) still pending.
+**Branch:** `main` (committed direct)
+
+### What changed
+
+Worker PIN login replaced with the V4 Bureau dialect using the existing `.bureau-v4 .bureau-v4-tablet` styles from `bureau-v4-stress.css`. Light port: no new CSS file, no doctrine restructuring of the numpad ergonomics. The 44px-minimum hit-target rule from the worker persona contract is preserved (numpad keys at 64px / min 44px, verified via DOM inspect).
+
+### Behavior
+
+- PraxisAtom replaces no-graphic header. State mirrors auth lifecycle: mounts in `boot`, transitions to `idle` after 1.4s, goes `loading` on PIN auto-submit, settles to `success` on welcome state or `error` on bad PIN. Same contract as Tier 1 Login.
+- Numpad uses `.bv4-numkey` from the shared bureau CSS. The original `glass` className is gone — V4 Bureau has its own paper-cream low-opacity treatment (0.04 base, 0.08 hover, 0.18 gold-tint active).
+- PIN dots: hairline rings filled with `--pv4-gold` once entered. Same auto-submit at length 4.
+- Welcome state ("Welcome, NAME · Loading your tasks") rendered in V4 Bureau treatment with `success`-state PraxisAtom.
+- FORGOT YOUR PIN footer copy preserved in mono caps.
+
+### Files
+
+- `src/features/worker/components/PinLoginPage.tsx` — rewrite (53+/64-). Imports PraxisAtom and `bureau-v4-stress.css` from auth feature.
+
+### Cross-feature CSS import
+
+PinLoginPage now imports `bureau-v4-stress.css` from `src/features/auth/components/`. This is a temporary shape — `bureau-v4-stress.css` is the de facto V4 Bureau implementation file but is named for its earlier role as a stress-test wrapper. Will be reorganized when V4 Bureau extracts to a `praxis-bureau` package (Phase 2 of the migration).
+
+### Build
+
+`npm run build` ✓ in 17.85s, no errors.
+
+### Verification
+
+Visual + interaction verified at `/worker`. PIN entry fills dots, backspace clears one digit, no console errors, atom transitions work. Tap-target rule (44px minimum) satisfied via DOM inspect.
+
+---
+
 ## 2026-05-09 - Login · V4 Bureau dialect port (Tier 1 ceremonial)
 
 **Type:** Feature — Auth / Design system
