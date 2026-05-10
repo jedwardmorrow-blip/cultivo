@@ -4,6 +4,52 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-05-09 - Login · V4 Bureau dialect port (Tier 1 ceremonial)
+
+**Type:** Feature — Auth / Design system
+**Status:** ✅ Tier 1 of three-tier validation. SalesInventoryView (Tier 2 instrument) and PinLoginPage (Tier 3 worker) still pending.
+**Branch:** `main` (committed direct per session 475 plan)
+
+### What changed
+
+Login replaced with the V4 Bureau dialect: deep-navy canvas, paper-cream paper, gold accent, Bureau identity marks (serial plate, registry number, dashed rules). Sandbox-scoped: nothing in `src/brand-tokens.css` or `tailwind.config.js` was touched. The doctrine lives in a parallel `--pv4-*` namespace under `.bureau-login`, so the rest of the operator surface (every screen still using `cult-*` utilities) renders exactly as before.
+
+### Behavior
+
+- Procedural login cog deprecated. Replaced by `<PraxisAtom>` — state-aware React component using the real signature-atom geometry (six states: `boot`, `idle`, `loading`, `success`, `error`, `reduced-motion`). Atom mirrors the auth lifecycle: mounts in `boot`, transitions to `idle`, goes `loading` during `signIn()`, flashes `success` or `error` on resolve, settles back to `idle`.
+- PraxisAtom is the only expressive-motion surface in V4 Bureau. Rest of the surface stays still.
+- Stress-test harness at `?v4test=sales` and `?v4test=pin` previews V4 Bureau on SalesInventoryView and PinLoginPage by overriding `--op-*` tokens inside `.bureau-v4` wrapper. Lets us evaluate Tier 2 and Tier 3 visually without porting the components yet.
+
+### Files
+
+- `src/features/auth/components/Login.tsx` — rewritten for V4 Bureau structure (159+/62-).
+- `src/features/auth/components/login-bureau.css` — sandbox-scoped V4 Bureau styles for the Login surface.
+- `src/features/auth/components/V4StressTest.tsx` — query-param-gated stress-test harness for Tier 2 and Tier 3.
+- `src/features/auth/components/bureau-v4-stress.css` — `.bureau-v4` wrapper that overrides `--op-*` tokens locally.
+- `src/features/auth/components/praxis-atom/PraxisAtom.tsx` — state-aware atom component.
+- `src/features/auth/components/praxis-atom/praxis-atom.css` — atom styles.
+
+### Doctrine references
+
+- Decision row `d004d3fc-4f1b-4cc1-9a4c-d267dc8824fb` (V4 Bureau canonical).
+- Doctrine row `cultivo_v4_bureau_canonical_v1` (id `086ecee8-bf68-4455-abd2-b4dbe8b583c7`).
+- PraxisAtom doctrine `praxis_atom_v1` (id `879ea6ff-e57e-4232-95ae-de2ff5da559e`).
+- Glass doctrine `cultivo_glass_doctrine_v1` (id `9ae88200-d12f-4e81-a7c8-c825ba7a66d7`).
+
+### Known doc drift introduced by this commit
+
+CLAUDE.md still names Login as "the canonical example of the new aesthetic" referring to the working-instrument doctrine. With V4 Bureau in place on Login, that statement is now misleading. CLAUDE.md update queued for after the three-tier validation completes (after PinLoginPage and SalesInventoryView ports). Do not reference Login as a working-instrument example until then; reference `/dashboard` or `/executive-hub` Overview instead.
+
+### Build
+
+`npm run build` ✓ in 15.32s, no errors, chunk sizes unchanged.
+
+### Verification
+
+Visual verification not yet run on this commit. Surface available locally at `/login` (default route when unauthenticated) and at `/login?v4test=sales` / `/login?v4test=pin` for stress-test previews.
+
+---
+
 ## 2026-04-29 - Cultivation Command Center · PR4 (dnd-kit reschedule calendar)
 
 **Type:** Feature — Cultivation

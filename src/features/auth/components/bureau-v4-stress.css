@@ -1,0 +1,389 @@
+/* ═══════════════════════════════════════════════════════════════════
+   V4 Bureau token override · stress-test wrapper
+   design-test/v4-login worktree, session 474.
+
+   Scopes V4 Bureau palette to .bureau-v4 by overriding --op-* and
+   --accent tokens that the cult-* utility classes resolve through.
+   Every cult-surface, cult-text-primary, cult-border, cult-accent
+   inside this wrapper inherits V4 values automatically without
+   touching brand-tokens.css globally.
+
+   Used to stress-test V4 Bureau on dense list (SalesInventoryView)
+   and worker tablet (PinLoginPage) without authenticating.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;800&display=swap');
+
+.bureau-v4 {
+  --pv4-canvas-deep:   #061a33;
+  --pv4-canvas:        #0a2545;
+  --pv4-paper:         #F1E8D2;
+  --pv4-paper-dim:     rgba(241,232,210,0.78);
+  --pv4-paper-mute:    rgba(241,232,210,0.55);
+  --pv4-paper-faint:   rgba(241,232,210,0.32);
+  --pv4-gold:          #C9A24B;
+  --pv4-gold-paper:    #E8D69A;
+  --pv4-red:           #C42130;
+  --pv4-amber:         #D97706;
+  --pv4-rule:          rgba(201,162,75,0.45);
+  --pv4-rule-soft:     rgba(201,162,75,0.18);
+
+  /* Override the global op-* tokens for everything inside this wrapper.
+     The Tailwind cult-* utilities map to these, so this propagates. */
+  --op-canvas:          #061a33;
+  --op-surface:         #08213f;
+  --op-surface-2:       #0c2a4f;
+  --op-line:            rgba(201,162,75,0.18);
+  --op-line-strong:     rgba(201,162,75,0.45);
+  --op-ink:             #F1E8D2;
+  --op-ink-2:           rgba(241,232,210,0.78);
+  --op-ink-3:           rgba(241,232,210,0.55);
+  --op-ink-4:           rgba(241,232,210,0.32);
+  --accent:             #C9A24B;
+  --accent-press:       #E8D69A;
+
+  /* Density-dependent hairline tokens (refinement A from doctrine).
+     Surface authors pick by intent, not opacity. */
+  --op-rule-light:      rgba(201,162,75,0.18);
+  --op-rule-mid:        rgba(201,162,75,0.32);
+  --op-rule-strong:     rgba(201,162,75,0.50);
+
+  /* Status colors — warn resolved (refinement A from doctrine).
+     Old: --status-warn used --pv4-gold which collided with --accent.
+     New: warn is amber, distinct from gold. ok and bad unchanged. */
+  --status-ok:          #6EAA8D;
+  --status-warn:        #D97706;
+  --status-bad:         #C42130;
+
+  background: #061a33;
+  color: #F1E8D2;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+}
+
+/* At-rest motion — pulse on live-status dots only.
+   No other motion permitted. Bureau aesthetic is paper; paper does
+   not pulse. The single pulse on the live-dot is the nod to "this
+   is alive software, not actual paper." */
+@keyframes bv4-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(196, 33, 48, 0.55);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(196, 33, 48, 0);
+    opacity: 0.75;
+  }
+}
+
+.bureau-v4 .live-dot,
+.bureau-v4 .bv4-plate .live-dot {
+  animation: bv4-pulse 2.4s ease-in-out infinite;
+}
+
+/* Dense-row container — promotes hairline strength to --op-rule-mid
+   for surfaces with row-to-row scanning. Refinement B from doctrine.
+   Cult-* utility classes inside resolve cult-border to the bumped
+   --op-line value, so existing JSX inherits without rewriting. */
+.bureau-v4 .bv4-dense-rows {
+  --op-line: var(--op-rule-mid);
+}
+
+/* KPI lead numeric — Big Shoulders extension test (refinement E).
+   Used for hero numerics inside summary taglines, where a number
+   wants to read as the page's primary fact. Mono caps unit/label
+   stays beside it for the working-instrument feel. */
+.bureau-v4 .bv4-num-lead {
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--pv4-paper);
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+.bureau-v4 .bv4-num-unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-mute);
+  margin-right: 12px;
+}
+
+/* Status warn / bad / ok caps for inline use — uses the resolved
+   warn (amber, no longer gold) so warn states do not collide with
+   the interactive accent color. */
+.bureau-v4 .bv4-status-warn {
+  color: var(--status-warn);
+}
+.bureau-v4 .bv4-status-bad {
+  color: var(--status-bad);
+}
+.bureau-v4 .bv4-status-ok {
+  color: var(--status-ok);
+}
+
+/* Top serial plate — Bureau header marks */
+.bureau-v4 .bv4-plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px dashed var(--pv4-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+  background: #061a33;
+}
+
+.bureau-v4 .bv4-plate .stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bureau-v4 .bv4-plate .serial {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-v4 .bv4-plate .sep {
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-v4 .bv4-plate .live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pv4-red);
+}
+
+.bureau-v4 .bv4-plate .corner-bracket {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid var(--pv4-gold);
+  border-left: 1px solid var(--pv4-gold);
+}
+
+/* Big Shoulders title for hero contexts */
+.bureau-v4 .bv4-title {
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  color: var(--pv4-paper);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bureau-v4 .bv4-title .period {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: var(--pv4-red);
+  margin-left: 4px;
+  vertical-align: 0.05em;
+}
+
+.bureau-v4 .bv4-tagline {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-mute);
+  margin-top: 4px;
+}
+
+.bureau-v4 .bv4-page {
+  padding: 20px 24px 60px;
+}
+
+.bureau-v4 .bv4-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 22px 0 18px;
+  border-bottom: 1px dashed var(--pv4-rule);
+  margin-bottom: 24px;
+}
+
+.bureau-v4 .bv4-page-header .left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bureau-v4 .bv4-page-header .meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bureau-v4 .bv4-page-header .right {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-mute);
+  text-align: right;
+}
+
+.bureau-v4 .bv4-page-header .right strong {
+  color: var(--pv4-paper);
+  font-weight: 600;
+}
+
+/* Worker tablet variants — guarantee 44px tap targets even with V4 marks */
+.bureau-v4-tablet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 16px;
+}
+
+.bureau-v4-tablet .bv4-pin-stack {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.bureau-v4-tablet .bv4-pin-cog {
+  width: 48px;
+  height: 48px;
+}
+
+.bureau-v4-tablet .bv4-pin-mark {
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: 0.04em;
+  color: var(--pv4-paper);
+  display: flex;
+  align-items: center;
+}
+
+.bureau-v4-tablet .bv4-pin-mark .period {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: var(--pv4-red);
+  margin-left: 4px;
+  vertical-align: 0.05em;
+}
+
+.bureau-v4-tablet .bv4-pin-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-mute);
+  margin-top: 4px;
+}
+
+.bureau-v4-tablet .bv4-pin-fig {
+  margin: 6px 0 4px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--pv4-rule);
+  border-bottom: 1px dashed var(--pv4-rule);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-v4-tablet .bv4-pin-fig .serial {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-v4-tablet .bv4-pin-fig .sep {
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-v4-tablet .bv4-pin-dots {
+  display: flex;
+  gap: 16px;
+}
+
+.bureau-v4-tablet .bv4-pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--pv4-rule);
+  background: transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.bureau-v4-tablet .bv4-pin-dot.is-filled {
+  background: var(--pv4-gold);
+  border-color: var(--pv4-gold);
+}
+
+.bureau-v4-tablet .bv4-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.bureau-v4-tablet .bv4-numkey {
+  height: 64px;
+  min-height: 44px;
+  background: rgba(241,232,210,0.04);
+  border: 1px solid var(--pv4-rule);
+  color: var(--pv4-paper);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.bureau-v4-tablet .bv4-numkey:hover {
+  background: rgba(241,232,210,0.08);
+  border-color: var(--pv4-gold);
+}
+
+.bureau-v4-tablet .bv4-numkey:active {
+  background: rgba(201,162,75,0.18);
+}
+
+.bureau-v4-tablet .bv4-numkey.is-back {
+  background: transparent;
+  border: 1px solid var(--pv4-paper-faint);
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-v4-tablet .bv4-pin-foot {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-faint);
+  text-align: center;
+}

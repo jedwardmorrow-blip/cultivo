@@ -1,0 +1,247 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Praxis Atom · state-aware operating mark
+   Geometry inherited from praxis-web/public/assets/signature-atom-animated.svg
+   (cog frame plus three orbits plus pulsing nucleus). State machine
+   adds BOOT, LOADING, SUCCESS, ERROR, REDUCED-MOTION on top of IDLE.
+
+   Bureau aesthetic discipline: motion is concentrated on the atom and
+   nowhere else. The atom does the system's motion work; everywhere
+   else stays still.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.praxis-atom {
+  display: inline-block;
+  line-height: 0;
+  --atom-cycle: 3.2s;
+  --orbit-1: 13s;   /* innermost, fastest */
+  --orbit-2: 20s;   /* middle, reverse */
+  --orbit-3: 32s;   /* outermost, slowest */
+}
+
+.praxis-atom svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── IDLE (default canonical motion) ─────────────────────────────── */
+
+.praxis-atom .pa-orbit { transform-origin: 180px 180px; }
+.praxis-atom .pa-orbit-1 { animation: pa-rotate var(--orbit-1) linear infinite; }
+.praxis-atom .pa-orbit-2 { animation: pa-rotate-rev var(--orbit-2) linear infinite; }
+.praxis-atom .pa-orbit-3 { animation: pa-rotate var(--orbit-3) linear infinite; }
+
+.praxis-atom .pa-nucleus {
+  transform-origin: 180px 180px;
+  animation: pa-nucleus-pulse var(--atom-cycle) ease-in-out infinite;
+}
+
+.praxis-atom .pa-halo {
+  transform-origin: 180px 180px;
+  animation: pa-halo-pulse var(--atom-cycle) ease-in-out infinite;
+}
+
+.praxis-atom .pa-specular {
+  animation: pa-specular var(--atom-cycle) ease-in-out infinite;
+}
+
+@keyframes pa-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes pa-rotate-rev {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+@keyframes pa-nucleus-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.09); }
+}
+
+@keyframes pa-halo-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.18; }
+  50%      { transform: scale(1.18); opacity: 0.04; }
+}
+
+@keyframes pa-specular {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.55; }
+}
+
+/* ── BOOT (orbits fade in over 1.2s, then settle into canonical) ─── */
+
+.praxis-atom[data-state="boot"] .pa-orbit-1 {
+  animation:
+    pa-boot-fade 1.4s ease-out both,
+    pa-rotate var(--orbit-1) linear 1.2s infinite;
+}
+.praxis-atom[data-state="boot"] .pa-orbit-2 {
+  animation:
+    pa-boot-fade 1.4s ease-out 0.15s both,
+    pa-rotate-rev var(--orbit-2) linear 1.35s infinite;
+}
+.praxis-atom[data-state="boot"] .pa-orbit-3 {
+  animation:
+    pa-boot-fade 1.4s ease-out 0.3s both,
+    pa-rotate var(--orbit-3) linear 1.5s infinite;
+}
+
+.praxis-atom[data-state="boot"] .pa-nucleus {
+  animation:
+    pa-boot-nucleus 1.4s ease-out both,
+    pa-nucleus-pulse var(--atom-cycle) ease-in-out 1.4s infinite;
+}
+
+.praxis-atom[data-state="boot"] .pa-halo {
+  animation:
+    pa-boot-halo 1.4s ease-out both,
+    pa-halo-pulse var(--atom-cycle) ease-in-out 1.4s infinite;
+}
+
+.praxis-atom[data-state="boot"] .pa-specular {
+  animation:
+    pa-boot-specular 1.4s ease-out both,
+    pa-specular var(--atom-cycle) ease-in-out 1.4s infinite;
+}
+
+@keyframes pa-boot-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pa-boot-nucleus {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pa-boot-halo {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1); opacity: 0.18; }
+}
+
+@keyframes pa-boot-specular {
+  from { opacity: 0; }
+  to   { opacity: 0.35; }
+}
+
+/* ── LOADING (orbits 1.5x speed, nucleus dims, halo widens) ──────── */
+
+.praxis-atom[data-state="loading"] {
+  --orbit-1: 8.5s;
+  --orbit-2: 13s;
+  --orbit-3: 21s;
+}
+
+.praxis-atom[data-state="loading"] .pa-nucleus {
+  animation: pa-nucleus-pulse 1.6s ease-in-out infinite;
+  opacity: 0.78;
+}
+
+.praxis-atom[data-state="loading"] .pa-halo {
+  animation: pa-halo-load 1.6s ease-in-out infinite;
+}
+
+@keyframes pa-halo-load {
+  0%, 100% { transform: scale(1.05); opacity: 0.12; }
+  50%      { transform: scale(1.30); opacity: 0.02; }
+}
+
+/* ── SUCCESS (paper-cream flash overlay on the nucleus, 320ms) ───── */
+
+.praxis-atom[data-state="success"] .pa-success-flash {
+  animation: pa-success-flash 320ms ease-out forwards;
+}
+
+@keyframes pa-success-flash {
+  0%   { opacity: 0; transform: scale(0.7); }
+  35%  { opacity: 0.85; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+.praxis-atom[data-state="success"] .pa-orbit-particle {
+  animation: pa-particle-flash 320ms ease-out forwards;
+}
+
+@keyframes pa-particle-flash {
+  0%   { fill: var(--pa-particle-fill, #C9A24B); }
+  40%  { fill: #F1E8D2; filter: brightness(1.4); }
+  100% { fill: var(--pa-particle-fill, #C9A24B); filter: brightness(1); }
+}
+
+/* ── ERROR (orbits stutter slow, nucleus tints darker red, halo contracts) */
+
+.praxis-atom[data-state="error"] {
+  --orbit-1: 43s;
+  --orbit-2: 60s;
+  --orbit-3: 95s;
+}
+
+.praxis-atom[data-state="error"] .pa-nucleus {
+  fill: #7a1422;
+}
+
+/* Simplified variant — sub-32px geometry from favicon-simplified.
+   Pulse on halo and nucleus carries liveness; no orbits exist. */
+.praxis-atom-simplified .pa-halo {
+  animation: pa-halo-pulse var(--atom-cycle) ease-in-out infinite;
+}
+.praxis-atom-simplified .pa-nucleus {
+  transform-origin: 180px 180px;
+  animation: pa-nucleus-pulse var(--atom-cycle) ease-in-out infinite;
+}
+
+.praxis-atom[data-state="error"] .pa-halo {
+  animation: pa-halo-error 0.8s ease-out;
+  opacity: 0.06;
+}
+
+@keyframes pa-halo-error {
+  0%   { transform: scale(1); opacity: 0.18; }
+  100% { transform: scale(0.85); opacity: 0.06; }
+}
+
+/* ── REDUCED-MOTION (or user preference) ─────────────────────────── */
+
+.praxis-atom[data-state="reduced-motion"] .pa-orbit-1,
+.praxis-atom[data-state="reduced-motion"] .pa-orbit-2,
+.praxis-atom[data-state="reduced-motion"] .pa-orbit-3 {
+  animation: none;
+}
+
+.praxis-atom[data-state="reduced-motion"] .pa-nucleus {
+  animation: pa-nucleus-pulse-soft 4.5s ease-in-out infinite;
+}
+
+.praxis-atom[data-state="reduced-motion"] .pa-halo {
+  animation: none;
+  opacity: 0.10;
+}
+
+.praxis-atom[data-state="reduced-motion"] .pa-specular {
+  animation: none;
+  opacity: 0.4;
+}
+
+@keyframes pa-nucleus-pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+
+/* Honor system preference automatically (overrides any state except
+   explicit declaration of state="reduced-motion" which is opt-in). */
+@media (prefers-reduced-motion: reduce) {
+  .praxis-atom:not([data-state="reduced-motion"]) .pa-orbit-1,
+  .praxis-atom:not([data-state="reduced-motion"]) .pa-orbit-2,
+  .praxis-atom:not([data-state="reduced-motion"]) .pa-orbit-3 {
+    animation: none;
+  }
+  .praxis-atom:not([data-state="reduced-motion"]) .pa-halo,
+  .praxis-atom:not([data-state="reduced-motion"]) .pa-specular {
+    animation: none;
+  }
+  .praxis-atom:not([data-state="reduced-motion"]) .pa-nucleus {
+    animation: pa-nucleus-pulse-soft 4.5s ease-in-out infinite;
+  }
+}

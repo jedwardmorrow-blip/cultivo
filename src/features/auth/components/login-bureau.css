@@ -1,0 +1,335 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Login · Praxis V4 Bureau dialect test
+   design-test/v4-login branch, session 474.
+
+   Question: does V4 Bureau (deep navy + paper-cream + gold + Bureau
+   identity marks) hold up as instrument-grade on a ceremonial surface
+   without glass? Login is the canonical aesthetic example per
+   CLAUDE.md, so the answer is informative for the broader displacement
+   question (V4 Bureau replacing the Cultivo canvas).
+
+   Sandbox-scoped to .bureau-login. Does not touch global brand-tokens.
+   No glass on this test — login is auth, not synthesis or overlay.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;800&display=swap');
+
+.bureau-login {
+  --pv4-canvas-deep:   #061a33;
+  --pv4-canvas:        #0a2545;
+  --pv4-paper:         #F1E8D2;
+  --pv4-paper-dim:     rgba(241,232,210,0.78);
+  --pv4-paper-mute:    rgba(241,232,210,0.55);
+  --pv4-paper-faint:   rgba(241,232,210,0.32);
+  --pv4-gold:          #C9A24B;
+  --pv4-gold-paper:    #E8D69A;
+  --pv4-red:           #C42130;
+  --pv4-rule:          rgba(201,162,75,0.45);
+  --pv4-rule-soft:     rgba(201,162,75,0.18);
+
+  position: fixed;
+  inset: 0;
+  background: var(--pv4-canvas-deep);
+  color: var(--pv4-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum";
+}
+
+/* Top serial plate — Bureau header marks */
+.bureau-login .serial-plate {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  border-bottom: 1px dashed var(--pv4-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-login .serial-stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bureau-login .serial-stamp .serial {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-login .serial-stamp .sep {
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-login .serial-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bureau-login .serial-status .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pv4-red);
+  animation: bureau-login-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes bureau-login-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(196, 33, 48, 0.55);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(196, 33, 48, 0);
+    opacity: 0.75;
+  }
+}
+
+/* Center stack */
+.bureau-login .login-stack {
+  width: 100%;
+  max-width: 380px;
+  padding: 0 24px;
+  position: relative;
+}
+
+/* Cog mark — DEPRECATED. Replaced by <PraxisAtom> component. CSS kept
+   only to preserve sizing for any other surfaces still importing it. */
+.bureau-login .login-cog {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 28px;
+  display: block;
+}
+
+/* Wordmark */
+.bureau-login .login-mark {
+  text-align: center;
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 800;
+  font-size: 38px;
+  letter-spacing: 0.04em;
+  color: var(--pv4-paper);
+  line-height: 1;
+}
+
+.bureau-login .login-mark .period {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  background: var(--pv4-red);
+  margin-left: 6px;
+  vertical-align: 0.05em;
+}
+
+.bureau-login .login-tagline {
+  text-align: center;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-login .login-tagline .tag-sep {
+  color: var(--pv4-paper-faint);
+  margin: 0 8px;
+}
+
+/* FIG. plate above the form */
+.bureau-login .login-fig {
+  margin-top: 36px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--pv4-rule);
+  border-bottom: 1px dashed var(--pv4-rule);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-login .login-fig .serial {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-login .login-fig .sep {
+  color: var(--pv4-paper-faint);
+}
+
+/* Form */
+.bureau-login form {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.bureau-login label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-mute);
+  margin-bottom: 8px;
+}
+
+.bureau-login .field {
+  position: relative;
+}
+
+.bureau-login .field svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--pv4-paper-faint);
+  pointer-events: none;
+}
+
+.bureau-login input[type='email'],
+.bureau-login input[type='password'] {
+  width: 100%;
+  padding: 11px 12px 11px 36px;
+  background: rgba(241, 232, 210, 0.04);
+  border: 1px solid var(--pv4-rule);
+  border-radius: 0;
+  color: var(--pv4-paper);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  outline: none;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.bureau-login input::placeholder {
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-login input:focus {
+  border-color: var(--pv4-gold);
+  background: rgba(241, 232, 210, 0.07);
+}
+
+.bureau-login .row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.bureau-login .forgot {
+  background: transparent;
+  border: none;
+  color: var(--pv4-paper-mute);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  padding: 0;
+  border-bottom: 1px dotted var(--pv4-paper-faint);
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.bureau-login .forgot:hover {
+  color: var(--pv4-gold);
+  border-bottom-color: var(--pv4-gold);
+}
+
+.bureau-login .submit {
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--pv4-gold);
+  color: var(--pv4-canvas-deep);
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  margin-top: 4px;
+}
+
+.bureau-login .submit:hover:not(:disabled) {
+  background: var(--pv4-gold-paper);
+}
+
+.bureau-login .submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error */
+.bureau-login .error-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--pv4-red);
+  background: rgba(196, 33, 48, 0.08);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--pv4-paper);
+}
+
+.bureau-login .error-row svg {
+  width: 14px;
+  height: 14px;
+  color: var(--pv4-red);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Footer */
+.bureau-login .login-footer {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--pv4-rule);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-faint);
+}
+
+/* Bottom plate */
+.bureau-login .bottom-plate {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 22px;
+  border-top: 1px dashed var(--pv4-rule);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-faint);
+}
