@@ -4,6 +4,48 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-05-10 - SalesInventoryView · V4 Bureau Tier 2 instrument (cross-component validation)
+
+**Type:** Feature — Sales / Design system
+**Status:** ✅ Tier 2 instrument doctrine validated on a second production surface. /dashboard + /crm-inventory both ship Tier 2 Bureau treatment now.
+**Branch:** `main` (committed direct, session 477)
+
+### What changed
+
+`/crm-inventory` (the Sales Inventory grade-first view used during phone calls with buyers) ported to V4 Bureau Tier 2 instrument dialect. Sandbox-scoped under `.bureau-v4 .bureau-sales`. Light port — adds the Tier 2 chrome (Bureau plate, page header with Big Shoulders title, bv4-tagline KPI strip, right-side status block with over-committed and low-stock counts) above the existing list. The MenuView and PositionView components inherit V4 Bureau colors automatically through the `cult-*` utility cascade — no code changes inside.
+
+This is the original Tier 2 candidate from session 474. It was deferred when /dashboard became Tier 2 anchor in session 476. Now both surfaces ship Tier 2, validating the doctrine across two real production instrument surfaces (executive rollup + sales inventory).
+
+### Files
+
+- **Modified:** `src/features/inventory/components/SalesInventoryView.tsx` (rewrite, ~210 lines). Adds Bureau plate, page header, tagline KPI strip, right-side status block, A/B layout switcher restyled as Bureau elements, dense-rows wrapper around the body. Imports `bureau-v4-stress.css` for the cascade.
+
+### What stays unchanged
+
+`MenuView`, `PositionView`, `useStrainPosition` hook, `sales-position` molecule. The cascade through `--op-*` overrides means these inherit V4 Bureau values without touching their code.
+
+### Doctrine alignment
+
+Sales / Account Manager persona spec (`cultivo_persona_sales_account_manager`) lists Orders as the canonical default module. SalesInventoryView is the Sales Inventory subsurface used during quote-building phone calls. Tier 2 instrument applies because the surface is dense list with comparison work — exactly what Tier 2 prescribes.
+
+### Build
+
+Local Vite build deferred (system memory pressure, see prior commits). tsc passes.
+
+### Verification
+
+Visual verified at `/crm-inventory` (1440×900): Bureau plate top, "SALES INVENTORY." Big Shoulders title, KPI tagline (LBS QUOTABLE / LBS UNGRADED / LBS OPEN DEMAND / STRAINS), real strain data flowing into MenuView with grade columns (CULT/B/C/D/UNGRADED). A/B layout toggle preserved as Bureau pill. The pre-existing "Failed to fetch badge counts" console errors are unrelated TopNav telemetry.
+
+### Tier 2 cross-component validation status
+
+Two surfaces ship Tier 2 instrument treatment now:
+- `/dashboard` — executive rollup home (COO persona)
+- `/crm-inventory` — sales inventory list (Sales/Account Manager persona)
+
+Doctrine holds across distinct operational contexts: dense KPI cells with floor plan integration AND dense list with grade-bucketed strain rows. Same primitives (Bureau plate, Big Shoulders title, bv4-tagline, status block, dense-rows wrapper) work in both.
+
+---
+
 ## 2026-05-10 - Dashboard · PendingModal glass (cultivo_glass_doctrine_v1 Rule 2 — second application)
 
 **Type:** Feature — Dashboard / Design system
