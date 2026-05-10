@@ -489,3 +489,56 @@
   color: var(--pv4-paper-faint);
   padding: 24px;
 }
+
+/* ── SideRail: glass overlay (Rule 2 from cultivo_glass_doctrine_v1) ──
+   The floor plan SVG underneath has color shifts (room states), repeating
+   chips (room codes), stroke variation (compass, scalebar, callouts) — it
+   passes the content-density test, so glass earns its place per Rule 2.
+
+   Scoped under .bureau-dashboard so the treatment only applies on the COO
+   dashboard. Cultivation Command Center keeps its opaque hairline side-
+   by-side rail (still doctrine-compliant in that context).
+
+   Behavior change: instead of reflowing the canvas to 1fr 320px when
+   rail opens, the rail slides over the canvas as a true overlay. The COO
+   keeps the full floor plan visible and sees room detail "lifted" above
+   the spatial backdrop, exactly as Rule 2 prescribes. */
+
+.bureau-dashboard .home-floorplan .fpl-main {
+  position: relative;
+}
+
+.bureau-dashboard .home-floorplan .fpl-main.rail-open {
+  /* Override the side-by-side reflow — canvas stays full width */
+  grid-template-columns: 1fr;
+}
+
+.bureau-dashboard .home-floorplan .fpl-rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+
+  /* Tested values from doctrine row, mid of permitted ranges */
+  background: rgba(6, 26, 51, 0.62);
+  background-image: none;
+  -webkit-backdrop-filter: blur(26px) saturate(1.3);
+  backdrop-filter: blur(26px) saturate(1.3);
+
+  border: none;
+  border-left: 1px solid rgba(201, 162, 75, 0.32);
+  border-radius: 0;
+
+  box-shadow:
+    inset 1px 0 0 rgba(241, 232, 210, 0.06),
+    -1px 0 0 rgba(3, 16, 31, 0.55);
+
+  z-index: 10;
+}
+
+/* Glass-context override: rail head separator picks up the gold rule
+   to match the Bureau dialect */
+.bureau-dashboard .home-floorplan .fpl-rail .fpl-rail-head {
+  border-bottom-color: rgba(201, 162, 75, 0.18);
+}

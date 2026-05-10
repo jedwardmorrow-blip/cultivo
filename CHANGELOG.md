@@ -4,6 +4,70 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-05-10 - Dashboard · SideRail glass overlay (cultivo_glass_doctrine_v1 Rule 2)
+
+**Type:** Feature — Dashboard / Design system
+**Status:** ✅ Glass earned its place. SideRail behavior changed from side-by-side reflow to slide-in overlay with content-dense glass.
+**Branch:** `main` (committed direct, session 477)
+
+### What changed
+
+The SideRail drawer on `/dashboard` upgraded from opaque hairline side-by-side panel to true slide-in overlay with glass treatment, scoped under `.bureau-dashboard`. Implements Rule 2 of `cultivo_glass_doctrine_v1` (id `9ae88200-d12f-4e81-a7c8-c825ba7a66d7`): glass permitted on overlays only when the underlying content has visual density worth refracting. The floor plan SVG passes the test — color shifts (room states), repeating chips (room codes), stroke variation (compass, scalebar, callouts).
+
+CLAUDE.md updated to reflect the refined glass doctrine, closing the doc-state drift the doctrine row itself flagged ("CLAUDE.MD UPDATE NEEDED" in `cultivo_glass_doctrine_v1`).
+
+### Behavior change
+
+Previously: opening a room callout collapsed the floor plan canvas to 1fr 320px grid, with the rail beside it. The COO lost half the spatial context to read room detail.
+
+Now: the canvas stays full-width, the rail slides in from the right as an overlay, the floor plan remains visible behind the glass. Per the doctrine, this earns the room detail a "lifted layer over the spatial backdrop" read instead of "eating half the canvas to show me one room."
+
+Cultivation Command Center (which also uses SideRail at `/cultivation-command-center`) is untouched — its rail stays opaque hairline side-by-side because that surface's overall density profile is different. Glass scoping is `.bureau-dashboard .home-floorplan .fpl-rail` only.
+
+### Tested values applied
+
+Mid of doctrine permitted ranges:
+
+- Background: `rgba(6, 26, 51, 0.62)` translucent navy
+- Backdrop-filter: `blur(26px) saturate(1.3)` (within doctrine's 24-30px / 1.2-1.35 ranges)
+- Border-left: `1px solid rgba(201, 162, 75, 0.32)` gold edge
+- Inset edge highlight: `inset 1px 0 0 rgba(241, 232, 210, 0.06)` paper warmth catch-light
+- Outer edge shadow: `-1px 0 0 rgba(3, 16, 31, 0.55)` anchor weight
+- Position: `absolute` overlay inside `.fpl-main` (which gets `position: relative` for containment)
+- Width: `360px`
+- z-index: `10`
+
+### Files
+
+- **Modified:** `src/features/dashboard/components/home/dashboard-bureau.css` (~50 lines added). Sandbox-scoped under `.bureau-dashboard .home-floorplan` so cultivation-command-center stays opaque.
+- **Modified:** `CLAUDE.md` — refined the "Borders" rule, the "Glass utilities are flattened" paragraph, and the "No backdrop-blur" banned-pattern entry. All three now cite `cultivo_glass_doctrine_v1` and name the permitted scopes.
+
+### What stays unchanged
+
+The base `.fpl-rail` styling in `src/features/cultivation/components/command/floor-plan/floor-plan.css` is untouched. SideRail.tsx component is untouched. The glass override is a CSS-only add scoped to `.bureau-dashboard`, so the same component renders differently in different contexts based on which wrapper surrounds it.
+
+### Doctrine notes
+
+The doctrine row explicitly documented this scenario as "Drawer over a content-dense backdrop: not yet directly tested. Doctrine permits, awaits in-context test when cultivation Command Center drawer ships." This commit is the first in-context test of Rule 2 on a real production surface. Tested values are within doctrine ranges and visually verified.
+
+### Build
+
+Local Vite build still hangs (system memory pressure, see prior commit). tsc --noEmit passes. Vercel CI will be the production-build smoke test.
+
+### Verification
+
+Visual verified at `/dashboard` in dev server. Click any room callout in the inline strip (e.g. FLW-09), SideRail slides in from the right as glass overlay, floor plan SVG visible through the translucent navy + 26px blur. Click the X or click outside the rail bounds to close. Spatial context preserved.
+
+### Migration status
+
+- **Tier 1 ceremonial (Login):** ✅ shipped session 475 (commit `e86ebc4`).
+- **Tier 2 instrument (Dashboard):** ✅ shipped session 476 (commit `dcaede4`). Plus glass overlay refinement this commit.
+- **Tier 3 worker (PinLoginPage):** ✅ shipped session 475 (commit `ca69714`).
+
+V4 Bureau three-tier validation complete with a doctrine-correct glass exception applied where the content-density test passes.
+
+---
+
 ## 2026-05-10 - Dashboard · V4 Bureau dialect port (Tier 2 instrument, A+ scope)
 
 **Type:** Feature — Dashboard / Design system

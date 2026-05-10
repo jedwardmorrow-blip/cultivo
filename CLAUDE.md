@@ -19,13 +19,13 @@ The aesthetic is **working-instrument**: earned, used, quiet. Rejects "Tesla tou
 
 - **Type.** IBM Plex Sans + IBM Plex Mono. **No serif inside the product.** Marketing artifacts get a separate kit and may add serif there. Polarity rule.
 - **Color.** Single warm-white accent `#E8E0D4`. Operator canvas `#0A0A0A`. Surface stops `#111111` and `#161616`.
-- **Borders.** Hairlines, not shadows. No glass. No backdrop blur. No gradient mesh.
+- **Borders.** Hairlines, not shadows. Glass forbidden on instrument surfaces (KPI strips, calendar, room board, env rail, alerts panel, batch detail, all Treatment A/C). Glass permitted on synthesis surfaces (The Seed) when paired with a warm halo behind. Glass permitted on overlays (drawers, modals) only when the underlying content has visual density worth refracting; sparse-backdrop overlays use the existing hairline-edge solid. See `cultivo_glass_doctrine_v1` (id `9ae88200-d12f-4e81-a7c8-c825ba7a66d7`) for tested values.
 - **Stage colors.** 6px markers only. Never as fills, borders, backgrounds, or chart lines.
 - **Status colors.** Desaturated. `#6EAA8D` ok, `#C8943A` warn, `#C56A6A` bad.
 - **Source of truth.** `src/brand-tokens.css` at `:root`. Imported at the top of `src/index.css`.
 - **Tailwind alignment.** `tailwind.config.js` `cult-*` tokens repoint to `var(--op-*)` and `var(--accent)` etc. so existing `cult-surface`, `cult-border`, `cult-text-primary` class usage automatically inherits the new tokens.
 
-**Glass utilities are flattened.** `.glass`, `.glass-card`, `.glass-input`, `.glass-elevated`, `.glass-modal`, `.glass-nav`, `.glass-skeleton` in `src/index.css` resolve to opaque hairline equivalents. Existing components using these classes auto-inherit working-instrument without refactoring. **Do not re-introduce backdrop-blur or rgba surfaces.** If a component needs a flat opaque surface, use `cult-surface` or `cult-surface-raised`. If it needs a hairline border, use `cult-border` or `cult-border-strong`.
+**Glass utilities are flattened.** `.glass`, `.glass-card`, `.glass-input`, `.glass-elevated`, `.glass-modal`, `.glass-nav`, `.glass-skeleton` in `src/index.css` resolve to opaque hairline equivalents. Existing components using these classes auto-inherit working-instrument without refactoring. **Do not re-introduce backdrop-blur or rgba surfaces on instrument surfaces.** Permitted scopes for backdrop-filter and rgba surface backgrounds: `.seed-row` and `.seed-frame` (synthesis surface), `.bureau-dashboard .home-floorplan .fpl-rail` (drawer over content-dense floor plan, session 477), and future content-dense overlay contexts that satisfy `cultivo_glass_doctrine_v1` Rule 2. If a component needs a flat opaque surface, use `cult-surface` or `cult-surface-raised`. If it needs a hairline border, use `cult-border` or `cult-border-strong`.
 
 **Box shadows neutralized.** `shadow-glass`, `shadow-glass-lg`, all `shadow-glow-*` classes are now `'none'`. Migrate components to hairlines over time; do not add new shadow utilities.
 
@@ -107,7 +107,7 @@ The brain returns active rules, persona contracts, recent decisions, open tasks,
 
 These patterns are AI-generated reflexes that betray the aesthetic. Operator tools should feel **made**, not **generated**. Lint and the Tailwind config block most of them at build time. Do not re-introduce them by hand.
 
-- **No `backdrop-blur-*`.** Modal scrims are `bg-black/60`, opaque. The Tailwind config zeroes every `backdropBlur` value including standard names.
+- **No `backdrop-blur-*` on instrument surfaces.** Modal scrims and drawer panels over sparse backdrops stay opaque (`bg-black/60`). Modal scrims and drawer panels over content-dense backdrops (heatmaps, calendars with bars, room boards with chips, dashboards with KPI tiles, list views with rows) may use backdrop-filter per `cultivo_glass_doctrine_v1` Rule 2. Permitted scopes today: `.seed-row`, `.seed-frame`, `.bureau-dashboard .home-floorplan .fpl-rail`. The Tailwind config zeroes every `backdropBlur` value as a default; opt-in happens via raw CSS in scoped contexts.
 - **No `box-shadow` (any variant).** No `shadow-sm`, `shadow-md`, `shadow-lg`, `shadow-xl`, `shadow-2xl`, no glow shadows, no inner glows. Elevation is hairlines (`border-cult-border`, `border-cult-border-strong`). The Tailwind config zeroes all of these at the source.
 - **No `rounded-xl`, `rounded-2xl`, `rounded-3xl`.** Cap at `rounded-cult` (12px) for panels, `rounded` (4px) for chips. Soft radii are an AI reflex toward "friendly" — the kit reads as instrument, not toy.
 - **No stage colors as fills, tinted backgrounds, or borders.** Stage colors are 6px dot markers next to a label, never decoration. `bg-cult-stage-flower/10`, `border-cult-stage-clone/50`, `text-cult-stage-harvest` on a chip body are all violations. The single allowed use of a stage color is a `<span class="w-1.5 h-1.5 rounded-full bg-cult-stage-X" />` next to text.
