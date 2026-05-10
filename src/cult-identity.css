@@ -1,0 +1,178 @@
+/* ═══════════════════════════════════════════════════════════════
+   cult-identity.css
+   Working-instrument identity vocabulary (cultivo_working_instrument_identity_v1)
+
+   Six primitives that compose with both working-instrument and V4 Bureau
+   dialects. All doctrine-legal: no box-shadow, no glass on instrument, no
+   rounded-xl, no raw palette colors, no editorial copy, no decoration.
+
+     1. .cult-cut-tl / .cult-cut-tr / .cult-cut-br / .cult-cut-bl
+        Single-corner clip-path. Identity at the silhouette.
+
+     2. .cult-paired-hairline
+        Outer 1px var(--op-line-strong) + inset ::before 1px var(--op-line)
+        offset 2px. Depth without shadow.
+
+     3. .cult-registry  (with data-registry="R-NN / CODE")
+        Small mono corner mark, top-right. Serial-number identity.
+
+     4. .cult-tick-top / .cult-tick-bottom
+        Hairline tick rule on top or bottom edge, every 32px. Reads as
+        measurement scale on instrument-grade panels.
+
+     5. .cult-section-rule
+        Solid hairline above + dashed hairline below (4px gap). Replaces
+        plain dividers between major data sections.
+
+     6. .cult-scan-canvas
+        Faint vertical hairlines every 96px on canvas. Ambient texture
+        without breaking the no-noise rule. Doctrine-legal because lines
+        are var(--op-line) hairlines.
+
+   These primitives are imported in src/index.css and applied at component
+   level via class composition. They do not redefine surface tokens.
+   ─────────────────────────────────────────────────────────── */
+
+/* ── 1. Cut corners ───────────────────────────────────────── */
+.cult-cut-tl,
+.cult-cut-tr,
+.cult-cut-br,
+.cult-cut-bl {
+  --cut: 10px;
+}
+.cult-cut-tl {
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+}
+.cult-cut-tr {
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+}
+.cult-cut-br {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+}
+.cult-cut-bl {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+}
+
+/* ── 2. Paired hairline (no box-shadow, doctrine-legal) ───── */
+.cult-paired {
+  position: relative;
+}
+.cult-paired::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--op-line);
+  pointer-events: none;
+  z-index: 0;
+}
+.cult-paired > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 3. Registry corner mark ──────────────────────────────── */
+.cult-registry {
+  position: relative;
+}
+.cult-registry::after {
+  content: attr(data-registry);
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--op-ink-4);
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+.cult-registry-bl::after {
+  content: attr(data-registry);
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  top: auto;
+  right: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--op-ink-4);
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+.cult-registry-bl {
+  position: relative;
+}
+
+/* ── 4. Tick rules ─────────────────────────────────────────── */
+.cult-tick-top {
+  position: relative;
+}
+.cult-tick-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background-image: linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 32px 5px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 2;
+}
+.cult-tick-bottom {
+  position: relative;
+}
+.cult-tick-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background-image: linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 32px 5px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── 5. Section rule signature ────────────────────────────── */
+.cult-section-rule {
+  position: relative;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--op-line-strong);
+}
+.cult-section-rule::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  border-bottom: 1px dashed var(--op-line);
+  height: 0;
+  pointer-events: none;
+}
+
+/* ── 6. Scan-line canvas backdrop ─────────────────────────── */
+.cult-scan-canvas {
+  background-image:
+    linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 96px 100%;
+  background-position: 0 0;
+  background-repeat: repeat-x;
+}
+
+/* V4 Bureau scan-line variant (gold-tinted hairlines on navy canvas) */
+.bureau-v4 .cult-scan-canvas,
+.bureau-dashboard.cult-scan-canvas,
+.bureau-dashboard .cult-scan-canvas {
+  background-image:
+    linear-gradient(to right, rgba(201, 162, 75, 0.06) 0 1px, transparent 1px 100%);
+}

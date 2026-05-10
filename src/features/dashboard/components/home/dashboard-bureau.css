@@ -619,3 +619,131 @@
   color: var(--pv4-paper);
   border-color: rgba(201, 162, 75, 0.65);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Identity vocabulary application — V4 Bureau dialect
+   (cultivo_working_instrument_identity_v1, dialect = bureau)
+
+   The identity primitives compose with V4 Bureau. Cut corners and
+   tick rules read consistent across both dialects (V4 Bureau already
+   has registry plates, paper-cream serial numbers, dashed rules, so
+   the new vocabulary integrates naturally rather than displacing).
+
+   Tinted variants: scan-lines and tick rules use rgba(201, 162, 75)
+   (gold-tinted hairlines) instead of var(--op-line) so they read as
+   Bureau ornament, not working-instrument carbon.
+   ─────────────────────────────────────────────────────────── */
+
+/* Canvas backdrop: faint gold scan-lines every 96px across the
+   entire dashboard surface. Adds ambient texture to the navy canvas
+   without breaking the no-noise rule. */
+.bureau-dashboard.home-root {
+  background-image:
+    linear-gradient(to right, rgba(201, 162, 75, 0.05) 0 1px, transparent 1px 100%);
+  background-size: 96px 100%;
+  background-repeat: repeat-x;
+  background-position: 0 0;
+}
+
+/* Bureau plate: cut top-left corner gives the plate the punched-
+   aluminum silhouette real instruments carry. Existing border and
+   inner content unchanged. */
+.bureau-dashboard .bv4-plate {
+  --cut: 12px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+}
+
+/* Page header: tick rule on top edge gives the header the
+   measurement-scale signature. Tinted gold so it reads as Bureau
+   ornament rather than working-instrument carbon. */
+.bureau-dashboard .bv4-page-header {
+  position: relative;
+  padding-top: 10px;
+}
+.bureau-dashboard .bv4-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background-image: linear-gradient(to right, rgba(201, 162, 75, 0.18) 0 1px, transparent 1px 100%);
+  background-size: 32px 5px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Page header registry corner mark, top-right. The bv4-plate already
+   carries the high-ceremony serial; this is the smaller secondary
+   mark on the page header itself. */
+.bureau-dashboard .bv4-page-header::after {
+  content: 'R-04 / DASH-COO';
+  position: absolute;
+  top: 14px;
+  right: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(201, 162, 75, 0.55);
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+/* Stage ribbon: cut bottom-right corner. Subtle but reads as
+   instrument-grade signature. */
+.bureau-dashboard .bv4-stage-ribbon {
+  --cut: 10px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+}
+
+/* Facility section: tick rule on top edge. Same measurement-scale
+   ornament that the page header carries, repeating as a structural
+   rhythm down the rack. */
+.bureau-dashboard .home-section.facility-section {
+  position: relative;
+}
+.bureau-dashboard .home-section.facility-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: linear-gradient(to right, rgba(201, 162, 75, 0.14) 0 1px, transparent 1px 100%);
+  background-size: 32px 4px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Pending modal: cut top-left corner gives the modal panel
+   silhouette identity beyond the Rule 2 glass. The card is now
+   visually distinct even when the backdrop refraction is subtle
+   (a doctrine concern from CommandCenter modal Rule 2 review). */
+.bureau-dashboard .home-modal {
+  --cut: 14px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+}
+
+/* Floor plan canvas: subtle tick rule on top edge. The canvas is
+   the highest-density surface in the dashboard; ornament here reads
+   as a measurement scale on a plotter, not decoration. */
+.bureau-dashboard .home-floorplan {
+  position: relative;
+}
+.bureau-dashboard .home-floorplan::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: linear-gradient(to right, rgba(201, 162, 75, 0.14) 0 1px, transparent 1px 100%);
+  background-size: 32px 4px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 2;
+}

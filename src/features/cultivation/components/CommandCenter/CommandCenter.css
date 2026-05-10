@@ -500,3 +500,137 @@
 /* ── Loading / empty ────────────────────────────────────── */
 .cmd-loading { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-3); padding: 32px; text-align: center; letter-spacing: 0.1em; text-transform: uppercase; }
 .cmd-empty { font-family: var(--font-mono); font-size: 11px; color: var(--op-ink-4); padding: 24px; text-align: center; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Identity vocabulary application (cultivo_working_instrument_identity_v1)
+
+   Applies the six primitives from cult-identity.css to the cmd surface.
+   Composes with the existing layout. No structural changes, only
+   additive identity moves (cut corners, paired hairlines, registry
+   marks, tick rules, scan-line backdrop).
+   ─────────────────────────────────────────────────────────── */
+
+/* Canvas backdrop: faint vertical scan-lines every 96px on the cmd
+   surface. Reads as ambient measurement texture without breaking the
+   no-noise rule. Hairline-only, doctrine-legal. */
+.cmd {
+  background-image:
+    linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 96px 100%;
+  background-repeat: repeat-x;
+  background-position: 0 0;
+}
+
+/* Header gets a registry corner mark.  R-07 / CMD reads as serial
+   number identity. The data-registry attribute is added in JSX. */
+.cmd .hdr {
+  position: relative;
+}
+.cmd .hdr::after {
+  content: 'R-07 / CMD-CULTIVATION';
+  position: absolute;
+  top: -14px;
+  right: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--op-ink-4);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Section container: cut top-right corner + tick rule on top edge.
+   Keeps existing border + radius + overflow. The clip-path defines
+   the silhouette; the tick rule lives inside the clipped region. */
+.cmd .sec {
+  --cut: 12px;
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+  position: relative;
+}
+.cmd .sec > .sec-hd {
+  position: relative;
+}
+.cmd .sec > .sec-hd::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 32px 4px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Attention strip: cut top-left corner + tick rule on top edge.
+   Mirror of .sec to give the rack visual asymmetry. */
+.cmd .attn {
+  --cut: 12px;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+  position: relative;
+  padding-top: 14px;
+}
+.cmd .attn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--cut);
+  right: 0;
+  height: 4px;
+  background-image: linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 32px 4px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* KPI cells row: tick rule on top edge of the grid. The cells
+   already have inter-cell hairline dividers; tick rule adds the
+   measurement-scale signature on the top edge. */
+.cmd .cells {
+  position: relative;
+  padding-top: 5px;
+}
+.cmd .cells::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: linear-gradient(to right, var(--op-line) 0 1px, transparent 1px 100%);
+  background-size: 32px 4px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+
+/* Modal panel: cut top-right corner + registry corner mark.
+   The modal carries identity weight from the panel itself, so
+   the Rule 2 glass refraction does not have to be the only
+   personality move. */
+.cmd .cmd-modal-card {
+  --cut: 14px;
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+  position: relative;
+}
+.cmd .cmd-modal-hd {
+  position: relative;
+}
+.cmd .cmd-modal-hd::after {
+  content: 'R-07 / CMD-MODAL';
+  position: absolute;
+  bottom: -10px;
+  left: 16px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.55;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 3;
+}
