@@ -542,3 +542,80 @@
 .bureau-dashboard .home-floorplan .fpl-rail .fpl-rail-head {
   border-bottom-color: rgba(201, 162, 75, 0.18);
 }
+
+/* ── PendingModal glass overlay (Rule 2 from cultivo_glass_doctrine_v1) ──
+   Same Rule 2 application as the SideRail. Underneath the modal is the
+   full home rack — Bureau plate, page header, hero tagline, stage ribbon,
+   all 7 data sections, the floor plan SVG. Maximum content density. The
+   modal overlays it centered.
+
+   Scrim is lighter than the doctrine's 0.40 default because the
+   underlying surface is so dense the modal needs a slight extra dim to
+   keep the modal text legible. We sit at 0.50, still allowing the home
+   rack to be visible behind the blur. */
+
+.bureau-dashboard .home-modal-overlay {
+  background: rgba(3, 16, 31, 0.50);
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  backdrop-filter: blur(8px) saturate(1.15);
+}
+
+.bureau-dashboard .home-modal {
+  background: rgba(6, 26, 51, 0.72);
+  -webkit-backdrop-filter: blur(28px) saturate(1.3);
+  backdrop-filter: blur(28px) saturate(1.3);
+  border: 1px solid rgba(201, 162, 75, 0.34);
+  border-radius: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(241, 232, 210, 0.06),
+    0 1px 0 rgba(3, 16, 31, 0.55);
+  color: var(--pv4-paper);
+  font-family: var(--font-sans);
+}
+
+.bureau-dashboard .home-modal-eyebrow {
+  color: var(--pv4-paper-mute);
+  font-family: var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+.bureau-dashboard .home-modal-title {
+  color: var(--pv4-paper);
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bureau-dashboard .home-modal-row {
+  border-top-color: rgba(201, 162, 75, 0.18);
+  grid-template-columns: 100px 1fr;
+}
+
+.bureau-dashboard .home-modal-key {
+  color: var(--pv4-gold);
+  font-family: var(--font-mono);
+  letter-spacing: 0.16em;
+}
+
+.bureau-dashboard .home-modal-val {
+  color: var(--pv4-paper-dim);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+.bureau-dashboard .home-modal-close {
+  background: transparent;
+  border: 1px solid rgba(201, 162, 75, 0.45);
+  color: var(--pv4-gold);
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  border-radius: 0;
+}
+
+.bureau-dashboard .home-modal-close:hover {
+  background: rgba(201, 162, 75, 0.12);
+  color: var(--pv4-paper);
+  border-color: rgba(201, 162, 75, 0.65);
+}

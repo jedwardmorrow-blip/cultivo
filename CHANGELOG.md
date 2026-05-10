@@ -4,6 +4,41 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-05-10 - Dashboard · PendingModal glass (cultivo_glass_doctrine_v1 Rule 2 — second application)
+
+**Type:** Feature — Dashboard / Design system
+**Status:** ✅ Second in-context test of Rule 2. Modal pattern on /dashboard now consistent with the SideRail overlay — both lift above dense content, neither covers it opaquely.
+**Branch:** `main` (committed direct, session 477)
+
+### What changed
+
+The PendingModal that opens when you click any PendingCell on /dashboard (PACE, VARIANCE, CASH MTD, DAYS-TO-PAY, COMPLIANCE FLAGS) now uses the Rule 2 glass treatment instead of opaque scrim + opaque card. The home rack underneath has maximum content density (Bureau plate + page header + hero KPI tagline + stage ribbon + 7 data sections + floor plan SVG with inline callouts), so the content-density test passes cleanly.
+
+Scrim is lighter than default (rgba(3,16,31,0.50) instead of full opaque) so the home rack is dimly visible behind the modal. Modal panel is translucent navy with 28px blur + saturate 1.3, gold border, Big Shoulders Display title, mono gold key labels, paper-cream values.
+
+### Tested values
+
+- Scrim: `rgba(3, 16, 31, 0.50)` + `backdrop-filter: blur(8px) saturate(1.15)`
+- Modal: `rgba(6, 26, 51, 0.72)` + `backdrop-filter: blur(28px) saturate(1.3)`
+- Border: `1px solid rgba(201, 162, 75, 0.34)` gold
+- Title: Big Shoulders Display 22px / 0.04em letter-spacing
+- Labels: Plex Mono 10-11px / 0.16em gold
+- Close button: gold border + gold text, hover bumps to paper
+
+### Files
+
+- **Modified:** `src/features/dashboard/components/home/dashboard-bureau.css` (~70 lines added)
+
+### Why this completes the overlay pattern
+
+After the SideRail glass commit, /dashboard had two overlay surfaces with inconsistent treatment: the SideRail used Rule 2 glass, the PendingModal still used opaque scrim. Now both follow Rule 2 since both overlay maximum-density content. Doctrine-correct, consistent.
+
+### Verification
+
+Visual verified at /dashboard (1440×900): click any PendingCell, modal opens centered with glass, home rack visible behind through scrim, mono gold key labels readable against translucent navy.
+
+---
+
 ## 2026-05-10 - Dashboard · SideRail glass overlay (cultivo_glass_doctrine_v1 Rule 2)
 
 **Type:** Feature — Dashboard / Design system
