@@ -180,8 +180,8 @@
 }
 .cmd .rm-type[data-stage="mother"] {
   color: var(--stage-mother);
-  background: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.32);
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.32);
 }
 .cmd .rm-urg { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 .cmd .rm-big { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--op-ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
