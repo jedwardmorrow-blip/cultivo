@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
-import { DollarSign, ShoppingCart, Truck } from 'lucide-react';
+import { DollarSign, ShoppingCart, Truck, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
+import { HubSection } from '@/shared/components/HubSection';
 import { RevenuePipeline } from '@/features/production-queue/components/RevenuePipeline';
 import { useRevenuePipeline } from '@/features/production-queue/hooks/useRevenuePipeline';
 import { formatCurrencyShort, formatWeight, todayIso } from '@/shared/utils/format';
@@ -169,11 +170,11 @@ function StrainRunwayBars({ atpRows, orders30d, loading }: {
     <div className="space-y-3">
       {runwayData.map(d => {
         const days = d.runwayDays;
-        const chipClass = days == null
-          ? 'bg-slate-700/50 text-slate-400'
-          : days >= 14 ? 'bg-cult-success-muted text-cult-success border border-cult-success/30'
-          : days >= 7  ? 'bg-cult-warning-muted text-cult-warning border border-cult-warning/30'
-          :              'bg-cult-danger-muted text-cult-danger border border-cult-danger/30';
+        const pillTone = days == null
+          ? 'neutral'
+          : days >= 14 ? 'positive'
+          : days >= 7  ? 'warn'
+          :              'negative';
 
         return (
           <div key={d.strain} className="flex items-center gap-3">
@@ -186,7 +187,7 @@ function StrainRunwayBars({ atpRows, orders30d, loading }: {
                 style={{ width: `${Math.min(100, ((days ?? 0) / 30) * 100)}%` }}
               />
             </div>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${chipClass}`}>
+            <span className={`cult-mono-pill cult-mono-pill--${pillTone}`}>
               {days != null ? `${days}d` : '—'}
             </span>
           </div>
@@ -342,46 +343,36 @@ export function SalesHub() {
 
   return (
     <HubShell section="Sales" icon={DollarSign} kpis={kpis}>
-      <div className="space-y-6">
+      <div className="space-y-4">
 
-        {/* ATP Inventory Table */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <ShoppingCart className="w-4 h-4" />
-            Available to Sell (ATP)
-          </h2>
+        <HubSection label="Available to Sell (ATP)" icon={ShoppingCart}>
           <ATPInventoryTable rows={atpRows} loading={atpLoading} />
-        </div>
+        </HubSection>
 
-        {/* Order Status Funnel */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Truck className="w-4 h-4" />
-            Order Status Funnel
-          </h2>
+        <HubSection label="Order Status Funnel" icon={Truck}>
           <OrderStatusFunnel counts={orderCounts} loading={ordersLoading} />
-        </div>
+        </HubSection>
 
-        {/* Revenue Pipeline */}
         {!revenueLoading && (
-          <RevenuePipeline
-            data={pipeline}
-            weekOutlook={weekOutlook}
-            weekOffset={weekOffset}
-            onWeekChange={setWeekOffset}
-            weekLabel={selectedWeekLabel}
-            weekRange={selectedWeekRange}
-          />
+          <HubSection label="Revenue Pipeline" icon={TrendingUp}>
+            <RevenuePipeline
+              data={pipeline}
+              weekOutlook={weekOutlook}
+              weekOffset={weekOffset}
+              onWeekChange={setWeekOffset}
+              weekLabel={selectedWeekLabel}
+              weekRange={selectedWeekRange}
+            />
+          </HubSection>
         )}
 
-        {/* Strain Runway Bars */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
-            Strain Runway (ATP ÷ Avg Weekly Velocity)
-          </h2>
-          <p className="text-[11px] text-cult-text-faint mb-3">Days of supply based on last 30d order velocity. Green ≥14d · Amber ≥7d · Red &lt;7d</p>
+        <HubSection
+          label="Strain Runway (ATP ÷ Avg Weekly Velocity)"
+          icon={BarChart3}
+          meta="≥14d ok · ≥7d warn · <7d bad"
+        >
           <StrainRunwayBars atpRows={atpRows} orders30d={orders30d} loading={atpLoading || ordersLoading} />
-        </div>
+        </HubSection>
 
       </div>
     </HubShell>

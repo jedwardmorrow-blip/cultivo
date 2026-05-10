@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Scissors, AlertTriangle, Package } from 'lucide-react';
 import { HubShell } from './HubShell';
+import { HubSection } from '@/shared/components/HubSection';
 import { BatchKanbanCard } from './BatchKanbanCard';
 import { useBatchPipeline, getDaysInStage } from '../hooks/useBatchPipeline';
 import { useRevenuePipeline } from '@/features/production-queue/hooks/useRevenuePipeline';
@@ -170,18 +171,13 @@ export function PostProductionHub() {
 
   return (
     <HubShell section="Post Production" icon={Scissors} kpis={kpis}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-end">
           <AuditOverdueBadge />
         </div>
         <AgingAlertBanner batches={batches} />
 
-        {/* Batch Pipeline Preview */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            Batch Pipeline
-          </h2>
+        <HubSection label="Batch Pipeline" icon={Package}>
           {batchesLoading ? (
             <div className="animate-pulse grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
               {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-cult-surface rounded-cult" />)}
@@ -195,18 +191,12 @@ export function PostProductionHub() {
               ))}
             </div>
           )}
-        </div>
+        </HubSection>
 
-        {/* Active Sessions */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Scissors className="w-4 h-4" />
-            Active Sessions
-          </h2>
+        <HubSection label="Active Sessions" icon={Scissors}>
           <OpenSessionList sessions={sessions} loading={sessionsLoading} />
-        </div>
+        </HubSection>
 
-        {/* Revenue Pipeline */}
         {!revenueLoading && (
           <RevenuePipeline
             data={pipeline}

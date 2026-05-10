@@ -1,0 +1,233 @@
+/*
+ * Canonical lift utilities — propagated from the lifted dashboard surface.
+ *
+ * Source patterns live in src/features/dashboard/components/home/home.css
+ * for the home-* variants (cell deltas, section header, pending cell). These
+ * cult-* utilities are the doctrine-portable versions designed to be reused
+ * on any operator surface (hubs, drawers, modals, lists) without coupling to
+ * the dashboard's structural CSS.
+ *
+ * Imported globally via src/index.css so any component can pull a single
+ * class without registering its own per-feature stylesheet.
+ *
+ * Canonical mono-pill spec (matches dashboard delta chip, status pills, rm-type):
+ *   font: 9px IBM Plex Mono, letter-spacing 0.14em, line-height 1.5
+ *   padding: 2px 6px, border-radius: 999px
+ *   border: 1px solid token, background: transparent (tone colors via modifier)
+ *
+ * Canonical section header spec:
+ *   padding: 12px 16px, hairline bottom border, op-canvas background
+ *   icon: 22px tinted square, lucide stroke 1.6, 13px inner
+ *   label: 11px Plex Mono, 0.14em, uppercase, op-ink-3
+ */
+
+/* ── Canonical mono-pill ──────────────────────────────────────── */
+.cult-mono-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--op-line-strong);
+  background: transparent;
+  color: var(--op-ink-3);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.cult-mono-pill--positive {
+  color: var(--status-ok);
+  border-color: rgba(110, 170, 141, 0.45);
+}
+.cult-mono-pill--negative {
+  color: var(--status-bad);
+  border-color: rgba(197, 106, 106, 0.45);
+}
+.cult-mono-pill--warn {
+  color: var(--status-warn);
+  border-color: rgba(200, 148, 58, 0.45);
+}
+.cult-mono-pill--neutral {
+  color: var(--op-ink-3);
+  border-color: var(--op-line-strong);
+}
+.cult-mono-pill--accent {
+  color: var(--accent);
+  border-color: rgba(232, 224, 212, 0.35);
+}
+.cult-mono-pill-glyph {
+  font-size: 8px;
+  line-height: 1;
+}
+
+/* ── Canonical section header ─────────────────────────────────── */
+.cult-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--op-line);
+  background: var(--op-canvas);
+}
+.cult-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--op-line-strong);
+  background: var(--op-canvas);
+  color: var(--accent);
+  border-radius: var(--r-xs, 4px);
+  flex-shrink: 0;
+}
+.cult-section-icon > svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 1.6;
+}
+.cult-section-label {
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+}
+.cult-section-meta {
+  margin-left: auto;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--op-ink-4, var(--op-ink-3));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Canonical pending cell ───────────────────────────────────── */
+.cult-pending-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.10);
+  border: 1px solid var(--op-line);
+  border-radius: var(--r-md, 8px);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: background 120ms ease;
+}
+.cult-pending-cell::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(232, 224, 212, 0.10);
+  border-radius: var(--r-xs, 4px);
+  pointer-events: none;
+}
+.cult-pending-cell:hover {
+  background: var(--op-surface, rgba(0, 0, 0, 0.16));
+}
+.cult-pending-cell:hover::before {
+  border-color: rgba(232, 224, 212, 0.22);
+}
+.cult-pending-cell-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+.cult-pending-cell-label {
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--op-ink-3);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cult-pending-cell-badge {
+  /* Reuses cult-mono-pill spec inline so PendingCell stays one class import */
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--op-line-strong);
+  background: transparent;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--op-ink-3);
+  flex-shrink: 0;
+}
+.cult-pending-cell-primary {
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--op-ink-4, var(--op-ink-3));
+  letter-spacing: -0.01em;
+  position: relative;
+  z-index: 1;
+}
+.cult-pending-cell-reason {
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--op-ink-3);
+  position: relative;
+  z-index: 1;
+}
+.cult-pending-cell-cta {
+  margin-top: 4px;
+  font-family: var(--font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  opacity: 0.72;
+  transition: opacity 120ms ease;
+}
+.cult-pending-cell:hover .cult-pending-cell-cta {
+  opacity: 1;
+}
+
+/* ── V4 Bureau dialect overrides ──────────────────────────────── */
+/* When these utilities render inside a .bureau-* wrapper, switch tones to
+   the Bureau gold/paper palette to stay coherent with V4 Bureau surfaces. */
+.bureau-dashboard .cult-mono-pill,
+.bureau-login .cult-mono-pill,
+.bureau-pin .cult-mono-pill {
+  background: transparent;
+  border-color: rgba(201, 162, 75, 0.32);
+  color: var(--pv4-paper-mute);
+}
+.bureau-dashboard .cult-mono-pill--positive,
+.bureau-login .cult-mono-pill--positive,
+.bureau-pin .cult-mono-pill--positive {
+  color: var(--pv4-gold);
+  border-color: rgba(201, 162, 75, 0.55);
+}
+.bureau-dashboard .cult-section-icon,
+.bureau-login .cult-section-icon,
+.bureau-pin .cult-section-icon {
+  border-color: rgba(201, 162, 75, 0.40);
+  background: rgba(201, 162, 75, 0.06);
+  color: var(--pv4-gold);
+}

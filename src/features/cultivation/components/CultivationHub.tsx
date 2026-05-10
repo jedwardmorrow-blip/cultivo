@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { Sprout, Calendar, Clock, Leaf } from 'lucide-react';
+import { Sprout, Calendar, Clock, Leaf, LayoutGrid } from 'lucide-react';
 import { HubShell } from '@/features/hub/components/HubShell';
+import { HubSection } from '@/shared/components/HubSection';
 import { useRoomSummaries } from '../hooks/useRoomSummaries';
 import { useDailyTasks } from '../hooks/useDailyTasks';
 import { usePlantGroups } from '../hooks/usePlantGroups';
@@ -210,10 +211,8 @@ export function CultivationHub() {
 
   return (
     <HubShell section="Cultivation" icon={Sprout} kpis={kpis}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Room Grid */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">Active Rooms</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <HubSection label="Active Rooms" icon={LayoutGrid}>
           {roomsLoading ? (
             <div className="animate-pulse space-y-2">
               {[1,2,3].map(i => <div key={i} className="h-14 bg-cult-surface rounded-cult" />)}
@@ -225,14 +224,9 @@ export function CultivationHub() {
               {summaries.map(s => <RoomSummaryMini key={s.room_id} summary={s} />)}
             </div>
           )}
-        </div>
+        </HubSection>
 
-        {/* Upcoming Harvests */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            Upcoming Harvests
-          </h2>
+        <HubSection label="Upcoming Harvests" icon={Calendar}>
           {upcomingHarvests.length === 0 ? (
             <p className="text-[12px] text-cult-text-faint py-2">No upcoming harvests scheduled.</p>
           ) : (
@@ -247,21 +241,18 @@ export function CultivationHub() {
               ))}
             </div>
           )}
-        </div>
+        </HubSection>
 
-        {/* Today Task Queue */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4 lg:col-span-2">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Today's Task Queue
-          </h2>
-          {tasksLoading ? (
-            <div className="animate-pulse space-y-2">
-              {[1,2,3].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
-            </div>
-          ) : (
-            <TaskQueueMini tasks={tasks} roomCodeMap={roomCodeMap} />
-          )}
+        <div className="lg:col-span-2">
+          <HubSection label="Today's Task Queue" icon={Clock}>
+            {tasksLoading ? (
+              <div className="animate-pulse space-y-2">
+                {[1,2,3].map(i => <div key={i} className="h-8 bg-cult-surface rounded-cult" />)}
+              </div>
+            ) : (
+              <TaskQueueMini tasks={tasks} roomCodeMap={roomCodeMap} />
+            )}
+          </HubSection>
         </div>
       </div>
     </HubShell>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Wallet, TrendingUp, BarChart2, Activity } from 'lucide-react';
+import { Wallet, TrendingUp, BarChart2, Activity, Coins } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
+import { HubSection } from '@/shared/components/HubSection';
 import { StatCard } from '@/shared/components/StatCard';
 import { formatCurrencyShort } from '@/shared/utils/format';
 
@@ -428,41 +429,25 @@ export function OperationsHub() {
 
   return (
     <HubShell section="Operations" icon={Wallet} kpis={kpis}>
-      <div className="space-y-6">
+      <div className="space-y-4">
 
-        {/* Cost / Gram by Strain */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Cost / Gram by Strain (Top 5)
-          </h2>
-          <p className="text-[11px] text-cult-text-faint mb-3">Avg cost/g across all batches. Green &lt;$0.50 · Neutral &lt;$1.50 · Red ≥$1.50</p>
+        <HubSection
+          label="Cost / Gram by Strain (Top 5)"
+          icon={TrendingUp}
+          meta="<$0.50 ok · <$1.50 neutral · ≥$1.50 bad"
+        >
           <CostBreakdownGrid costRows={costRows} loading={cpgLoading} />
-        </div>
+        </HubSection>
 
-        {/* Weekly Revenue Bar Chart */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <BarChart2 className="w-4 h-4" />
-            Revenue Recognized — Last 8 Weeks
-          </h2>
+        <HubSection label="Revenue Recognized — Last 8 Weeks" icon={BarChart2}>
           <WeeklyRevenueChart buckets={weeklyBuckets} loading={revLoading} />
-        </div>
+        </HubSection>
 
-        {/* Batch Margin Table */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
-            Batch Margin Table
-          </h2>
+        <HubSection label="Batch Margin Table" icon={Coins}>
           <BatchMarginTable rows={marginRows} loading={marginLoading} />
-        </div>
+        </HubSection>
 
-        {/* Operational KPI Chips */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-4 h-4" />
-            Operational KPIs
-          </h2>
+        <HubSection label="Operational KPIs" icon={Activity}>
           <OperationalKPIChips
             fillRate={fillRate}
             avgDaysToShip={avgDaysToShip}
@@ -470,7 +455,7 @@ export function OperationsHub() {
             trimWaste={trimWaste}
             loading={revLoading || cpgLoading}
           />
-        </div>
+        </HubSection>
 
       </div>
     </HubShell>

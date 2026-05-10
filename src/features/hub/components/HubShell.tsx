@@ -1,10 +1,19 @@
 import React from 'react';
 import { StatCard } from '@/shared/components/StatCard';
+import { PendingCell } from '@/shared/components/PendingCell';
 
 interface KpiDef {
   label: string;
   value: string;
   sub?: string;
+  /** When true, renders a PendingCell empty-state instead of a StatCard. */
+  pending?: boolean;
+  /** Optional reason text for the pending state. */
+  pendingReason?: string;
+  /** Optional setup route or handler for the pending state. */
+  setupHref?: string;
+  onSetup?: () => void;
+  trend?: { value: number; label?: string };
 }
 
 interface HubShellProps {
@@ -24,8 +33,10 @@ export function HubShell({ section, icon: Icon, kpis, children }: HubShellProps)
       <div className="px-6 py-4 border-b border-cult-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Icon className="w-5 h-5 text-cult-text-muted" />
-            <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">{section}</h1>
+            <span className="cult-section-icon" aria-hidden="true">
+              <Icon />
+            </span>
+            <h1 className="cult-section-label">{section}</h1>
           </div>
           <span className="font-mono uppercase tracking-[0.14em] text-[10px] text-cult-text-muted">{dateStr} &middot; {timeStr}</span>
         </div>
@@ -34,7 +45,23 @@ export function HubShell({ section, icon: Icon, kpis, children }: HubShellProps)
         {kpis && kpis.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {kpis.slice(0, 3).map((kpi) => (
-              <StatCard key={kpi.label} label={kpi.label} value={kpi.value} subtitle={kpi.sub} />
+              kpi.pending ? (
+                <PendingCell
+                  key={kpi.label}
+                  label={kpi.label}
+                  reason={kpi.pendingReason}
+                  setupHref={kpi.setupHref}
+                  onSetup={kpi.onSetup}
+                />
+              ) : (
+                <StatCard
+                  key={kpi.label}
+                  label={kpi.label}
+                  value={kpi.value}
+                  subtitle={kpi.sub}
+                  trend={kpi.trend}
+                />
+              )
             ))}
           </div>
         )}

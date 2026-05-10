@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Crown, AlertTriangle, TrendingUp, TrendingDown, Users, ChevronDown, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
+import { HubSection } from '@/shared/components/HubSection';
 import { formatCurrencyShort } from '@/shared/utils/format';
 import { AuditOverdueBadge } from '@/features/compliance';
 import { FloorPlanLive } from '@features/cultivation/components/command/floor-plan';
@@ -444,35 +445,21 @@ export function ExecutiveHub() {
                 />
               </div>
 
-              {/* Attention Alert Strip */}
-              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-                <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-cult-warning" />
-                  Attention Required
-                </h2>
+              <HubSection label="Attention Required" icon={AlertTriangle}>
                 <AttentionAlertStrip alerts={alerts} loading={isAlertsLoading} />
-              </div>
+              </HubSection>
 
-              {/* Revenue Summary */}
-              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-                <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Revenue Summary
-                </h2>
+              <HubSection label="Revenue Summary" icon={TrendingUp}>
                 <RevenueSummaryPanel
                   recognized={revRecognized}
                   pipeline={revPipeline}
                   loading={revLoading}
                 />
-              </div>
+              </HubSection>
 
-              {/* Headcount Activity */}
-              <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-                <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider">
-                  Headcount Activity
-                </h2>
+              <HubSection label="Headcount Activity" icon={Users}>
                 <HeadcountSummaryPanel count={sessionCount} loading={sessionLoading} />
-              </div>
+              </HubSection>
 
               {/* Legacy KPI strip preserved here for now; HubShell KPIs nulled
                   out at the top so the Floor Plan's facility state strip can

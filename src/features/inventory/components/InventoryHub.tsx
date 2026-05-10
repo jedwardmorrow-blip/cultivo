@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Archive, Flag, Activity, QrCode } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { HubShell } from '@/features/hub/components/HubShell';
+import { HubSection } from '@/shared/components/HubSection';
 import { StatCard } from '@/shared/components/StatCard';
 import { formatWeight, formatWeightShort } from '@/shared/utils/format';
 import { InventoryProjectionPanel } from './InventoryProjectionPanel';
@@ -269,7 +270,7 @@ export function InventoryHub() {
 
   return (
     <HubShell section="Inventory" icon={Archive} kpis={kpis}>
-      <div className="space-y-6">
+      <div className="space-y-4">
 
         {/* Category breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -293,38 +294,22 @@ export function InventoryHub() {
           />
         </div>
 
-        {/* Flag Review Queue */}
-        <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-          <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-            <Flag className="w-4 h-4 text-cult-warning" />
-            Flag Review Queue
-          </h2>
+        <HubSection label="Flag Review Queue" icon={Flag}>
           <FlagReviewQueue items={flaggedItems} loading={loading} />
-        </div>
+        </HubSection>
 
-        {/* Liquidation Queue */}
         <BatchLiquidationQueue />
 
-        {/* Inventory Projection */}
         <InventoryProjectionPanel />
 
-        {/* Logs row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-            <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              Movement Log (24h)
-            </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <HubSection label="Movement Log (24h)" icon={Activity}>
             <MovementLogMini movements={movements} loading={movementsLoading} />
-          </div>
+          </HubSection>
 
-          <div className="bg-cult-surface border border-cult-surface rounded-cult p-4">
-            <h2 className="text-label font-semibold text-cult-text-primary mb-3 uppercase tracking-wider flex items-center gap-2">
-              <QrCode className="w-4 h-4" />
-              QR Scan Log (24h)
-            </h2>
+          <HubSection label="QR Scan Log (24h)" icon={QrCode}>
             <QRScanLogMini movements={movements} loading={movementsLoading} />
-          </div>
+          </HubSection>
         </div>
 
       </div>
