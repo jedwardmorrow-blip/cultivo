@@ -128,8 +128,8 @@ When in doubt, look at `/dashboard` and `/executive-hub` Overview. Those are the
 A parallel design dialect being validated section-by-section. Deep-navy canvas (`--pv4-canvas-deep`), paper-cream type (`--pv4-paper`), gold accent (`--pv4-gold`), Bureau identity marks (serial plate, registry number, dashed rules). Replaces the working-instrument aesthetic on three target tiers:
 
 - **Tier 1 ceremonial** — Login. **Shipped** session 475, commit `e86ebc4`.
-- **Tier 2 instrument** — SalesInventoryView. **Pending.** Stress-test preview at `/login?v4test=sales`.
-- **Tier 3 worker** — PinLoginPage. **Pending.** Stress-test preview at `/login?v4test=pin`.
+- **Tier 2 instrument** — `/dashboard` home rack (COO daily home). **Shipped** session 476. Adds Bureau plate, hero KPI tagline, severity status block, 6-stage StageFlowRibbon, tightened Facility frame with inline urgency callouts. SalesInventoryView is queued as a second-instrument-tier surface for cross-component validation. Stress-test preview at `/login?v4test=sales`.
+- **Tier 3 worker** — PinLoginPage. **Shipped** session 475, commit `ca69714`. Stress-test preview at `/login?v4test=pin`.
 
 **Implementation contract.**
 

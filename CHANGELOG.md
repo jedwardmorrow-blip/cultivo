@@ -4,6 +4,70 @@ This document tracks significant changes, bug fixes, and improvements to the Cul
 
 ---
 
+## 2026-05-10 - Dashboard · V4 Bureau dialect port (Tier 2 instrument, A+ scope)
+
+**Type:** Feature — Dashboard / Design system
+**Status:** ✅ Tier 2 instrument port complete on /dashboard. Three-tier validation done: Login (ceremonial), PinLoginPage (worker), Dashboard (instrument).
+**Branch:** `main` (committed direct per session 476 plan)
+
+### What changed
+
+The COO daily home at `/dashboard` ported to V4 Bureau Tier 2 instrument dialect. Sandbox-scoped under `.bureau-v4 .bureau-dashboard` — no global token changes, brand-tokens.css and tailwind.config.js untouched. The home rack's existing 7 data sections, sparklines, severity rollups, and PendingCell honesty pattern all preserved through the cult-* utility cascade.
+
+This is the A+ scope, not the light port. Three structural additions beyond the V4 Bureau dialect mapping.
+
+### Three structural additions for A+
+
+1. **DashboardBureauHeader** replaces the legacy HomeHeader. Renders the Bureau serial plate (FIG. 00 · DASHBOARD · COO · CULT CANNABIS with PraxisAtom on the SYSTEM LIVE side), a Big Shoulders Display title (DASHBOARD.) with a meta line, a hero KPI tagline of six paired numerics (BOOKED MTD · DELIVERED · COVER · AR AT RISK · LATE · LBS READY), and a right-side severity status pill block summing rollups across cashSev / pipelineSev / fulfillmentSev / exceptionsSev. Closes the "primary fact in 3 seconds" gap. The COO reads the day's posture above the fold.
+
+2. **StageFlowRibbon** is a new 6-stage horizontal ribbon between the hero and the data sections. Bridges to the COO Pipeline canonical surface (`cultivo_persona_coo` handoff lines 127-147) without building Pipeline itself. Each stage shows a primary numeric in Big Shoulders + unit + secondary tag. Plant counts (Clone / Veg / Flower) derive from `useFloorPlanData` rooms reduced by `dominant_stage`. Post-harvest stages (Dry/Cure / Package / Allocated) read directly from `useHomeData.conversion` and `useHomeData.coverage`. Honest about empty stages — `is-pending` styling with secondary text "no live rooms" or "no post-harvest material".
+
+3. **FloorPlanCanvas reframe.** The legacy `.fpl-canvas-cap` (eyebrow + h1 "Floor plan, live" + legend stack) is hidden via CSS. Replaced by a Bureau serial plate header (FIG. 04 · FACILITY · 22 ROOMS · 40TH ST left, compact 4-swatch legend right, off-cycle MOM/CLN stats inline). Reclaims roughly 120-180px. New inline callouts strip surfaces per-room urgency reasons that the cell sections cannot show (`FLW-09 d56 flip critical`, `FLW-07 3d to harvest`). Spatial signals earning their real estate. New compact live-state footer (FLOOR STATE LIVE · N CALLOUTS · COMPASS N · SCALE 50FT). Click-to-drill via SideRail preserved.
+
+### Files
+
+- **New:** `src/features/dashboard/components/home/dashboard-bureau.css` (~310 lines).
+- **New:** `src/features/dashboard/components/home/DashboardBureauHeader.tsx` (~120 lines).
+- **New:** `src/features/dashboard/components/home/StageFlowRibbon.tsx` (~100 lines).
+- **Modified:** `src/features/dashboard/components/home/Home.tsx` (~25 lines changed) — wrap root in `.bureau-v4 .bureau-dashboard`, swap HomeHeader for DashboardBureauHeader, mount StageFlowRibbon, tag Facility section with `className="facility-section"`.
+- **Modified:** `src/features/dashboard/components/home/FloorPlanCanvas.tsx` (rewritten, ~190 lines) — Bureau plate frame, callout-builder helper, callouts strip, compact footer. Legacy `.fpl-canvas-cap` left in DOM but hidden via CSS for compatibility.
+
+### What stays unchanged (cascade does the work)
+
+`Cell.tsx`, `Section.tsx`, `Sparkline.tsx`, `PendingCell.tsx`, `PendingModal.tsx`. Same for the FloorPlanSVG component — the room shapes inherit V4 Bureau colors through the existing fill values that map close to V4 Bureau's gold-and-red accent palette. `useHomeData`, `useFloorPlanData`, `useRoomOperationalState` hooks — no signature changes, no data-layer migrations.
+
+### Doctrine notes
+
+The COO's canonical surface per the persona row is **Pipeline**, not the home rack at `/dashboard`. Pipeline mockup is queued for Claude Design (handoff doc next-asks #2), not yet shipped. `/dashboard` is the de-facto COO daily home until then. The Tier 2 work here builds primitives (Bureau plate, Big Shoulders KPI tagline, FIG-style section labels, status pill block, stage-flow ribbon) that Pipeline will inherit when it lands.
+
+The Floor Plan atom is owned by Cultivation Manager per the gap list, not COO. Its presence in `/dashboard` is a doctrine-drift element borrowed from the Cultivation Manager surface. Acceptable for the executive rollup.
+
+Stage-flow ribbon may become redundant once Pipeline is built and the COO defaults to Pipeline on login per the persona spec. At that point the ribbon either deprecates or repositions. Until then it bridges the gap.
+
+### Build
+
+`npm run build` ✓, no errors.
+
+### Verification
+
+Visual verified at `/dashboard` (1440×900 viewport). Bureau plate top, hero tagline visible above the fold, severity pill block top-right shows BAD/WARN counts. Stage ribbon mid-page. Facility section reframed with FIG plate + inline callouts + compact footer. Click-to-drill on callouts opens SideRail. Build passes. Doctrine compliance preserved (no banned patterns introduced; V4 Bureau dialect lives entirely under `.bureau-*` scoped wrappers).
+
+### Migration status
+
+- **Tier 1 ceremonial (Login):** ✅ shipped session 475 (commit `e86ebc4`).
+- **Tier 2 instrument (Dashboard):** ✅ shipped session 476 (this commit).
+- **Tier 3 worker (PinLoginPage):** ✅ shipped session 475 (commit `ca69714`).
+- **Composite three-tier validation:** ✅ done. Doctrine holds across ceremonial / instrument / worker on real production surfaces.
+
+### Outstanding follow-ups
+
+- SalesInventoryView Tier 2 port as second instrument-tier surface for cross-component validation. Optional. Same pattern, lighter port.
+- Push to origin/main + Vercel alias check before any production deploy. Three commits ahead of origin (e86ebc4, 352834e, ca69714) plus this one.
+- COO Pipeline canonical surface implementation per `cultivo-design-handoff.md` next-asks #2 (Claude Design must deliver mockup first).
+- Extract V4 Bureau into `praxis-bureau` shared package (Phase 2 of the migration solidification plan, brain task `9b0ca44c-46f0-4a72-a0ef-c0de0c37ab5c`).
+
+---
+
 ## 2026-05-09 - PinLoginPage · V4 Bureau dialect port (Tier 3 worker, light)
 
 **Type:** Feature — Worker auth / Design system

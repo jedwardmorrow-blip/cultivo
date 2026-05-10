@@ -1,11 +1,14 @@
 import { useHomeData } from '../../hooks/useHomeData';
-import { HomeHeader } from './Header';
 import { Section } from './Section';
 import { Cell, type CellMarker } from './Cell';
 import { PendingCell } from './PendingCell';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
+import { DashboardBureauHeader } from './DashboardBureauHeader';
+import { StageFlowRibbon } from './StageFlowRibbon';
 import { fmtUSD, fmtLbs, fmtPct, fmtCount, fmtDate, daysFromToday } from './format';
 import './home.css';
+import '@/features/auth/components/bureau-v4-stress.css';
+import './dashboard-bureau.css';
 
 const SEV_RANK: Record<NonNullable<CellMarker>, number> = { ok: 1, warn: 2, bad: 3 };
 function rollupSeverity(...markers: (CellMarker | undefined)[]): CellMarker {
@@ -23,10 +26,22 @@ export function Home() {
 
   if (d.loading) {
     return (
-      <div className="home-root">
-        <HomeHeader tasksDoneToday={0} tasksTotalToday={0} loadedAt={0} />
+      <div className="home-root bureau-v4 bureau-dashboard">
+        <div className="bv4-plate">
+          <div className="stamp">
+            <span className="serial">FIG. 00</span>
+            <span className="sep">·</span>
+            <span>DASHBOARD</span>
+            <span className="sep">·</span>
+            <span>COO</span>
+            <span className="sep">·</span>
+            <span>CULT CANNABIS</span>
+          </div>
+          <div className="stamp">
+            <span>BOOTING</span>
+          </div>
+        </div>
         <div className="home-loading">loading instrument · reading from supabase</div>
-        <FloorPlanCanvas />
       </div>
     );
   }
@@ -67,12 +82,16 @@ export function Home() {
   );
 
   return (
-    <div className="home-root">
-      <HomeHeader
-        tasksDoneToday={d.header.tasksDoneToday}
-        tasksTotalToday={d.header.tasksTotalToday}
-        loadedAt={d.loadedAt}
+    <div className="home-root bureau-v4 bureau-dashboard">
+      <DashboardBureauHeader
+        data={d}
+        cashSev={cashSev}
+        pipelineSev={pipelineSev}
+        fulfillmentSev={fulfillmentSev}
+        exceptionsSev={exceptionsSev}
       />
+
+      <StageFlowRibbon data={d} />
 
       <div className="home-grid-top">
       <Section label="Revenue" cellCount={5}>
@@ -229,7 +248,7 @@ export function Home() {
         />
       </Section>
 
-      <Section label="Facility">
+      <Section label="Facility" className="facility-section">
         <FloorPlanCanvas />
       </Section>
 

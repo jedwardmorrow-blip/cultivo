@@ -1,0 +1,491 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Dashboard · Praxis V4 Bureau dialect (Tier 2 instrument)
+   session 476.
+
+   Sandbox-scoped under .bureau-v4 .bureau-dashboard. Inherits the
+   --pv4-* token namespace and --op-* overrides from
+   bureau-v4-stress.css (which must be imported alongside this file).
+
+   The cult-* utility classes used by Home.tsx, Cell, Section, Sparkline,
+   PendingCell, FloorPlanSVG cascade through the --op-* overrides
+   automatically — none of those components need code changes.
+
+   This file adds Tier 2 instrument elements specific to the dashboard:
+   Bureau plate header, hero KPI strip with Big Shoulders numerics,
+   right-side severity status block, stage-flow ribbon, tightened
+   Facility section frame with inline room callouts.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Root canvas ─────────────────────────────────────────────────── */
+
+.bureau-dashboard {
+  background: var(--pv4-canvas-deep);
+  color: var(--pv4-paper);
+  min-height: 100vh;
+}
+
+/* Override the default home-root padding for tier-2 ceremony spacing */
+.bureau-dashboard.home-root {
+  padding: 0 0 48px;
+  gap: 0;
+}
+
+/* ── Bureau plate (top serial bar) ───────────────────────────────── */
+
+.bureau-dashboard .bv4-plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px dashed var(--pv4-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-dashboard .bv4-plate .stamp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bureau-dashboard .bv4-plate .serial {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-dashboard .bv4-plate .sep {
+  color: var(--pv4-paper-faint);
+}
+
+/* ── Page header (hero) ──────────────────────────────────────────── */
+
+.bureau-dashboard .bv4-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px dashed var(--pv4-rule);
+}
+
+.bureau-dashboard .bv4-page-header .left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bureau-dashboard .bv4-page-header .meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bureau-dashboard .bv4-page-header .meta .lead {
+  color: var(--pv4-gold);
+}
+
+.bureau-dashboard .bv4-title {
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 800;
+  font-size: 36px;
+  letter-spacing: 0.04em;
+  color: var(--pv4-paper);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
+}
+
+.bureau-dashboard .bv4-title .period {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  background: var(--pv4-red);
+  margin-left: 4px;
+  vertical-align: 0.05em;
+}
+
+/* ── Hero KPI tagline (single-line numerics row) ─────────────────── */
+
+.bureau-dashboard .bv4-tagline {
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-dashboard .bv4-tagline .pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.bureau-dashboard .bv4-num-lead {
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--pv4-paper);
+  display: inline-block;
+  vertical-align: -2px;
+}
+
+.bureau-dashboard .bv4-num-unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-mute);
+}
+
+/* ── Status pill block (right side of hero) ──────────────────────── */
+
+.bureau-dashboard .bv4-status-pills {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-mute);
+  white-space: nowrap;
+}
+
+.bureau-dashboard .bv4-status-pills strong {
+  color: var(--pv4-paper);
+  font-weight: 600;
+}
+
+.bureau-dashboard .bv4-status-pills .bad {
+  color: var(--status-bad);
+}
+
+.bureau-dashboard .bv4-status-pills .warn {
+  color: var(--status-warn);
+}
+
+/* ── Stage-flow ribbon (6 stages between hero and sections) ──────── */
+
+.bureau-dashboard .bv4-stage-ribbon {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-bottom: 1px solid var(--pv4-rule-soft);
+  margin: 0 24px;
+}
+
+.bureau-dashboard .bv4-stage-cell {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.bureau-dashboard .bv4-stage-cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 16%;
+  bottom: 16%;
+  width: 1px;
+  background: var(--pv4-rule-soft);
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-fig {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-fig .num {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-value .lead {
+  font-family: 'Big Shoulders Display', var(--font-sans);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--pv4-paper);
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-value .unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+}
+
+.bureau-dashboard .bv4-stage-cell .stage-secondary {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-dashboard .bv4-stage-cell.is-pending .stage-value .lead {
+  color: var(--pv4-paper-faint);
+}
+
+/* ── Section padding override (push section grid back inside the rack) ─ */
+
+.bureau-dashboard .home-grid-top,
+.bureau-dashboard > .home-section,
+.bureau-dashboard > .home-floorplan-section {
+  margin: 0 24px;
+}
+
+.bureau-dashboard .home-grid-top {
+  margin-top: 16px;
+  margin-bottom: 14px;
+}
+
+.bureau-dashboard > .home-section + .home-section {
+  margin-top: 14px;
+}
+
+/* FIG-style section labels — bump letter-spacing, inline FIG number */
+.bureau-dashboard .home-section-label {
+  letter-spacing: 0.18em;
+  font-size: 10px;
+}
+
+.bureau-dashboard .home-section-label .fig-num {
+  color: var(--pv4-gold);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+/* ── Tightened Facility section frame ────────────────────────────── */
+
+.bureau-dashboard .home-section.facility-section {
+  /* Override the default section card chrome with Bureau plate aesthetic */
+  background: var(--pv4-canvas);
+  border-color: var(--pv4-rule-soft);
+}
+
+/* The Facility section uses the FloorPlanCanvas's Bureau plate as its
+   only header. Hide the generic section header that would otherwise
+   stack above and double the chrome. */
+.bureau-dashboard .home-section.facility-section > .home-section-header {
+  display: none;
+}
+
+.bureau-dashboard .bv4-facility-plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px dashed var(--pv4-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--pv4-paper-mute);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bureau-dashboard .bv4-facility-plate .left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bureau-dashboard .bv4-facility-plate .serial {
+  color: var(--pv4-gold);
+  font-weight: 600;
+}
+
+.bureau-dashboard .bv4-facility-plate .sep {
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-dashboard .bv4-facility-plate .offcycle {
+  display: inline-flex;
+  gap: 4px;
+  padding-left: 10px;
+  border-left: 1px solid var(--pv4-rule-soft);
+}
+
+.bureau-dashboard .bv4-facility-plate .offcycle strong {
+  color: var(--pv4-gold);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+/* Compact 4-swatch legend on the right of the facility plate */
+.bureau-dashboard .bv4-facility-plate .bv4-legend {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.bureau-dashboard .bv4-facility-plate .bv4-legend .swatch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bureau-dashboard .bv4-facility-plate .bv4-legend .swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--pv4-rule-soft);
+}
+
+/* Floor plan body inside Bureau facility section: reduce top padding */
+.bureau-dashboard .home-floorplan {
+  padding-top: 0;
+}
+
+.bureau-dashboard .home-floorplan .fpl-canvas {
+  padding-bottom: 8px;
+}
+
+/* Hide the original fpl-canvas-cap (eyebrow + h1 + legend stack) — the
+   Bureau plate replaces it. The component still renders it but we
+   collapse it visually. */
+.bureau-dashboard .home-floorplan .fpl-canvas-cap {
+  display: none;
+}
+
+/* Compact live-state footer below floor plan */
+.bureau-dashboard .bv4-facility-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-top: 1px dashed var(--pv4-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper-faint);
+}
+
+.bureau-dashboard .bv4-facility-foot .live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pv4-red);
+  margin-right: 6px;
+  vertical-align: 0.05em;
+}
+
+/* ── Inline room urgency callouts overlaid on the floor plan ─────── */
+
+.bureau-dashboard .bv4-room-callouts {
+  position: relative;
+  pointer-events: none;
+}
+
+.bureau-dashboard .bv4-room-callout {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  background: rgba(6, 26, 51, 0.85);
+  border: 1px solid var(--pv4-rule);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--pv4-paper);
+  white-space: nowrap;
+}
+
+.bureau-dashboard .bv4-room-callout.is-urgent {
+  border-color: var(--pv4-red);
+  color: var(--pv4-paper);
+}
+
+.bureau-dashboard .bv4-room-callout.is-urgent .dot {
+  background: var(--pv4-red);
+}
+
+.bureau-dashboard .bv4-room-callout.is-attention {
+  border-color: var(--status-warn);
+}
+
+.bureau-dashboard .bv4-room-callout.is-attention .dot {
+  background: var(--status-warn);
+}
+
+.bureau-dashboard .bv4-room-callout .dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pv4-paper-mute);
+}
+
+/* Stack of callouts above the floor plan SVG, scrollable horizontally if many */
+.bureau-dashboard .bv4-callouts-strip {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--pv4-rule-soft);
+}
+
+.bureau-dashboard .bv4-callouts-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Loading state ───────────────────────────────────────────────── */
+
+.bureau-dashboard .home-loading {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--pv4-paper-faint);
+  padding: 24px;
+}
