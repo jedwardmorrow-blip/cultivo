@@ -12,6 +12,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { AlertTriangle, Users, LayoutGrid } from 'lucide-react';
 import { useCommandCenterData, type RoomShape, type TaskShape } from './useCommandCenterData';
 import { CYCLE_PHASE_MARKERS } from '../../constants/cyclePhaseMarkers';
 import { TASK_TYPE_CONFIG, type TaskType, type TaskStatus } from '../../types';
@@ -116,6 +117,7 @@ function AttentionStrip({ rooms, onRoomClick }: { rooms: RoomShape[]; onRoomClic
 
   return (
     <div className="attn">
+      <span className="sec-icon" aria-hidden="true"><AlertTriangle /></span>
       <span className="ml" style={{ flexShrink: 0 }}>Attention</span>
       {items.map(r => (
         <button key={r.room_id} className="attn-item" type="button" onClick={() => onRoomClick(r.room_id)}>
@@ -167,6 +169,28 @@ function PendingCell({ label, reason }: { label: string; reason: string }) {
 // ═══════════════════════════════════════════════════════════════
 type LaborTotals = { total: number; done: number; active: number; pending: number; unassigned: number };
 
+function deltaFromSpark(spark?: number[]): { value: string; direction: 'up' | 'down' | 'flat'; tone: 'positive' | 'negative' | 'neutral' } | null {
+  if (!spark || spark.length < 2) return null;
+  const first = spark[0];
+  const last = spark[spark.length - 1];
+  if (first === 0 || !Number.isFinite(first) || !Number.isFinite(last)) return null;
+  const pct = ((last - first) / Math.abs(first)) * 100;
+  if (Math.abs(pct) < 0.5) return { value: '0%', direction: 'flat', tone: 'neutral' };
+  const direction: 'up' | 'down' = pct > 0 ? 'up' : 'down';
+  return { value: `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`, direction, tone: direction === 'up' ? 'positive' : 'negative' };
+}
+
+function CellDelta({ spark }: { spark?: number[] }) {
+  const d = deltaFromSpark(spark);
+  if (!d) return null;
+  return (
+    <span className={`cmd-cell-delta ${d.tone}`}>
+      <span aria-hidden="true">{d.direction === 'up' ? '▲' : d.direction === 'down' ? '▼' : '–'}</span>
+      {d.value}
+    </span>
+  );
+}
+
 function LaborStrip({ totals, roomCount, topType, sparks }: {
   totals: LaborTotals;
   roomCount: number;
@@ -177,18 +201,19 @@ function LaborStrip({ totals, roomCount, topType, sparks }: {
   return (
     <div className="sec">
       <div className="sec-hd">
+        <span className="sec-icon" aria-hidden="true"><Users /></span>
         <span className="ml">Labor</span>
         <span className="ml-sm ml-r">{new Date().toLocaleDateString('en-US', { weekday: 'short' })} · today</span>
       </div>
       <div className="cells" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
         <button type="button" className="cell">
-          <span className="cell-label">Total Tasks</span>
+          <span className="cell-label">Total Tasks<CellDelta spark={sparks.total} /></span>
           <span className="cell-val">{totals.total}</span>
           <span className="cell-sub">across {roomCount} rooms</span>
           <Spark data={sparks.total} />
         </button>
         <button type="button" className="cell">
-          <span className="cell-label"><span className="d d-ok" /> Done</span>
+          <span className="cell-label"><span className="d d-ok" /> Done<CellDelta spark={sparks.done} /></span>
           <span className="cell-val">{totals.done}</span>
           <span className="cell-sub">{pct}% complete</span>
           <Spark data={sparks.done} status="ok" />
@@ -1718,6 +1743,7 @@ export function CommandCenter() {
           />
           <div className="sec">
             <div className="sec-hd">
+              <span className="sec-icon" aria-hidden="true"><LayoutGrid /></span>
               <span className="ml">Rooms</span>
               <span className="ml-sm ml-r">{activeRooms} active · {roomSections.empty.length} empty</span>
             </div>
@@ -1729,6 +1755,7 @@ export function CommandCenter() {
               return (
                 <div key={stage} className="rooms-section">
                   <div className="rooms-section-hd">
+                    <span className="sec-icon" aria-hidden="true"><LayoutGrid /></span>
                     <span className="ml">{label}</span>
                     <span className="ml-sm">{list.length} room{list.length === 1 ? '' : 's'} · {totalPlants} plants</span>
                   </div>

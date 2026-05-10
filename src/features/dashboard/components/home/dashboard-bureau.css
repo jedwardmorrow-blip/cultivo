@@ -163,12 +163,24 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  white-space: nowrap;
+}
+
+.bureau-dashboard .bv4-status-pills > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid rgba(201, 162, 75, 0.32);
+  border-radius: 999px;
+  background: transparent;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
+  line-height: 1.5;
   color: var(--pv4-paper-mute);
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .bureau-dashboard .bv4-status-pills strong {
@@ -429,16 +441,21 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 6px;
-  background: rgba(6, 26, 51, 0.85);
-  border: 1px solid var(--pv4-rule);
-  border-radius: 0;
+  padding: 2px 6px;
+  background: transparent;
+  border: 1px solid rgba(201, 162, 75, 0.32);
+  border-radius: 999px;
   font-family: var(--font-mono);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--pv4-paper);
+  color: var(--pv4-paper-mute);
+  line-height: 1.5;
   white-space: nowrap;
+}
+.bureau-dashboard .bv4-room-callout strong {
+  font-weight: 600;
+  color: var(--pv4-paper);
 }
 
 .bureau-dashboard .bv4-room-callout.is-urgent {

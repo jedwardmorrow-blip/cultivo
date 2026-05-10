@@ -71,7 +71,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--op-line);
   background: var(--op-canvas);
 }
@@ -196,19 +196,19 @@
 .home-cell-delta {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
   font-size: 9px;
-  letter-spacing: 0.06em;
-  padding: 1px 5px;
+  letter-spacing: 0.14em;
+  padding: 2px 6px;
   border-radius: 999px;
   border: 1px solid var(--op-line-strong);
-  background: var(--op-canvas);
+  background: transparent;
   color: var(--op-ink-3);
   flex-shrink: 0;
-  text-transform: none;
+  text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 .home-cell-delta.positive {
   color: var(--status-ok);
