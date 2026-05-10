@@ -29,7 +29,9 @@ The aesthetic is **working-instrument**: earned, used, quiet. Rejects "Tesla tou
 
 **Box shadows neutralized.** `shadow-glass`, `shadow-glass-lg`, all `shadow-glow-*` classes are now `'none'`. Migrate components to hairlines over time; do not add new shadow utilities.
 
-**Login is the canonical example** of the new aesthetic at `src/features/auth/components/Login.tsx`. Reference it when building new instrument-grade screens.
+**Canonical references for working-instrument** are `/dashboard` and `/executive-hub` Overview. Reference them when building new instrument-grade screens.
+
+**Login has been ported to the V4 Bureau dialect** (Tier 1 ceremonial) as of session 475 / commit `e86ebc4`. The V4 Bureau dialect is a parallel doctrine being validated section-by-section across three tiers (ceremonial / instrument / worker). It is sandbox-scoped under `.bureau-*` wrappers using a `--pv4-*` token namespace, so it does not displace working-instrument outside those wrappers. See "V4 Bureau dialect (in-progress migration)" below before designing auth, ceremonial, or worker-tier surfaces.
 
 ## Surface treatment contract (Phase 1)
 
@@ -119,7 +121,31 @@ These patterns are AI-generated reflexes that betray the aesthetic. Operator too
 - **No serif in operator code.** IBM Plex Sans + IBM Plex Mono only. Marketing/public surfaces may use IBM Plex Serif; operator code never. Italic Plex Sans (400/600) is allowed.
 - **No decorative icons in data tiles.** Icons are wayfinding only — top nav, sub-nav, primary action buttons. Inside KPI tiles, status pills, table rows, and section headers: no icons.
 
-When in doubt, look at `src/features/auth/components/Login.tsx`, `/dashboard`, and `/executive-hub` Overview. Those are the canonical references.
+When in doubt, look at `/dashboard` and `/executive-hub` Overview. Those are the canonical working-instrument references. (Login is now V4 Bureau, not working-instrument.)
+
+## V4 Bureau dialect (in-progress migration)
+
+A parallel design dialect being validated section-by-section. Deep-navy canvas (`--pv4-canvas-deep`), paper-cream type (`--pv4-paper`), gold accent (`--pv4-gold`), Bureau identity marks (serial plate, registry number, dashed rules). Replaces the working-instrument aesthetic on three target tiers:
+
+- **Tier 1 ceremonial** — Login. **Shipped** session 475, commit `e86ebc4`.
+- **Tier 2 instrument** — SalesInventoryView. **Pending.** Stress-test preview at `/login?v4test=sales`.
+- **Tier 3 worker** — PinLoginPage. **Pending.** Stress-test preview at `/login?v4test=pin`.
+
+**Implementation contract.**
+
+- Each ported surface gets a sandbox-scoped CSS file (e.g. `login-bureau.css`) using a `--pv4-*` namespace under a wrapper class (`.bureau-login`, etc.).
+- `src/brand-tokens.css` and `tailwind.config.js` are NOT touched during the migration. The working-instrument cascade through `cult-*` utilities stays intact for the rest of the operator surface.
+- The only motion-permitted component in V4 Bureau is `<PraxisAtom>` at `src/features/auth/components/praxis-atom/PraxisAtom.tsx`. It subsumes loading spinners, status dots, success toasts, error states, and boot screens. Six states: `boot`, `idle`, `loading`, `success`, `error`, `reduced-motion`.
+- The legacy `.glass`, `.glass-card`, etc. classes from working-instrument continue to work inside V4 Bureau wrappers because `src/index.css` already flattens them to opaque hairline equivalents that resolve through `var(--op-*)`. The `.bureau-v4` wrapper in `bureau-v4-stress.css` overrides `--op-*` locally to V4 Bureau values, so existing components inherit V4 Bureau without code changes (used by V4StressTest).
+- V4 Bureau imports `Big Shoulders Display` for ceremonial / display contexts. This is a sans display face, not a serif, so the "no serif in operator code" banned-pattern rule is preserved in spirit. Operator copy inside V4 Bureau still uses IBM Plex Sans / Mono.
+
+**Doctrine references** (in `business_context`):
+- `cultivo_v4_bureau_canonical_v1` (id `086ecee8-bf68-4455-abd2-b4dbe8b583c7`).
+- `praxis_atom_v1` (id `879ea6ff-e57e-4232-95ae-de2ff5da559e`).
+- `cultivo_glass_doctrine_v1` (id `9ae88200-d12f-4e81-a7c8-c825ba7a66d7`).
+- Decision row `d004d3fc-4f1b-4cc1-9a4c-d267dc8824fb` (V4 Bureau canonical).
+
+Once all three tiers ship, the brain will decide whether V4 Bureau displaces working-instrument globally (a `--op-*` token swap) or stays a per-surface dialect. Until then, do NOT introduce V4 Bureau patterns into surfaces outside the three target tiers.
 
 ## Bridge contracts (Claude Design vs Claude Code)
 
