@@ -92,10 +92,6 @@ export function DashboardBureauHeader({ data, cashSev, pipelineSev, fulfillmentS
             )}
           </div>
 
-          <div className="bv4-title">
-            DASHBOARD<span className="period" />
-          </div>
-
           <div className="bv4-tagline">
             <span className="pair">
               <span className="bv4-num-lead">{fmtUSD(data.revenue.bookedMTD)}</span>

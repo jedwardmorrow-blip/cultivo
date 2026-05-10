@@ -161,7 +161,7 @@
 }
 .home-cell-label {
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--op-ink-3);
@@ -276,14 +276,88 @@
 }
 .home-cell-secondary {
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--op-ink-2);
   letter-spacing: 0.02em;
 }
 
 /* PENDING cell: dotted bottom hairline */
+/* Empty-state cell (PendingCell) — deliberate not-configured treatment.
+   Dashed outline reads as a placeholder slot, the small "Not configured"
+   badge confirms the state is intentional rather than broken data, and
+   the "Set up →" CTA at the bottom converts the empty moment into an
+   onboarding affordance. The cell remains clickable (opens PendingModal
+   with details on what's missing and how to configure it). */
 .home-cell-pending {
   border-bottom: 1px dotted var(--op-line-strong);
+  position: relative;
+  background: rgba(0, 0, 0, 0.10);
+}
+.home-cell-pending::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(232, 224, 212, 0.10);
+  border-radius: var(--r-xs, 4px);
+  pointer-events: none;
+}
+.home-cell-pending:hover::before {
+  border-color: rgba(232, 224, 212, 0.22);
+}
+.home-cell-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--op-line-strong);
+  background: transparent;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--op-ink-3);
+}
+.home-cell-primary-empty {
+  color: var(--op-ink-4) !important;
+  font-size: 22px;
+  font-weight: 300;
+}
+.home-cell-pending-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  transition: color 120ms;
+}
+.home-cell-pending:hover .home-cell-pending-cta {
+  color: var(--op-ink);
+}
+/* V4 Bureau dialect — empty state uses paper-faint + gold CTA */
+.bureau-dashboard .home-cell-pending {
+  background: rgba(3, 16, 31, 0.35);
+}
+.bureau-dashboard .home-cell-pending::before {
+  border-color: rgba(201, 162, 75, 0.16);
+}
+.bureau-dashboard .home-cell-pending:hover::before {
+  border-color: rgba(201, 162, 75, 0.34);
+}
+.bureau-dashboard .home-cell-pending-badge {
+  border-color: rgba(201, 162, 75, 0.32);
+  color: var(--pv4-paper-mute);
+}
+.bureau-dashboard .home-cell-pending-cta {
+  color: var(--pv4-gold);
+}
+.bureau-dashboard .home-cell-pending:hover .home-cell-pending-cta {
+  color: var(--pv4-paper);
 }
 
 /* ── Floor plan body (mounts inside a Section card) ─────────── */
