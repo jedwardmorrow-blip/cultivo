@@ -20,12 +20,15 @@ import type { BulkSubTab } from '../types';
 
 /* ── Shared layout shell ──────────────────────────────────────── */
 
-function ViewShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+function ViewShell({ title, subtitle, icon: Icon = Archive, children }: { title: string; subtitle: string; icon?: typeof Package; children: ReactNode }) {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="font-mono uppercase tracking-[0.18em] text-sm text-cult-text-primary">{title}</h1>
-        <p className="font-mono uppercase tracking-[0.12em] text-[10px] text-cult-text-muted mt-1.5">{subtitle}</p>
+    <div className="space-y-4 animate-fade-in">
+      <div className="cult-section-header" style={{ borderTop: '1px solid var(--op-line)' }}>
+        <span className="cult-section-icon" aria-hidden="true">
+          <Icon />
+        </span>
+        <span className="cult-section-label">{title}</span>
+        <span className="cult-section-meta">{subtitle}</span>
       </div>
       {children}
     </div>
@@ -73,40 +76,46 @@ export function UnifiedInventoryViewWrapper() {
     packaged: ctx.packagedItems.length,
   };
 
+  const subtitleByStage: Record<StageTab, string> = {
+    all: 'View all inventory across all stages',
+    binned: 'Fresh flower directly from harvest, ready for processing',
+    bucked: 'Flower that has been bucked and is ready for trimming',
+    bulk: 'Processed flower, smalls, and trim ready for packaging',
+    packaged: 'Final packaged products ready for distribution',
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-cult-text-primary">Inventory</h1>
-        <p className="text-cult-text-muted text-sm mt-2">
-          {activeStage === 'all' && 'View all inventory across all stages'}
-          {activeStage === 'binned' && 'Fresh flower directly from harvest, ready for processing'}
-          {activeStage === 'bucked' && 'Flower that has been bucked and is ready for trimming'}
-          {activeStage === 'bulk' && 'Processed flower, smalls, and trim ready for packaging'}
-          {activeStage === 'packaged' && 'Final packaged products ready for distribution'}
-        </p>
+    <div className="space-y-4 animate-fade-in">
+      <div className="cult-section-header" style={{ borderTop: '1px solid var(--op-line)' }}>
+        <span className="cult-section-icon" aria-hidden="true">
+          <Archive />
+        </span>
+        <span className="cult-section-label">Inventory</span>
+        <span className="cult-section-meta">{subtitleByStage[activeStage]}</span>
       </div>
 
-      {/* Stage tabs */}
-      <div className="flex gap-1 p-1 bg-cult-surface rounded-lg w-fit">
-        {STAGE_TABS.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveStage(key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeStage === key
-                ? 'bg-cult-border text-cult-text-primary shadow-sm'
-                : 'text-cult-text-secondary hover:text-cult-text-primary'
-            }`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {label}
-            <span className={`text-xs px-1.5 py-0.5 rounded-full tabular-nums ${
-              activeStage === key ? 'bg-cult-text-muted/30 text-cult-text-primary' : 'bg-cult-border/50 text-cult-text-muted'
-            }`}>
-              {stageCounts[key]}
-            </span>
-          </button>
-        ))}
+      {/* Stage tabs — canonical mono-pill grouping */}
+      <div className="flex gap-1 px-4 flex-wrap">
+        {STAGE_TABS.map(({ key, label, icon: Icon }) => {
+          const isActive = activeStage === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setActiveStage(key)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded font-mono uppercase tracking-[0.14em] text-[11px] transition-colors ${
+                isActive
+                  ? 'bg-cult-surface-raised text-cult-text-primary border border-cult-border-strong'
+                  : 'text-cult-text-muted border border-transparent hover:text-cult-text-primary hover:border-cult-border'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+              <span className={`cult-mono-pill ${isActive ? 'cult-mono-pill--accent' : 'cult-mono-pill--neutral'}`}>
+                {stageCounts[key]}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Stage content */}
