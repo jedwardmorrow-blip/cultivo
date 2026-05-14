@@ -1,13 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { AlertTriangle, Calendar, Plus } from 'lucide-react';
+import { AlertTriangle, Calendar, Plus, Sprout } from 'lucide-react';
 import { useProductionPlanner, WEEKS_AFTER_CURRENT, WEEKS_AFTER_PLANNING } from '../hooks/useProductionPlanner';
 import { RoomDetailCard } from './RoomDetailCard';
 import { StrainStatsPanel } from './StrainStatsPanel';
 import { PlannedCycleBar } from './PlannedCycleBar';
 import { PlannedCycleForm } from './PlannedCycleForm';
 import { ForecastSummaryPanel } from './ForecastSummaryPanel';
-import { STAGE_HEX, ROOM_TYPE_ORDER } from '../types';
-import type { CalendarRoom, StrainCultivationStats, CalendarPlannedEntry } from '../types';
+import { STAGE_HEX } from '../types';
+import type { CalendarRoom, CalendarRoomStrain, StrainCultivationStats, CalendarPlannedEntry, MotherBatchGroupRow } from '../types';
 import {
   ROOM_TYPE_DOT,
   ROOM_TYPE_LEFT_BORDER,
@@ -40,11 +40,67 @@ interface WeekMarker {
   isMonthStart: boolean;
 }
 
+interface CohortRenderBar {
+  key: string;
+  label: string;
+  stage: string;
+  plantCount: number;
+  strainCount: number;
+  startDate: Date;
+  endDate: Date;
+  daysInStage: number | null;
+  isSynthetic: boolean;
+  isQuarantined: boolean;
+  strains: CalendarRoomStrain[];
+}
+
+function buildCohortBars(room: CalendarRoom): CohortRenderBar[] {
+  const groups = new Map<string, CohortRenderBar>();
+
+  for (const strain of room.strains) {
+    if (!strain.earliest_planted_date) continue;
+    const key = strain.cohort_key ?? strain.batch_id ?? strain.strain_id;
+    const startDate = new Date(strain.earliest_planted_date);
+    const endDate = strain.estimated_harvest_date
+      ? new Date(strain.estimated_harvest_date)
+      : new Date(startDate.getTime() + 88 * 86400000);
+    const existing = groups.get(key);
+
+    if (!existing) {
+      groups.set(key, {
+        key,
+        label: strain.cohort_label ?? strain.batch_code ?? strain.strain_name,
+        stage: strain.growth_stage,
+        plantCount: strain.plant_count,
+        strainCount: 1,
+        startDate,
+        endDate,
+        daysInStage: strain.days_in_stage,
+        isSynthetic: Boolean(strain.is_synthetic),
+        isQuarantined: Boolean(strain.is_quarantined),
+        strains: [strain],
+      });
+      continue;
+    }
+
+    if (startDate < existing.startDate) existing.startDate = startDate;
+    if (endDate > existing.endDate) existing.endDate = endDate;
+    existing.plantCount += strain.plant_count;
+    existing.strainCount += 1;
+    existing.isSynthetic = existing.isSynthetic || Boolean(strain.is_synthetic);
+    existing.isQuarantined = existing.isQuarantined || Boolean(strain.is_quarantined);
+    existing.strains.push(strain);
+  }
+
+  return Array.from(groups.values()).sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+}
+
 export function ProductionPlannerView() {
   const {
     rooms,
     strainStats,
     strainStatsById,
+    motherBatchGroups,
     harvestAlerts,
     loading,
     error,
@@ -176,7 +232,7 @@ export function ProductionPlannerView() {
         </div>
 
         {/* View mode toggle */}
-        <div className="flex items-center gap-1 bg-cult-surface border border-cult-border rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-cult-surface border border-cult-border rounded p-1">
           <button
             onClick={() => setViewMode('current')}
             className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
@@ -191,7 +247,7 @@ export function ProductionPlannerView() {
             onClick={() => setViewMode('planning')}
             className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
               viewMode === 'planning'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-cult-accent text-cult-bg'
                 : 'text-cult-text-muted hover:text-cult-text-primary'
             }`}
           >
@@ -202,21 +258,26 @@ export function ProductionPlannerView() {
 
       {/* Planning mode banner */}
       {viewMode === 'planning' && (
-        <div className="flex items-center gap-2 px-6 py-2 bg-violet-900/20 border-b border-violet-700/30 text-xs text-violet-300">
-          <div className="w-3 h-3 rounded-sm border border-dashed border-violet-400 bg-violet-600/40 flex-shrink-0" />
+        <div className="flex items-center gap-2 px-6 py-2 bg-cult-surface border-b border-cult-border text-xs text-cult-text-secondary">
+          <div className="w-3 h-3 rounded-sm border border-dashed border-cult-accent bg-cult-accent/20 flex-shrink-0" />
           <span>
-            Planning Mode — 26-week horizon. Click <strong>+</strong> on any room row to add a planned cycle. Click a planned bar to edit or delete.
+            Planning Mode · 26-week horizon · add with + · edit planned bars
           </span>
         </div>
       )}
 
+      {motherBatchGroups.length > 0 && (
+        <MotherBatchGroupSummary groups={motherBatchGroups} />
+      )}
+
       {/* Harvest Alerts */}
       {harvestAlerts.length > 0 && (
-        <div className="flex items-center gap-3 px-6 py-2 bg-cult-stage-harvest/10 border-b border-cult-stage-harvest/30">
+        <div className="flex items-center gap-3 px-6 py-2 bg-cult-surface border-b border-cult-border">
+          <div className="h-6 w-1.5 bg-cult-stage-harvest rounded-sm flex-shrink-0" />
           <AlertTriangle className="w-4 h-4 text-cult-stage-harvest flex-shrink-0" />
           <div className="flex gap-4 overflow-x-auto text-sm">
             {harvestAlerts.map((a, i) => (
-              <span key={i} className="whitespace-nowrap text-cult-stage-harvest">
+              <span key={i} className="whitespace-nowrap text-cult-text-primary">
                 <span className="font-semibold">{a.room_code}</span>
                 <span className="text-cult-text-secondary mx-1">{a.strain_name}</span>
                 <span className="font-medium">
@@ -258,6 +319,7 @@ export function ProductionPlannerView() {
               {rooms.map((room, rowIdx) => {
                 const y = HEADER_HEIGHT + rowIdx * ROW_HEIGHT;
                 const isSelected = selectedRoom?.room_id === room.room_id;
+                const cohortBars = buildCohortBars(room);
 
                 return (
                   <div
@@ -282,7 +344,7 @@ export function ProductionPlannerView() {
                       {viewMode === 'planning' && (
                         <button
                           onClick={(e) => handleAddPlan(room, e)}
-                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded bg-violet-700/60 hover:bg-violet-600 text-violet-200 hover:text-white transition-colors"
+                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded bg-cult-accent/20 hover:bg-cult-accent text-cult-accent hover:text-cult-bg transition-colors"
                           title={`Add planned cycle to ${room.room_name}`}
                         >
                           <Plus className="w-3 h-3" />
@@ -293,39 +355,54 @@ export function ProductionPlannerView() {
                     {/* Timeline area */}
                     <div className="relative flex-1" style={{ width: totalWidth }}>
                       {/* Actual strain cycle bars */}
-                      {room.strains.map((strain, sIdx) => {
-                        if (!strain.earliest_planted_date) return null;
-                        const planted = new Date(strain.earliest_planted_date);
-                        const barStart = daysBetween(startDate, planted) * DAY_WIDTH;
-                        const estEnd = strain.estimated_harvest_date
-                          ? new Date(strain.estimated_harvest_date)
-                          : new Date(planted.getTime() + 88 * 86400000);
-                        const barWidth = Math.max(daysBetween(planted, estEnd) * DAY_WIDTH, 14);
-                        const barY = 4 + sIdx * 10;
-                        const color = STAGE_HEX[strain.growth_stage] ?? '#6B7280';
+                      {cohortBars.map((cohort, sIdx) => {
+                        const barStart = daysBetween(startDate, cohort.startDate) * DAY_WIDTH;
+                        const barWidth = Math.max(daysBetween(cohort.startDate, cohort.endDate) * DAY_WIDTH, 18);
+                        const barY = 5 + sIdx * 14;
+                        const color = STAGE_HEX[cohort.stage] ?? '#6B7280';
 
-                        if (barY + 8 > ROW_HEIGHT) return null;
+                        if (barY + 11 > ROW_HEIGHT) return null;
+
+                        const titleParts = [
+                          `${cohort.label} — ${cohort.plantCount}p`,
+                          cohort.strainCount > 1 ? `${cohort.strainCount} strains` : cohort.strains[0]?.strain_name,
+                          cohort.stage,
+                          cohort.daysInStage !== null ? `${cohort.daysInStage}d` : null,
+                          cohort.isSynthetic ? 'projected date' : null,
+                          cohort.isQuarantined ? 'quarantined confidence' : null,
+                        ].filter(Boolean);
 
                         return (
                           <div
-                            key={strain.strain_id}
-                            className="absolute rounded-sm opacity-80 hover:opacity-100 transition-opacity"
+                            key={cohort.key}
+                            className="absolute rounded-sm opacity-85 hover:opacity-100 transition-opacity overflow-hidden"
                             style={{
                               left: Math.max(barStart, 0),
                               top: barY,
                               width: barWidth,
-                              height: 8,
+                              height: 11,
                               backgroundColor: color,
+                              border: cohort.isQuarantined
+                                ? '1px solid rgba(255, 255, 255, 0.75)'
+                                : cohort.isSynthetic
+                                  ? '1px dashed rgba(255, 255, 255, 0.65)'
+                                  : undefined,
                             }}
-                            title={`${strain.strain_name} — ${strain.plant_count}p ${strain.growth_stage} (${strain.days_in_stage ?? '?'}d)`}
-                          />
+                            title={titleParts.join(' · ')}
+                          >
+                            {cohort.strainCount > 1 && barWidth >= 42 && (
+                              <span className="absolute right-1 top-0 text-[8px] leading-[11px] font-mono font-bold text-cult-bg/90">
+                                {cohort.strainCount}S
+                              </span>
+                            )}
+                          </div>
                         );
                       })}
 
                       {/* Planned cycle ghost bars (planning mode only) */}
                       {viewMode === 'planning' &&
                         (room.plannedCycles ?? []).map((plan, pIdx) => {
-                          const barY = 4 + (room.strains.length + pIdx) * 10;
+                          const barY = 5 + (cohortBars.length + pIdx) * 14;
                           if (barY + 8 > ROW_HEIGHT) return null;
                           return (
                             <PlannedCycleBar
@@ -365,11 +442,54 @@ export function ProductionPlannerView() {
         <PlannedCycleForm
           room={planFormRoom}
           strainStats={strainStats}
+          motherBatchGroups={motherBatchGroups}
           editing={editingCycle}
           onSave={handleFormSave}
           onClose={() => { setPlanFormRoom(null); setEditingCycle(null); }}
         />
       )}
+    </div>
+  );
+}
+
+function MotherBatchGroupSummary({ groups }: { groups: MotherBatchGroupRow[] }) {
+  const activeGroups = groups.filter((group) => group.active_plant_count > 0);
+  const activePlants = activeGroups.reduce((sum, group) => sum + group.active_plant_count, 0);
+  const strainCount = new Set(activeGroups.map((group) => group.strain_id)).size;
+  const sourceCount = activeGroups.filter((group) => group.source_cycle_id || group.source_batch_registry_id).length;
+  const sample = activeGroups
+    .slice()
+    .sort((a, b) => b.active_plant_count - a.active_plant_count)
+    .slice(0, 4);
+
+  return (
+    <div className="flex items-center gap-3 px-6 py-2 bg-cult-surface border-b border-cult-border text-xs">
+      <Sprout className="w-4 h-4 text-cult-stage-mother flex-shrink-0" />
+      <div className="flex items-center gap-2 text-cult-text-primary flex-shrink-0">
+        <span className="font-semibold">Mother Groups</span>
+        <span className="text-cult-text-muted">
+          {activeGroups.length} groups · {activePlants} moms · {strainCount} strains
+        </span>
+      </div>
+      {sourceCount < activeGroups.length && (
+        <span className="text-cult-text-muted flex-shrink-0">
+          {activeGroups.length - sourceCount} unlinked
+        </span>
+      )}
+      <div className="flex gap-2 overflow-x-auto min-w-0">
+        {sample.map((group) => (
+          <span
+            key={group.mother_batch_group_key}
+            className="whitespace-nowrap rounded border border-cult-border bg-cult-bg px-2 py-0.5 text-cult-text-secondary"
+            title={`${group.strain_name} · ${group.active_plant_count} active moms`}
+          >
+            <span className="font-medium text-cult-text-primary">{group.strain_name}</span>
+            <span className="text-cult-text-muted ml-1">
+              {group.source_cycle_code || group.source_batch_number || group.room_code || 'lineage pending'}
+            </span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

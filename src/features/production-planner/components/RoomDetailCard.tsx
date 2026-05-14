@@ -145,7 +145,7 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
 
           return (
             <div
-              key={strain.strain_id}
+              key={strain.batch_id ?? strain.strain_id}
               className="flex items-center gap-3 px-4 py-2.5 border-b border-cult-border/30 cursor-pointer hover:bg-cult-surface/60 transition-colors"
               onClick={() => onStrainClick(strain.strain_id)}
             >
@@ -165,6 +165,13 @@ export function RoomDetailCard({ room, onStrainClick, onClose }: RoomDetailCardP
                   <span>{pctOfRoom}% of room</span>
                   {strain.days_in_stage !== null && <span>{strain.days_in_stage}d in stage</span>}
                 </div>
+                {(strain.batch_code || strain.cohort_label || strain.confidence) && (
+                  <div className="flex items-center gap-2 mt-1 text-[10px] text-cult-text-muted font-mono">
+                    {strain.batch_code && <span>{strain.batch_code}</span>}
+                    {strain.cohort_label && <span>cohort {strain.cohort_label}</span>}
+                    {strain.confidence && <span>{strain.confidence}</span>}
+                  </div>
+                )}
               </div>
               <BarChart3 className="w-3.5 h-3.5 text-cult-text-muted flex-shrink-0" />
             </div>

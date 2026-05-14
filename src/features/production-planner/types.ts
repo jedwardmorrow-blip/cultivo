@@ -1,6 +1,6 @@
 /**
  * Types for the Production Planner feature.
- * Mirrors v_room_occupancy and v_strain_cultivation_stats DB views.
+ * Mirrors v_room_occupancy, v_batch_lifecycle, and v_strain_cultivation_stats DB views.
  */
 
 export interface RoomOccupancy {
@@ -21,6 +21,56 @@ export interface RoomOccupancy {
   total_plants: number;
   strain_count: number;
   capacity_utilization_pct: number | null;
+}
+
+export interface BatchLifecycleRow {
+  batch_id: string;
+  batch_code: string | null;
+  strain_id: string;
+  strain_name: string | null;
+  room_id: string | null;
+  room_code: string | null;
+  lifecycle_state: string | null;
+  stage: string | null;
+  flower_plants: number | null;
+  veg_plants: number | null;
+  next_harvest_date: string | null;
+  days_in_stage: number | null;
+  age_days: number | null;
+  confidence: string | null;
+  harvest_date: string | null;
+}
+
+export interface GrowRoomRow {
+  id: string;
+  name: string | null;
+  room_code: string | null;
+  room_type: string | null;
+  capacity_plants: number | null;
+  square_footage: number | null;
+  is_active: boolean | null;
+}
+
+export interface MotherBatchGroupRow {
+  mother_batch_group_key: string;
+  source_cycle_id: string | null;
+  source_cycle_code: string | null;
+  source_batch_registry_id: string | null;
+  source_batch_number: string | null;
+  room_id: string;
+  room_code: string | null;
+  room_name: string | null;
+  strain_id: string;
+  strain_name: string;
+  plant_group_count: number;
+  active_plant_group_count: number;
+  plant_count: number;
+  active_plant_count: number;
+  planted_date_min: string | null;
+  last_stage_entered_at: string | null;
+  last_created_at: string | null;
+  has_retired_moms: boolean;
+  moms: unknown;
 }
 
 export interface StrainCultivationStats {
@@ -81,6 +131,17 @@ export interface CalendarRoomStrain {
   stage_entered_at: string | null;
   days_in_stage: number | null;
   is_mother: boolean;
+  batch_id?: string | null;
+  batch_code?: string | null;
+  cycle_id?: string | null;
+  cycle_code?: string | null;
+  cohort_key?: string | null;
+  cohort_label?: string | null;
+  confidence?: string | null;
+  is_synthetic?: boolean;
+  synthetic_reason?: string | null;
+  is_quarantined?: boolean;
+  quarantine_reason?: string | null;
 }
 
 /** View mode for the production planner */
@@ -157,6 +218,26 @@ export type CreatePlannedCycleInput = {
   forecast_yield_grams?: number | null;
   forecast_price_per_gram?: number | null;
   notes?: string | null;
+};
+
+export type PlanCycleStrainInput = {
+  strain_id: string;
+  plant_count: number;
+  mother_batch_group_id?: string | null;
+};
+
+export type PlanCycleRpcInput = {
+  room_id: string;
+  planned_flip_date: string;
+  strains: PlanCycleStrainInput[];
+  planned_strains?: string[] | null;
+  target_yield_g_per_m2?: number | null;
+  legacyFallback: CreatePlannedCycleInput | CreatePlannedCycleInput[];
+};
+
+export type PlanCycleWriteResult = {
+  mode: 'rpc' | 'legacy';
+  data: unknown;
 };
 
 export type UpdatePlannedCycleInput = Partial<{
