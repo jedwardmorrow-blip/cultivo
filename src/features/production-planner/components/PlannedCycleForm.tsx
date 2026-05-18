@@ -5,9 +5,16 @@ import { plannedCyclesService } from '../services/plannedCyclesService';
 
 interface PlannedCycleFormProps {
   room: CalendarRoom;
+  rooms?: CalendarRoom[];
   strainStats: StrainCultivationStats[];
   motherBatchGroups?: MotherBatchGroupRow[];
   initialFlowerStartDate?: string | null;
+  gapContext?: {
+    roomCode: string;
+    startDate: string;
+    endDate: string;
+    days: number;
+  } | null;
   /** If provided, we are editing an existing cycle */
   editing?: CalendarPlannedEntry | null;
   onSave: () => void;
@@ -70,20 +77,42 @@ function confidenceWarnings(strains: StrainCultivationStats[]): string[] {
   });
 }
 
-export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], initialFlowerStartDate, editing, onSave, onClose }: PlannedCycleFormProps) {
+export function PlannedCycleForm({
+  room,
+  rooms = [room],
+  strainStats,
+  motherBatchGroups = [],
+  initialFlowerStartDate,
+  gapContext,
+  editing,
+  onSave,
+  onClose,
+}: PlannedCycleFormProps) {
   const activeStrains = useMemo(
     () => strainStats.filter((s) => s.is_active).sort((a, b) => a.strain_name.localeCompare(b.strain_name)),
     [strainStats]
+  );
+  const selectableRooms = useMemo(
+    () => rooms
+      .filter((candidate) => candidate.room_type !== 'mother' || candidate.room_id === room.room_id)
+      .sort((a, b) => a.room_code.localeCompare(b.room_code)),
+    [room.room_id, rooms]
   );
 
   const [strainRows, setStrainRows] = useState<CohortStrainRow[]>(() => [
     makeRow(editing?.strain_id ?? '', editing?.planned_plant_count?.toString() ?? ''),
   ]);
+  const [targetRoomId, setTargetRoomId] = useState(room.room_id);
   const [flowerStartDate, setFlowerStartDate] = useState(toInputDate(editing?.flower_start_date ?? initialFlowerStartDate ?? ''));
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formNotice, setFormNotice] = useState<string | null>(null);
+
+  const targetRoom = useMemo(
+    () => selectableRooms.find((candidate) => candidate.room_id === targetRoomId) ?? room,
+    [room, selectableRooms, targetRoomId]
+  );
 
   const strainById = useMemo(
     () => new Map(activeStrains.map((s) => [s.strain_id, s])),
@@ -151,7 +180,11 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
     // Reset error when inputs change
     setFormError(null);
     setFormNotice(null);
-  }, [strainRows, flowerStartDate]);
+  }, [strainRows, flowerStartDate, targetRoomId]);
+
+  useEffect(() => {
+    setTargetRoomId(room.room_id);
+  }, [room.room_id]);
 
   function updateRow(rowId: string, patch: Partial<CohortStrainRow>) {
     setStrainRows((rows) => rows.map((row) => row.rowId === rowId ? { ...row, ...patch } : row));
@@ -208,7 +241,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
           const vegStart = addDays(flowerStartDate, -vegDays);
           return {
             strain_id: row.strainId,
-            target_room_id: room.room_id,
+            target_room_id: targetRoom.room_id,
             planned_plant_count: row.count,
             flower_start_date: flowerStartDate,
             estimated_harvest_date: addDays(flowerStartDate, flowerDays),
@@ -217,7 +250,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
           };
         });
         const result = await plannedCyclesService.planCycle({
-          room_id: room.room_id,
+          room_id: targetRoom.room_id,
           planned_flip_date: flowerStartDate,
           strains: validRows.map((row) => ({
             strain_id: row.strainId,
@@ -263,8 +296,8 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
               {editing ? 'Edit Cycle' : 'Plan Cycle'}
             </h2>
             <p className="text-xs text-cult-text-muted mt-0.5">
-              {room.room_name}
-              {room.capacity_plants ? ` · Room capacity: ${room.capacity_plants} plants` : ''}
+              {targetRoom.room_name}
+              {targetRoom.capacity_plants ? ` · Room capacity: ${targetRoom.capacity_plants} plants` : ''}
             </p>
           </div>
           <button
@@ -278,6 +311,34 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-5">
+          <section className="space-y-2">
+            <label className="block text-sm font-medium text-cult-text-primary">
+              Room <span className="text-cult-stage-flower">*</span>
+            </label>
+            <select
+              value={targetRoom.room_id}
+              onChange={(e) => setTargetRoomId(e.target.value)}
+              disabled={!!editing}
+              className="w-full bg-cult-opaque-black border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary disabled:opacity-50 focus:outline-none focus:border-cult-accent"
+              aria-label="Target room"
+            >
+              {selectableRooms.map((candidate) => (
+                <option key={candidate.room_id} value={candidate.room_id}>
+                  {candidate.room_code} · {candidate.room_name}
+                  {candidate.capacity_plants ? ` · ${candidate.capacity_plants} capacity` : ''}
+                </option>
+              ))}
+            </select>
+            {gapContext && gapContext.roomCode === targetRoom.room_code && (
+              <div className="rounded border border-cult-accent/40 bg-cult-accent/10 px-3 py-2 text-xs text-cult-text-secondary">
+                <span className="font-semibold text-cult-text-primary">Flower gap</span>
+                <span className="ml-2">
+                  {gapContext.roomCode} · {formatDate(gapContext.startDate)} to {formatDate(gapContext.endDate)} · {gapContext.days}d
+                </span>
+              </div>
+            )}
+          </section>
+
           <section className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cult-text-secondary">
               <CalendarDays className="h-4 w-4 text-cult-accent" />
@@ -409,9 +470,9 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
                 );
               })}
             </div>
-            {room.capacity_plants && (
+            {targetRoom.capacity_plants && (
               <p className="text-[11px] text-cult-text-muted">
-                Room capacity: {room.capacity_plants} plants · Planned: {totalPlants} plants
+                Room capacity: {targetRoom.capacity_plants} plants · Planned: {totalPlants} plants
               </p>
             )}
           </section>
@@ -483,7 +544,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
               <p className="text-xs text-cult-text-muted">
                 {missingRequirements.length > 0
                   ? `Required: ${missingRequirements.join(', ')}.`
-                  : `Ready to create ${totalPlants} plants for ${formatDate(flowerStartDate)}.`}
+                  : `Ready to create ${totalPlants} plants in ${targetRoom.room_code} for ${formatDate(flowerStartDate)}.`}
               </p>
             )}
             <div className="flex gap-2">

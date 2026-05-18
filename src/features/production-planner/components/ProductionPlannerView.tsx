@@ -82,6 +82,13 @@ interface FlowerGapSuggestion {
   source: 'open' | 'between' | 'after';
 }
 
+interface PlanFormGapContext {
+  roomCode: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+}
+
 function buildCohortBars(room: CalendarRoom): CohortRenderBar[] {
   const groups = new Map<string, CohortRenderBar>();
 
@@ -209,6 +216,7 @@ export function ProductionPlannerView() {
   const [planFormRoom, setPlanFormRoom] = useState<CalendarRoom | null>(null);
   const [editingCycle, setEditingCycle] = useState<CalendarPlannedEntry | null>(null);
   const [planFormFlowerStart, setPlanFormFlowerStart] = useState<string | null>(null);
+  const [planFormGapContext, setPlanFormGapContext] = useState<PlanFormGapContext | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const weeksAfter = viewMode === 'planning' ? WEEKS_AFTER_PLANNING : WEEKS_AFTER_CURRENT;
@@ -282,11 +290,12 @@ export function ProductionPlannerView() {
     }
   }
 
-  function openPlanForm(room: CalendarRoom | null, flowerStartDate?: string | null) {
+  function openPlanForm(room: CalendarRoom | null, flowerStartDate?: string | null, gapContext?: PlanFormGapContext | null) {
     if (!room) return;
     setViewMode('planning');
     setEditingCycle(null);
     setPlanFormFlowerStart(flowerStartDate ?? null);
+    setPlanFormGapContext(gapContext ?? null);
     setPlanFormRoom(room);
   }
 
@@ -307,6 +316,7 @@ export function ProductionPlannerView() {
     if (ownerRoom) {
       setEditingCycle(entry);
       setPlanFormFlowerStart(null);
+      setPlanFormGapContext(null);
       setPlanFormRoom(ownerRoom);
     }
   }
@@ -315,6 +325,7 @@ export function ProductionPlannerView() {
     setPlanFormRoom(null);
     setEditingCycle(null);
     setPlanFormFlowerStart(null);
+    setPlanFormGapContext(null);
     reloadPlanned();
   }
 
@@ -603,7 +614,12 @@ export function ProductionPlannerView() {
         <>
           <FlowerCycleGapsPanel
             gaps={flowerGaps}
-            onPlan={(gap) => openPlanForm(gap.room, toISODate(gap.start))}
+            onPlan={(gap) => openPlanForm(gap.room, toISODate(gap.start), {
+              roomCode: gap.room.room_code,
+              startDate: toISODate(gap.start),
+              endDate: toISODate(gap.end),
+              days: gap.days,
+            })}
           />
           <ForecastSummaryPanel />
         </>
@@ -613,12 +629,14 @@ export function ProductionPlannerView() {
       {planFormRoom && (
         <PlannedCycleForm
           room={planFormRoom}
+          rooms={rooms}
           strainStats={strainStats}
           motherBatchGroups={motherBatchGroups}
           initialFlowerStartDate={planFormFlowerStart}
+          gapContext={planFormGapContext}
           editing={editingCycle}
           onSave={handleFormSave}
-          onClose={() => { setPlanFormRoom(null); setEditingCycle(null); setPlanFormFlowerStart(null); }}
+          onClose={() => { setPlanFormRoom(null); setEditingCycle(null); setPlanFormFlowerStart(null); setPlanFormGapContext(null); }}
         />
       )}
     </div>
