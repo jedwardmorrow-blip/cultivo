@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Loader2, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, CalendarDays, CheckCircle2, Loader2, Plus, Sprout, Trash2, X } from 'lucide-react';
 import type { StrainCultivationStats, CalendarPlannedEntry, CalendarRoom, MotherBatchGroupRow } from '../types';
 import { plannedCyclesService } from '../services/plannedCyclesService';
 
@@ -45,6 +45,15 @@ function makeRow(strainId = '', plantCount = '', motherBatchGroupId = ''): Cohor
   };
 }
 
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 function confidenceWarnings(strains: StrainCultivationStats[]): string[] {
   return strains.flatMap((strain) => {
     const warnings: string[] = [];
@@ -68,7 +77,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
   );
 
   const [strainRows, setStrainRows] = useState<CohortStrainRow[]>(() => [
-    makeRow(editing?.strain_id ?? (activeStrains[0]?.strain_id ?? ''), editing?.planned_plant_count?.toString() ?? ''),
+    makeRow(editing?.strain_id ?? '', editing?.planned_plant_count?.toString() ?? ''),
   ]);
   const [flowerStartDate, setFlowerStartDate] = useState(toInputDate(editing?.flower_start_date ?? initialFlowerStartDate ?? ''));
   const [saving, setSaving] = useState(false);
@@ -119,6 +128,14 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
     [validRows]
   );
 
+  const missingRequirements = useMemo(() => {
+    const missing: string[] = [];
+    if (!flowerStartDate) missing.push('flower start date');
+    if (strainRows.some((row) => !row.strainId)) missing.push('stream');
+    if (strainRows.some((row) => !parseInt(row.plantCount, 10) || parseInt(row.plantCount, 10) < 1)) missing.push('plant count');
+    return [...new Set(missing)];
+  }, [flowerStartDate, strainRows]);
+
   // Auto-compute cohort-level dates from shared flower start + longest strain timing.
   const computedDates = useMemo(() => {
     if (!flowerStartDate || validRows.length === 0) return null;
@@ -141,9 +158,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
   }
 
   function addStrainRow() {
-    const used = new Set(strainRows.map((row) => row.strainId).filter(Boolean));
-    const nextStrain = activeStrains.find((strain) => !used.has(strain.strain_id));
-    setStrainRows((rows) => [...rows, makeRow(nextStrain?.strain_id ?? '', '')]);
+    setStrainRows((rows) => [...rows, makeRow('', '')]);
   }
 
   function removeStrainRow(rowId: string) {
@@ -239,68 +254,148 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md bg-cult-bg border border-cult-border rounded-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+      <div className="w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-cult-opaque-near-black border border-cult-border rounded-lg shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-cult-border" data-legacy-object="New Batch Group">
           <div>
             <h2 className="text-base font-bold text-cult-text-primary">
-              {editing ? 'Edit Planned Cycle' : 'New Batch Group'}
+              {editing ? 'Edit Cycle' : 'Plan Cycle'}
             </h2>
-            <p className="text-xs text-cult-text-muted mt-0.5">{room.room_name}</p>
+            <p className="text-xs text-cult-text-muted mt-0.5">
+              {room.room_name}
+              {room.capacity_plants ? ` · Room capacity: ${room.capacity_plants} plants` : ''}
+            </p>
           </div>
-          <button onClick={onClose} className="text-cult-text-muted hover:text-cult-text-primary transition-colors">
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded border border-transparent text-cult-text-muted hover:border-cult-border hover:text-cult-text-primary transition-colors"
+            aria-label="Close"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Strain rows */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-cult-text-secondary">
-                Batch Group Composition <span className="text-cult-stage-flower">*</span>
-              </label>
+        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+          <section className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cult-text-secondary">
+              <CalendarDays className="h-4 w-4 text-cult-accent" />
+              Timing
+            </div>
+            <label className="block text-sm font-medium text-cult-text-primary">
+              Flower Start Date <span className="text-cult-stage-flower">*</span>
+            </label>
+            <input
+              type="date"
+              value={flowerStartDate}
+              onChange={(e) => setFlowerStartDate(e.target.value)}
+              className="w-full bg-cult-opaque-black border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent [color-scheme:dark]"
+            />
+          </section>
+
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-cult-text-secondary">
+                <Sprout className="h-4 w-4 text-cult-accent" />
+                Planned plants
+              </div>
               {!editing && (
                 <button
                   type="button"
                   onClick={addStrainRow}
-                  className="flex items-center gap-1 text-[11px] text-cult-accent hover:text-cult-accent/80 transition-colors"
+                  aria-label="Add strain"
+                  className="flex items-center gap-1.5 rounded border border-cult-border px-2.5 py-1.5 text-xs text-cult-text-secondary hover:border-cult-accent hover:text-cult-accent transition-colors"
                 >
-                  <Plus className="w-3 h-3" />
-                  Add strain
+                  <Plus className="w-3.5 h-3.5" />
+                  Add stream
                 </button>
               )}
             </div>
-            <div className="space-y-2">
-              {strainRows.map((row, index) => (
-                <div key={row.rowId} className="grid grid-cols-[1fr_88px_24px] gap-2">
-                  <div className="min-w-0 space-y-2">
-                    <select
-                      value={row.strainId}
-                      onChange={(e) => updateRow(row.rowId, { strainId: e.target.value, motherBatchGroupId: '' })}
-                      disabled={!!editing}
-                      className="w-full min-w-0 bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary disabled:opacity-50 focus:outline-none focus:border-cult-accent"
-                      aria-label={`Strain ${index + 1}`}
-                    >
-                      <option value="">Select strain…</option>
-                      {activeStrains.map((s) => (
-                        <option key={s.strain_id} value={s.strain_id}>
-                          {s.strain_name}
-                          {s.flowering_time_days ? ` (${s.flowering_time_days}d flower)` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    {!editing && row.strainId && (
+
+            <div className="space-y-3">
+              {strainRows.map((row, index) => {
+                const usedByOtherRows = new Set(
+                  strainRows
+                    .filter((other) => other.rowId !== row.rowId)
+                    .map((other) => other.strainId)
+                    .filter(Boolean)
+                );
+                const selectedMotherGroups = row.strainId ? (motherGroupsByStrain.get(row.strainId) ?? []) : [];
+
+                return (
+                  <div key={row.rowId} className="rounded border border-cult-border bg-cult-opaque-graphite p-3">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_112px_32px]">
+                      <div className="min-w-0">
+                        <label className="mb-1 block text-[11px] font-semibold text-cult-text-muted">
+                          Stream / Strain <span className="text-cult-stage-flower">*</span>
+                        </label>
+                        <select
+                          value={row.strainId}
+                          onChange={(e) => updateRow(row.rowId, { strainId: e.target.value, motherBatchGroupId: '' })}
+                          disabled={!!editing}
+                          className="w-full min-w-0 bg-cult-opaque-black border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary disabled:opacity-50 focus:outline-none focus:border-cult-accent"
+                          aria-label={`Strain ${index + 1}`}
+                        >
+                          <option value="">Select stream…</option>
+                          {activeStrains.map((s) => (
+                            <option key={s.strain_id} value={s.strain_id} disabled={usedByOtherRows.has(s.strain_id)}>
+                              {s.strain_name}
+                              {s.flowering_time_days ? ` (${s.flowering_time_days}d flower)` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-cult-text-muted">
+                        Plants <span className="text-cult-stage-flower">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={row.plantCount}
+                        onChange={(e) => updateRow(row.rowId, { plantCount: e.target.value })}
+                        placeholder="Count"
+                        className="w-full bg-cult-opaque-black border border-cult-border rounded px-2 py-2 text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent"
+                        aria-label={`Plant count ${index + 1}`}
+                      />
+                    </div>
+
+                    {!editing && strainRows.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => removeStrainRow(row.rowId)}
+                        className="flex h-9 w-9 items-center justify-center justify-self-end rounded border border-cult-border text-cult-text-muted hover:text-cult-stage-flower transition-colors sm:mt-5 sm:w-8"
+                        aria-label={`Remove stream ${index + 1}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <span />
+                    )}
+                  </div>
+
+                  {!editing && (
+                    <div className="mt-2">
+                      <label className="mb-1 block text-[11px] font-semibold text-cult-text-muted">
+                        Mother source
+                      </label>
                       <select
                         value={row.motherBatchGroupId}
                         onChange={(e) => updateRow(row.rowId, { motherBatchGroupId: e.target.value })}
-                        className="w-full min-w-0 bg-cult-surface border border-cult-border rounded px-3 py-1.5 text-xs text-cult-text-primary focus:outline-none focus:border-cult-accent"
+                        disabled={!row.strainId || selectedMotherGroups.length === 0}
+                        className="w-full min-w-0 bg-cult-opaque-black border border-cult-border rounded px-3 py-1.5 text-xs text-cult-text-primary disabled:opacity-60 focus:outline-none focus:border-cult-accent"
                         aria-label={`Mother batch group ${index + 1}`}
                       >
-                        <option value="">No mother group selected</option>
-                        {(motherGroupsByStrain.get(row.strainId) ?? []).map((group) => (
+                        <option value="">
+                          {!row.strainId
+                            ? 'Select stream first'
+                            : selectedMotherGroups.length === 0
+                              ? 'No mother groups available'
+                              : 'No mother group selected (optional)'}
+                        </option>
+                        {selectedMotherGroups.map((group) => (
                           <option key={group.mother_batch_group_key} value={group.mother_batch_group_key}>
                             {(group.source_cycle_code || group.source_batch_number || group.room_code || 'Mother group')}
                             {' · '}
@@ -308,42 +403,23 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
                           </option>
                         ))}
                       </select>
-                    )}
-                  </div>
-                  <input
-                    type="number"
-                    min={1}
-                    value={row.plantCount}
-                    onChange={(e) => updateRow(row.rowId, { plantCount: e.target.value })}
-                    placeholder="Plants"
-                    className="self-start bg-cult-surface border border-cult-border rounded px-2 py-2 text-sm text-cult-text-primary placeholder:text-cult-text-muted focus:outline-none focus:border-cult-accent"
-                    aria-label={`Plant count ${index + 1}`}
-                  />
-                  {!editing && strainRows.length > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => removeStrainRow(row.rowId)}
-                      className="self-start flex items-center justify-center rounded border border-cult-border text-cult-text-muted hover:text-cult-stage-flower transition-colors h-9"
-                      aria-label={`Remove strain ${index + 1}`}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  ) : (
-                    <span />
+                    </div>
                   )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
             {room.capacity_plants && (
-              <p className="text-[11px] text-cult-text-muted mt-1">
+              <p className="text-[11px] text-cult-text-muted">
                 Room capacity: {room.capacity_plants} plants · Planned: {totalPlants} plants
               </p>
             )}
-          </div>
+          </section>
 
           {dataHonestyWarnings.length > 0 && (
             <div className="border border-cult-border bg-cult-surface/50 rounded p-3">
-              <p className="text-[11px] font-semibold text-cult-text-secondary uppercase tracking-wide mb-2">
+              <p className="flex items-center gap-2 text-[11px] font-semibold text-cult-text-secondary uppercase tracking-wide mb-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-cult-stage-flower" />
                 Data Honesty
               </p>
               <div className="space-y-1">
@@ -361,24 +437,12 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
             </div>
           )}
 
-          {/* Flower start date */}
-          <div>
-            <label className="block text-xs font-semibold text-cult-text-secondary mb-1.5">
-              Flower Start Date <span className="text-cult-stage-flower">*</span>
-            </label>
-            <input
-              type="date"
-              value={flowerStartDate}
-              onChange={(e) => setFlowerStartDate(e.target.value)}
-              className="w-full bg-cult-surface border border-cult-border rounded px-3 py-2 text-sm text-cult-text-primary focus:outline-none focus:border-cult-accent [color-scheme:dark]"
-            />
-          </div>
-
           {/* Computed dates (read-only) */}
           {computedDates && (
             <div className="bg-cult-surface/50 rounded p-3 space-y-2 border border-cult-border/50">
-              <p className="text-[11px] font-semibold text-cult-text-muted uppercase tracking-wide mb-2">
-                Computed Schedule
+              <p className="flex items-center gap-2 text-[11px] font-semibold text-cult-text-muted uppercase tracking-wide mb-2">
+                <CheckCircle2 className="h-3.5 w-3.5 text-cult-accent" />
+                Schedule check
               </p>
               <ComputedField label="Clone Cut" value={computedDates.cloneCut} />
               <ComputedField
@@ -404,7 +468,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex flex-col gap-3 border-t border-cult-border pt-4 sm:flex-row sm:items-center sm:justify-between">
             {editing ? (
               <button
                 type="button"
@@ -416,7 +480,11 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
                 Delete
               </button>
             ) : (
-              <span />
+              <p className="text-xs text-cult-text-muted">
+                {missingRequirements.length > 0
+                  ? `Required: ${missingRequirements.join(', ')}.`
+                  : `Ready to create ${totalPlants} plants for ${formatDate(flowerStartDate)}.`}
+              </p>
             )}
             <div className="flex gap-2">
               <button
@@ -429,10 +497,11 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], in
               <button
                 type="submit"
                 disabled={saving || !flowerStartDate || validRows.length !== strainRows.length}
+                aria-label={editing ? 'Save Changes' : 'Create Batch Group'}
                 className="px-4 py-1.5 text-sm bg-cult-accent text-cult-bg rounded font-semibold disabled:opacity-50 hover:bg-cult-accent/90 transition-colors flex items-center gap-1.5"
               >
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                {editing ? 'Save Changes' : 'Create Batch Group'}
+                {editing ? 'Save Changes' : 'Create Cycle'}
               </button>
             </div>
           </div>
@@ -453,9 +522,7 @@ function ComputedField({
   note?: string;
   highlight?: boolean;
 }) {
-  const formatted = value
-    ? new Date(value + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    : '—';
+  const formatted = formatDate(value);
   return (
     <div className="flex items-center justify-between text-xs">
       <span className={highlight ? 'text-cult-text-primary font-medium' : 'text-cult-text-muted'}>
