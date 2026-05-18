@@ -32,12 +32,24 @@ interface HarnessRunIndexEntry {
   }>;
 }
 
+interface BrowserHarnessReport {
+  generated: string;
+  url: string;
+  targetRoot: string;
+  results: Array<{
+    status: 'PASS' | 'WARN' | 'FAIL';
+    name: string;
+    detail: string;
+  }>;
+}
+
 const repoRoot = process.cwd();
 const demoRoot = path.resolve(repoRoot, '..', 'cultivo-worktrees', 'prod-planner-b');
 const sostanzaDemoRoot = process.env.SOSTANZA_DEMO_ROOT
   ? path.resolve(process.env.SOSTANZA_DEMO_ROOT)
   : path.resolve(repoRoot, '..', 'sostanza-demo');
 const reportPath = path.join(repoRoot, 'docs', 'harness', 'production-planner-latest.md');
+const browserReportPath = path.join(repoRoot, 'docs', 'harness', 'browser', 'sostanza-plan-cycle-browser-report.json');
 const runsDir = path.join(repoRoot, 'docs', 'harness', 'runs');
 const runIndexPath = path.join(runsDir, 'index.json');
 
@@ -99,6 +111,15 @@ function readGitChangedFiles(root: string): string[] {
       .sort();
   } catch {
     return [];
+  }
+}
+
+function readBrowserHarnessReport(): BrowserHarnessReport | null {
+  if (!existsSync(browserReportPath)) return null;
+  try {
+    return JSON.parse(readFileSync(browserReportPath, 'utf8')) as BrowserHarnessReport;
+  } catch {
+    return null;
   }
 }
 
@@ -455,7 +476,40 @@ const parityChecks: Check[] = [
   },
 ];
 
-const allChecks = [...targetCoverageChecks, ...fileChecks, ...designChecks, ...intuitiveDesignChecks, ...dataChecks, ...parityChecks];
+const browserHarnessReport = readBrowserHarnessReport();
+const browserFlowChecks: Check[] = browserHarnessReport
+  ? [
+    {
+      status: 'pass',
+      title: 'Sostanza Plan a Cycle browser report is loaded',
+      detail: `The latest browser harness report was generated at ${browserHarnessReport.generated} against ${browserHarnessReport.url}.`,
+      evidence: browserReportPath,
+    },
+    ...browserHarnessReport.results.map((result): Check => ({
+      status: result.status === 'PASS' ? 'pass' : result.status === 'WARN' ? 'warn' : 'fail',
+      title: result.name,
+      detail: result.detail || 'Browser flow check completed without additional notes.',
+      evidence: browserReportPath,
+    })),
+  ]
+  : [
+    {
+      status: 'warn',
+      title: 'Sostanza Plan a Cycle browser report is available',
+      detail: 'Run `npm run harness:planner:browser` to exercise the stakeholder Plan a Cycle UI and feed browser-flow evidence into this harness.',
+      evidence: browserReportPath,
+    },
+  ];
+
+const allChecks = [
+  ...targetCoverageChecks,
+  ...fileChecks,
+  ...designChecks,
+  ...intuitiveDesignChecks,
+  ...browserFlowChecks,
+  ...dataChecks,
+  ...parityChecks,
+];
 const failCount = allChecks.filter((c) => c.status === 'fail').length;
 const warnCount = allChecks.filter((c) => c.status === 'warn').length;
 const passCount = allChecks.filter((c) => c.status === 'pass').length;
@@ -465,6 +519,7 @@ const runReportPath = path.join(runsDir, `${runId}-production-planner.md`);
 const hasDesignProblems = designChecks.some((check) => check.status !== 'pass');
 const hasIntuitiveDesignProblems = intuitiveDesignChecks.some((check) => check.status !== 'pass');
 const hasTargetProblems = targetCoverageChecks.some((check) => check.status !== 'pass');
+const hasBrowserFlowProblems = browserFlowChecks.some((check) => check.status !== 'pass');
 const hasParityProblems = parityChecks.some((check) => check.status !== 'pass');
 const hasDataProblems = dataChecks.some((check) => check.status !== 'pass');
 const summaryBullets = [
@@ -485,6 +540,9 @@ const summaryBullets = [
   hasIntuitiveDesignProblems
     ? '- Intuitive-design checks still have warnings; inspect action hierarchy and navigation affordance before polishing further.'
     : '- Intuitive-design checks currently pass for the planner harness scope.',
+  hasBrowserFlowProblems
+    ? '- Browser-flow checks need attention; run the Plan a Cycle browser harness before treating stakeholder-demo UX as proven.'
+    : '- Browser-flow checks currently pass for the Sostanza Plan a Cycle stakeholder path.',
 ];
 
 function renderChecks(title: string, checks: Check[]): string {
@@ -527,6 +585,7 @@ const report = [
   renderChecks('File Coverage', fileChecks),
   renderChecks('Design Contract', designChecks),
   renderChecks('UX / Intuitive Design', intuitiveDesignChecks),
+  renderChecks('Browser Flow', browserFlowChecks),
   renderChecks('Data Contract', dataChecks),
   renderChecks('Demo-To-Live Parity', parityChecks),
   '## How To Use This',
@@ -552,6 +611,7 @@ const groupedChecks = [
   ...fileChecks.map((check) => ({ ...check, group: 'File Coverage' })),
   ...designChecks.map((check) => ({ ...check, group: 'Design Contract' })),
   ...intuitiveDesignChecks.map((check) => ({ ...check, group: 'UX / Intuitive Design' })),
+  ...browserFlowChecks.map((check) => ({ ...check, group: 'Browser Flow' })),
   ...dataChecks.map((check) => ({ ...check, group: 'Data Contract' })),
   ...parityChecks.map((check) => ({ ...check, group: 'Demo-To-Live Parity' })),
 ];

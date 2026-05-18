@@ -1,0 +1,162 @@
+{
+  "generated": "2026-05-18T22:40:32.501Z",
+  "url": "http://127.0.0.1:5177/?demo=sostanza#",
+  "targetRoot": "/Users/justinmorrow/Desktop/Claude/sostanza-demo",
+  "results": [
+    {
+      "status": "PASS",
+      "name": "Sostanza stakeholder demo opens with planner actions",
+      "detail": "1 top action, 6 gap cards"
+    },
+    {
+      "status": "PASS",
+      "name": "Clone shortfall blocks create with recovery actions",
+      "detail": "RESOLVE BEFORE CREATE Singapore Sling 458 UNCOVERED CUTS USE OUTSIDE CLONES REDUCE TO 200 MOM CUTS PICK MOMS"
+    },
+    {
+      "status": "PASS",
+      "name": "Clone recovery enables create",
+      "detail": "READY TO CREATE BATCH GROUP."
+    },
+    {
+      "status": "PASS",
+      "name": "Veg overload is a soft warning with auto recovery",
+      "detail": "VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 25, 2026. USE AUTO · VEG-02"
+    },
+    {
+      "status": "PASS",
+      "name": "Flower capacity block has guided recovery actions",
+      "detail": "FLOWER CAPACITY BLOCK FLW-01 HOLDS 252 PLANTS; THIS PLAN HAS 420 Resolve the plant count or move to a room that fits before creating the batch group. REDUCE TO 252 PLANTS USE FLW-06"
+    },
+    {
+      "status": "PASS",
+      "name": "Flower capacity recovery paths clear the block",
+      "detail": "Reduce-to-cap and use-room recovery both cleared the flower capacity block."
+    },
+    {
+      "status": "PASS",
+      "name": "Finalize shows fixed confirmation banner",
+      "detail": "FINALIZED · 1-STRAIN BATCH GROUP · 420 PLANTS planned into FLW-06 ADDED TO PLANNING VIEW · CLIENT ONLY ×"
+    },
+    {
+      "status": "PASS",
+      "name": "Mobile warning layouts stay inside viewport",
+      "detail": "warning width 336px inside 390px viewport"
+    },
+    {
+      "status": "PASS",
+      "name": "No browser console errors",
+      "detail": ""
+    }
+  ],
+  "consoleEvents": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    }
+  ]
+}
