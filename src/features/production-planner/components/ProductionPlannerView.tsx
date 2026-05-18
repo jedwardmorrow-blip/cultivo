@@ -347,8 +347,8 @@ export function ProductionPlannerView() {
   return (
     <div className={`flex min-h-0 flex-col h-full font-sans ${viewMode === 'planning' ? 'pb-16' : ''}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 px-4 py-3 border-b border-cult-border sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+        <div className="flex min-w-0 items-center gap-3">
           <Calendar className="w-5 h-5 text-cult-accent" />
           <h1 className="text-xl font-bold text-cult-text-primary">Production Planner</h1>
           <span className="text-sm text-cult-text-muted">
@@ -356,20 +356,20 @@ export function ProductionPlannerView() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
           <button
             type="button"
             onClick={handlePlanCycleClick}
             disabled={!defaultPlanRoom}
-            className="inline-flex items-center gap-1.5 border border-cult-accent bg-cult-accent px-3 py-1.5 text-xs font-bold text-cult-bg transition-colors hover:bg-cult-accent/90 disabled:cursor-not-allowed disabled:border-cult-border disabled:bg-cult-surface disabled:text-cult-text-muted"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border border-cult-accent bg-cult-accent px-3 py-1.5 text-xs font-bold text-cult-bg transition-colors hover:bg-cult-accent/90 disabled:cursor-not-allowed disabled:border-cult-border disabled:bg-cult-surface disabled:text-cult-text-muted"
             title={defaultPlanRoom ? `Plan cycle in ${defaultPlanRoom.room_code}` : 'No grow room available to plan'}
           >
             <Plus className="h-3.5 w-3.5" />
-            Plan Cycle
+            Plan a Cycle
           </button>
 
           {/* View mode toggle */}
-          <div className="flex items-center gap-1 bg-cult-surface border border-cult-border rounded p-1">
+          <div className="flex shrink-0 items-center gap-1 bg-cult-surface border border-cult-border rounded p-1">
             <button
               onClick={() => setViewMode('current')}
               className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
@@ -396,11 +396,28 @@ export function ProductionPlannerView() {
 
       {/* Planning mode banner */}
       {viewMode === 'planning' && (
-        <div className="flex items-center gap-2 px-6 py-2 bg-cult-surface border-b border-cult-border text-xs text-cult-text-secondary">
-          <div className="w-3 h-3 rounded-sm border border-dashed border-cult-accent bg-cult-accent/20 flex-shrink-0" />
-          <span>
-            Planning Mode · 26-week horizon · add with + · edit planned bars
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2 bg-cult-surface border-b border-cult-border text-xs text-cult-text-secondary">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="w-3 h-3 rounded-sm border border-dashed border-cult-accent bg-cult-accent/20 flex-shrink-0" />
+            <span className="truncate">
+              Planning Mode · 26-week horizon · select a room, use row PLAN controls, or start here
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handlePlanCycleClick}
+            disabled={!defaultPlanRoom}
+            className="inline-flex items-center gap-1.5 whitespace-nowrap border border-cult-accent/70 bg-cult-accent/15 px-2.5 py-1 text-[11px] font-bold text-cult-accent transition-colors hover:bg-cult-accent hover:text-cult-bg disabled:cursor-not-allowed disabled:border-cult-border disabled:bg-cult-surface disabled:text-cult-text-muted"
+            title={defaultPlanRoom ? `Plan cycle in ${defaultPlanRoom.room_code}` : 'No grow room available to plan'}
+          >
+            <Plus className="h-3 w-3" />
+            Plan a Cycle
+            {defaultPlanRoom && (
+              <span className="font-medium text-current/70">
+                {defaultPlanRoom.room_code}
+              </span>
+            )}
+          </button>
         </div>
       )}
 
