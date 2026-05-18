@@ -7,6 +7,7 @@ interface PlannedCycleFormProps {
   room: CalendarRoom;
   strainStats: StrainCultivationStats[];
   motherBatchGroups?: MotherBatchGroupRow[];
+  initialFlowerStartDate?: string | null;
   /** If provided, we are editing an existing cycle */
   editing?: CalendarPlannedEntry | null;
   onSave: () => void;
@@ -60,7 +61,7 @@ function confidenceWarnings(strains: StrainCultivationStats[]): string[] {
   });
 }
 
-export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], editing, onSave, onClose }: PlannedCycleFormProps) {
+export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], initialFlowerStartDate, editing, onSave, onClose }: PlannedCycleFormProps) {
   const activeStrains = useMemo(
     () => strainStats.filter((s) => s.is_active).sort((a, b) => a.strain_name.localeCompare(b.strain_name)),
     [strainStats]
@@ -69,7 +70,7 @@ export function PlannedCycleForm({ room, strainStats, motherBatchGroups = [], ed
   const [strainRows, setStrainRows] = useState<CohortStrainRow[]>(() => [
     makeRow(editing?.strain_id ?? (activeStrains[0]?.strain_id ?? ''), editing?.planned_plant_count?.toString() ?? ''),
   ]);
-  const [flowerStartDate, setFlowerStartDate] = useState(toInputDate(editing?.flower_start_date ?? ''));
+  const [flowerStartDate, setFlowerStartDate] = useState(toInputDate(editing?.flower_start_date ?? initialFlowerStartDate ?? ''));
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);

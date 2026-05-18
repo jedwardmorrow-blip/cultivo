@@ -18,6 +18,9 @@ const ROW_HEIGHT = 48;
 const LABEL_WIDTH = 120;
 const HEADER_HEIGHT = 52;
 const WEEKS_BEFORE = 4;
+const DEFAULT_FLOWER_DAYS = 63;
+const TURNOVER_DAYS = 3;
+const MAX_GAP_SUGGESTIONS = 6;
 
 function getMonday(d: Date): Date {
   const day = d.getDay();
@@ -31,6 +34,22 @@ function daysBetween(a: Date, b: Date): number {
 
 function formatShortDate(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function startOfDay(d: Date): Date {
+  const next = new Date(d);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function addDaysDate(d: Date, days: number): Date {
+  const next = new Date(d);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function toISODate(d: Date): string {
+  return d.toISOString().slice(0, 10);
 }
 
 interface WeekMarker {
@@ -52,6 +71,15 @@ interface CohortRenderBar {
   isSynthetic: boolean;
   isQuarantined: boolean;
   strains: CalendarRoomStrain[];
+}
+
+interface FlowerGapSuggestion {
+  key: string;
+  room: CalendarRoom;
+  start: Date;
+  end: Date;
+  days: number;
+  source: 'open' | 'between' | 'after';
 }
 
 function buildCohortBars(room: CalendarRoom): CohortRenderBar[] {
@@ -95,6 +123,72 @@ function buildCohortBars(room: CalendarRoom): CohortRenderBar[] {
   return Array.from(groups.values()).sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
 }
 
+function findFlowerCycleGaps(rooms: CalendarRoom[], today: Date, horizonEnd: Date): FlowerGapSuggestion[] {
+  const earliestStart = startOfDay(today);
+  const latestEnd = startOfDay(horizonEnd);
+  const suggestions: FlowerGapSuggestion[] = [];
+
+  for (const room of rooms) {
+    if (room.room_type !== 'flower') continue;
+
+    const intervals = [
+      ...buildCohortBars(room).map((cohort) => ({
+        start: startOfDay(cohort.startDate),
+        end: startOfDay(cohort.endDate),
+      })),
+      ...(room.plannedCycles ?? []).map((plan) => ({
+        start: startOfDay(new Date(plan.flower_start_date)),
+        end: startOfDay(new Date(plan.estimated_harvest_date)),
+      })),
+    ]
+      .filter((interval) => interval.end >= earliestStart && interval.start <= latestEnd)
+      .map((interval) => ({
+        start: interval.start < earliestStart ? earliestStart : interval.start,
+        end: interval.end > latestEnd ? latestEnd : interval.end,
+      }))
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    let cursor = earliestStart;
+    let gapIndex = 0;
+
+    for (const interval of intervals) {
+      const gapStart = cursor;
+      const gapEnd = addDaysDate(interval.start, -TURNOVER_DAYS);
+      const gapDays = daysBetween(gapStart, gapEnd);
+      if (gapDays >= DEFAULT_FLOWER_DAYS) {
+        suggestions.push({
+          key: `${room.room_id}-${gapIndex}`,
+          room,
+          start: gapStart,
+          end: gapEnd,
+          days: gapDays,
+          source: cursor.getTime() === earliestStart.getTime() ? 'open' : 'between',
+        });
+        gapIndex++;
+      }
+
+      const nextCursor = addDaysDate(interval.end, TURNOVER_DAYS);
+      if (nextCursor > cursor) cursor = nextCursor;
+    }
+
+    const finalGapDays = daysBetween(cursor, latestEnd);
+    if (finalGapDays >= DEFAULT_FLOWER_DAYS) {
+      suggestions.push({
+        key: `${room.room_id}-${gapIndex}`,
+        room,
+        start: cursor,
+        end: latestEnd,
+        days: finalGapDays,
+        source: intervals.length === 0 ? 'open' : 'after',
+      });
+    }
+  }
+
+  return suggestions
+    .sort((a, b) => a.start.getTime() - b.start.getTime() || b.days - a.days || a.room.room_code.localeCompare(b.room.room_code))
+    .slice(0, MAX_GAP_SUGGESTIONS);
+}
+
 export function ProductionPlannerView() {
   const {
     rooms,
@@ -114,9 +208,22 @@ export function ProductionPlannerView() {
   const [selectedStrain, setSelectedStrain] = useState<StrainCultivationStats | null>(null);
   const [planFormRoom, setPlanFormRoom] = useState<CalendarRoom | null>(null);
   const [editingCycle, setEditingCycle] = useState<CalendarPlannedEntry | null>(null);
+  const [planFormFlowerStart, setPlanFormFlowerStart] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const weeksAfter = viewMode === 'planning' ? WEEKS_AFTER_PLANNING : WEEKS_AFTER_CURRENT;
+  const defaultPlanRoom = useMemo(() => {
+    if (selectedRoom && selectedRoom.room_type !== 'mother') return selectedRoom;
+
+    const flowerRooms = rooms.filter((room) => room.room_type === 'flower');
+    return (
+      flowerRooms.find((room) => room.total_plants === 0) ??
+      flowerRooms[0] ??
+      rooms.find((room) => room.room_type !== 'mother') ??
+      rooms[0] ??
+      null
+    );
+  }, [rooms, selectedRoom]);
 
   const today = useMemo(() => new Date(), []);
   const startDate = useMemo(() => {
@@ -126,8 +233,13 @@ export function ProductionPlannerView() {
   }, [today]);
   const totalDays = (WEEKS_BEFORE + weeksAfter) * 7;
   const totalWidth = totalDays * DAY_WIDTH;
+  const horizonEnd = useMemo(() => addDaysDate(startDate, totalDays), [startDate, totalDays]);
 
   const todayX = daysBetween(startDate, today) * DAY_WIDTH;
+  const flowerGaps = useMemo(
+    () => findFlowerCycleGaps(rooms, today, horizonEnd),
+    [horizonEnd, rooms, today]
+  );
 
   const weeks = useMemo<WeekMarker[]>(() => {
     const result: WeekMarker[] = [];
@@ -170,10 +282,21 @@ export function ProductionPlannerView() {
     }
   }
 
+  function openPlanForm(room: CalendarRoom | null, flowerStartDate?: string | null) {
+    if (!room) return;
+    setViewMode('planning');
+    setEditingCycle(null);
+    setPlanFormFlowerStart(flowerStartDate ?? null);
+    setPlanFormRoom(room);
+  }
+
+  function handlePlanCycleClick() {
+    openPlanForm(defaultPlanRoom);
+  }
+
   function handleAddPlan(room: CalendarRoom, e: React.MouseEvent) {
     e.stopPropagation();
-    setEditingCycle(null);
-    setPlanFormRoom(room);
+    openPlanForm(room);
   }
 
   function handleBarClick(entry: CalendarPlannedEntry) {
@@ -183,6 +306,7 @@ export function ProductionPlannerView() {
     );
     if (ownerRoom) {
       setEditingCycle(entry);
+      setPlanFormFlowerStart(null);
       setPlanFormRoom(ownerRoom);
     }
   }
@@ -190,6 +314,7 @@ export function ProductionPlannerView() {
   function handleFormSave() {
     setPlanFormRoom(null);
     setEditingCycle(null);
+    setPlanFormFlowerStart(null);
     reloadPlanned();
   }
 
@@ -220,7 +345,7 @@ export function ProductionPlannerView() {
   ) : null;
 
   return (
-    <div className="flex flex-col h-full font-sans">
+    <div className={`flex min-h-0 flex-col h-full font-sans ${viewMode === 'planning' ? 'pb-16' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-cult-border">
         <div className="flex items-center gap-3">
@@ -231,28 +356,41 @@ export function ProductionPlannerView() {
           </span>
         </div>
 
-        {/* View mode toggle */}
-        <div className="flex items-center gap-1 bg-cult-surface border border-cult-border rounded p-1">
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setViewMode('current')}
-            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
-              viewMode === 'current'
-                ? 'bg-cult-accent text-cult-bg'
-                : 'text-cult-text-muted hover:text-cult-text-primary'
-            }`}
+            type="button"
+            onClick={handlePlanCycleClick}
+            disabled={!defaultPlanRoom}
+            className="inline-flex items-center gap-1.5 border border-cult-accent bg-cult-accent px-3 py-1.5 text-xs font-bold text-cult-bg transition-colors hover:bg-cult-accent/90 disabled:cursor-not-allowed disabled:border-cult-border disabled:bg-cult-surface disabled:text-cult-text-muted"
+            title={defaultPlanRoom ? `Plan cycle in ${defaultPlanRoom.room_code}` : 'No grow room available to plan'}
           >
-            Current State
+            <Plus className="h-3.5 w-3.5" />
+            Plan Cycle
           </button>
-          <button
-            onClick={() => setViewMode('planning')}
-            className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
-              viewMode === 'planning'
-                ? 'bg-cult-accent text-cult-bg'
-                : 'text-cult-text-muted hover:text-cult-text-primary'
-            }`}
-          >
-            Planning Mode
-          </button>
+
+          {/* View mode toggle */}
+          <div className="flex items-center gap-1 bg-cult-surface border border-cult-border rounded p-1">
+            <button
+              onClick={() => setViewMode('current')}
+              className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+                viewMode === 'current'
+                  ? 'bg-cult-accent text-cult-bg'
+                  : 'text-cult-text-muted hover:text-cult-text-primary'
+              }`}
+            >
+              Current State
+            </button>
+            <button
+              onClick={() => setViewMode('planning')}
+              className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+                viewMode === 'planning'
+                  ? 'bg-cult-accent text-cult-bg'
+                  : 'text-cult-text-muted hover:text-cult-text-primary'
+              }`}
+            >
+              Planning Mode
+            </button>
+          </div>
         </div>
       </div>
 
@@ -290,7 +428,7 @@ export function ProductionPlannerView() {
       )}
 
       {/* Main content: calendar + optional panel */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Calendar */}
         <div className="flex-1 overflow-hidden flex flex-col">
           <div ref={scrollRef} className="flex-1 overflow-x-auto overflow-y-auto">
@@ -344,10 +482,12 @@ export function ProductionPlannerView() {
                       {viewMode === 'planning' && (
                         <button
                           onClick={(e) => handleAddPlan(room, e)}
-                          className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded bg-cult-accent/20 hover:bg-cult-accent text-cult-accent hover:text-cult-bg transition-colors"
+                          className="flex-shrink-0 inline-flex h-6 items-center gap-1 border border-cult-accent/50 bg-cult-accent/15 px-1.5 text-[10px] font-bold uppercase text-cult-accent transition-colors hover:bg-cult-accent hover:text-cult-bg"
                           title={`Add planned cycle to ${room.room_name}`}
+                          aria-label={`Plan cycle in ${room.room_name}`}
                         >
                           <Plus className="w-3 h-3" />
+                          Plan
                         </button>
                       )}
                     </div>
@@ -373,9 +513,10 @@ export function ProductionPlannerView() {
                         ].filter(Boolean);
 
                         return (
-                          <div
+                          <button
+                            type="button"
                             key={cohort.key}
-                            className="absolute rounded-sm opacity-85 hover:opacity-100 transition-opacity overflow-hidden"
+                            className="absolute cursor-pointer rounded-sm opacity-85 hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-cult-accent focus:ring-offset-1 focus:ring-offset-cult-bg transition-opacity overflow-hidden"
                             style={{
                               left: Math.max(barStart, 0),
                               top: barY,
@@ -389,13 +530,19 @@ export function ProductionPlannerView() {
                                   : undefined,
                             }}
                             title={titleParts.join(' · ')}
+                            aria-label={`Open ${cohort.label} cohort details`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleRoomClick(room);
+                            }}
                           >
+                            <span className="absolute left-0 top-0 h-full w-1 bg-cult-bg/70" aria-hidden="true" />
                             {cohort.strainCount > 1 && barWidth >= 42 && (
                               <span className="absolute right-1 top-0 text-[8px] leading-[11px] font-mono font-bold text-cult-bg/90">
                                 {cohort.strainCount}S
                               </span>
                             )}
-                          </div>
+                          </button>
                         );
                       })}
 
@@ -434,8 +581,16 @@ export function ProductionPlannerView() {
         )}
       </div>
 
-      {/* Forecast summary bottom panel (planning mode only) */}
-      {viewMode === 'planning' && <ForecastSummaryPanel />}
+      {/* Bottom planning panels */}
+      {viewMode === 'planning' && (
+        <>
+          <FlowerCycleGapsPanel
+            gaps={flowerGaps}
+            onPlan={(gap) => openPlanForm(gap.room, toISODate(gap.start))}
+          />
+          <ForecastSummaryPanel />
+        </>
+      )}
 
       {/* Planned cycle form modal */}
       {planFormRoom && (
@@ -443,9 +598,10 @@ export function ProductionPlannerView() {
           room={planFormRoom}
           strainStats={strainStats}
           motherBatchGroups={motherBatchGroups}
+          initialFlowerStartDate={planFormFlowerStart}
           editing={editingCycle}
           onSave={handleFormSave}
-          onClose={() => { setPlanFormRoom(null); setEditingCycle(null); }}
+          onClose={() => { setPlanFormRoom(null); setEditingCycle(null); setPlanFormFlowerStart(null); }}
         />
       )}
     </div>
@@ -489,6 +645,52 @@ function MotherBatchGroupSummary({ groups }: { groups: MotherBatchGroupRow[] }) 
             </span>
           </span>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function FlowerCycleGapsPanel({
+  gaps,
+  onPlan,
+}: {
+  gaps: FlowerGapSuggestion[];
+  onPlan: (gap: FlowerGapSuggestion) => void;
+}) {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-cult-border bg-cult-bg px-6 py-2 shadow-2xl flex-shrink-0">
+      <div className="flex items-center gap-3 overflow-x-auto">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Calendar className="w-3.5 h-3.5 text-cult-accent" />
+          <span className="text-xs font-semibold text-cult-text-primary">Flower Cycle Gaps</span>
+          <span className="text-[11px] text-cult-text-muted">{gaps.length} fit</span>
+        </div>
+
+        {gaps.length === 0 ? (
+          <span className="text-[11px] text-cult-text-muted whitespace-nowrap">
+            No {DEFAULT_FLOWER_DAYS}d flower windows in horizon
+          </span>
+        ) : (
+          <div className="flex items-center gap-2 min-w-0">
+            {gaps.map((gap) => (
+              <button
+                key={gap.key}
+                type="button"
+                onClick={() => onPlan(gap)}
+                className="flex-shrink-0 border border-cult-border bg-cult-surface px-2.5 py-1 text-left transition-colors hover:border-cult-accent hover:bg-cult-surface-raised focus:outline-none focus:ring-2 focus:ring-cult-accent focus:ring-offset-1 focus:ring-offset-cult-bg"
+                title={`Plan a flower cycle in ${gap.room.room_name} from ${formatShortDate(gap.start)} to ${formatShortDate(gap.end)}`}
+              >
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-cult-text-primary">
+                  {gap.room.room_code}
+                  <span className="text-cult-accent">{gap.days}d</span>
+                </span>
+                <span className="block text-[10px] text-cult-text-muted">
+                  {formatShortDate(gap.start)} to {formatShortDate(gap.end)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
