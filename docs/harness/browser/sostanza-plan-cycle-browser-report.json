@@ -1,6 +1,6 @@
 {
-  "generated": "2026-05-18T22:40:32.501Z",
-  "url": "http://127.0.0.1:5177/?demo=sostanza#",
+  "generated": "2026-05-19T16:42:25.592Z",
+  "url": "http://127.0.0.1:5181/?demo=sostanza#",
   "targetRoot": "/Users/justinmorrow/Desktop/Claude/sostanza-demo",
   "results": [
     {
@@ -10,8 +10,8 @@
     },
     {
       "status": "PASS",
-      "name": "Clone shortfall blocks create with recovery actions",
-      "detail": "RESOLVE BEFORE CREATE Singapore Sling 458 UNCOVERED CUTS USE OUTSIDE CLONES REDUCE TO 200 MOM CUTS PICK MOMS"
+      "name": "Clone shortfall warns without blocking create",
+      "detail": "CREATE WITH SOURCE WARNING → · 458 CLONE CUTS ARE STILL OPEN. YOU CAN CREATE THE PLAN WITH THIS WARNING OR RESOLVE SOURCE COVERAGE ABOVE."
     },
     {
       "status": "PASS",
@@ -21,7 +21,7 @@
     {
       "status": "PASS",
       "name": "Veg overload is a soft warning with auto recovery",
-      "detail": "VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 25, 2026. USE AUTO · VEG-02"
+      "detail": "VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 26, 2026. USE AUTO · VEG-02"
     },
     {
       "status": "PASS",

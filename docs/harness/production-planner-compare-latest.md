@@ -1,12 +1,12 @@
 # Production Planner Harness Compare
 
-Generated: 2026-05-18T22:56:28.372Z
+Generated: 2026-05-19T16:42:38.429Z
 
 ## Compared Runs
 
-Previous: 2026-05-18T22:40:36.683Z (99%, 50 pass, 1 warn, 0 fail)
+Previous: 2026-05-19T16:39:17.240Z (99%, 50 pass, 1 warn, 0 fail)
 
-Current: 2026-05-18T22:56:27.957Z (99%, 50 pass, 1 warn, 0 fail)
+Current: 2026-05-19T16:42:32.557Z (99%, 50 pass, 1 warn, 0 fail)
 
 Score delta: +0
 
@@ -24,11 +24,11 @@ Score delta: +0
 
 ## Added Checks
 
-- No checks were added.
+- Browser Flow: Clone shortfall warns without blocking create (PASS)
 
 ## Removed Checks
 
-- No checks were removed.
+- Browser Flow: Clone shortfall blocks create with recovery actions (PASS)
 
 ## Session-Close Prompt
 

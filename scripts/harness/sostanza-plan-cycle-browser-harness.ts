@@ -143,7 +143,7 @@ async function main() {
       return `${topActionCount} top action, ${gapCardCount} gap cards`;
     });
 
-    await runCheck('Clone shortfall blocks create with recovery actions', async () => {
+    await runCheck('Clone shortfall warns without blocking create', async () => {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
@@ -151,14 +151,18 @@ async function main() {
       const primary = page.locator('.plan-form button.plan-form-btn.primary').first();
       const disabled = await primary.isDisabled();
       const buttonText = normalizeText(await primary.innerText());
+      const guidance = normalizeText(await page.locator('#plan-form-finalize-guidance').innerText());
       const resolveText = normalizeText(await page.locator('.mother-coverage-resolve').innerText());
-      if (!disabled) throw new Error('Create button was enabled with uncovered clone cuts.');
-      if (!/Resolve \d+ Cuts First/i.test(buttonText)) throw new Error(`Unexpected create button text: ${buttonText}`);
+      if (disabled) throw new Error('Create button was disabled for uncovered clone cuts.');
+      if (!/Create With Source Warning/i.test(buttonText)) throw new Error(`Unexpected create button text: ${buttonText}`);
+      if (!/clone cuts are still open/i.test(guidance) || !/resolve source coverage above/i.test(guidance)) {
+        throw new Error(`Source warning guidance missing: ${guidance}`);
+      }
       if (!/Use outside clones/i.test(resolveText) || !/Reduce to 200 mom cuts/i.test(resolveText) || !/Pick moms/i.test(resolveText)) {
         throw new Error(`Recovery actions missing: ${resolveText}`);
       }
       await page.close();
-      return resolveText;
+      return `${buttonText} · ${guidance}`;
     });
 
     await runCheck('Clone recovery enables create', async () => {

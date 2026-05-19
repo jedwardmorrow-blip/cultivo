@@ -1,6 +1,6 @@
 # Production Planner Harness Report
 
-Generated: 2026-05-18T22:56:27.957Z
+Generated: 2026-05-19T16:42:32.557Z
 
 Purpose: keep the Sostanza demo, live Cultivo planner, and Cultivo design/data contracts honest before planner work starts or ships.
 
@@ -49,7 +49,7 @@ Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/.vercel/project.json; /Use
 
 No Cultivo-only planner source changes are currently in flight, or the standalone Sostanza demo has matching planner work.
 
-Evidence: `cultivo changed: none; sostanza changed: none`
+Evidence: `cultivo changed: none; sostanza changed: src/features/lab/production-planner/LabPlanCohortForm.tsx, src/features/lab/production-planner/lab-tokens.css`
 
 ### PASS - Both demo targets are first-class harness inputs
 
@@ -217,7 +217,7 @@ Evidence: `src/features/production-planner/components/ProductionPlannerView.tsx`
 
 ### PASS - Sostanza Plan a Cycle browser report is loaded
 
-The latest browser harness report was generated at 2026-05-18T22:40:32.501Z against http://127.0.0.1:5177/?demo=sostanza#.
+The latest browser harness report was generated at 2026-05-19T16:42:25.592Z against http://127.0.0.1:5181/?demo=sostanza#.
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
@@ -227,9 +227,9 @@ Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sosta
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
-### PASS - Clone shortfall blocks create with recovery actions
+### PASS - Clone shortfall warns without blocking create
 
-RESOLVE BEFORE CREATE Singapore Sling 458 UNCOVERED CUTS USE OUTSIDE CLONES REDUCE TO 200 MOM CUTS PICK MOMS
+CREATE WITH SOURCE WARNING → · 458 CLONE CUTS ARE STILL OPEN. YOU CAN CREATE THE PLAN WITH THIS WARNING OR RESOLVE SOURCE COVERAGE ABOVE.
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
@@ -241,7 +241,7 @@ Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sosta
 
 ### PASS - Veg overload is a soft warning with auto recovery
 
-VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 25, 2026. USE AUTO · VEG-02
+VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 26, 2026. USE AUTO · VEG-02
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
