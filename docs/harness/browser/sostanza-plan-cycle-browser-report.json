@@ -1,6 +1,6 @@
 {
-  "generated": "2026-05-19T16:42:25.592Z",
-  "url": "http://127.0.0.1:5181/?demo=sostanza#",
+  "generated": "2026-05-20T13:45:15.994Z",
+  "url": "http://127.0.0.1:5184/?demo=sostanza#",
   "targetRoot": "/Users/justinmorrow/Desktop/Claude/sostanza-demo",
   "results": [
     {
@@ -10,18 +10,23 @@
     },
     {
       "status": "PASS",
+      "name": "Recommended multi-strain mix opens ready to create",
+      "detail": "RECOMMENDED MIX 5-strain mix · 84 plants per strain · FLW-06 capacity plan Next: review forecast and create the batch group."
+    },
+    {
+      "status": "PASS",
       "name": "Clone shortfall warns without blocking create",
-      "detail": "CREATE WITH SOURCE WARNING → · 458 CLONE CUTS ARE STILL OPEN. YOU CAN CREATE THE PLAN WITH THIS WARNING OR RESOLVE SOURCE COVERAGE ABOVE."
+      "detail": "CREATE WITH SOURCE WARNING → · 883 clone cuts are still open. You can create the plan with this warning or resolve source coverage above."
     },
     {
       "status": "PASS",
       "name": "Clone recovery enables create",
-      "detail": "READY TO CREATE BATCH GROUP."
+      "detail": "Ready to create batch group."
     },
     {
       "status": "PASS",
       "name": "Veg overload is a soft warning with auto recovery",
-      "detail": "VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 26, 2026. USE AUTO · VEG-02"
+      "detail": "VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 27, 2026. USE AUTO · VEG-02"
     },
     {
       "status": "PASS",
@@ -36,7 +41,7 @@
     {
       "status": "PASS",
       "name": "Finalize shows fixed confirmation banner",
-      "detail": "FINALIZED · 1-STRAIN BATCH GROUP · 420 PLANTS planned into FLW-06 ADDED TO PLANNING VIEW · CLIENT ONLY ×"
+      "detail": "FINALIZED · 5-STRAIN BATCH GROUP · 420 PLANTS planned into FLW-06 ADDED TO PLANNING VIEW · CLIENT ONLY ×"
     },
     {
       "status": "PASS",
@@ -50,6 +55,18 @@
     }
   ],
   "consoleEvents": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
     {
       "type": "debug",
       "text": "[vite] connecting..."

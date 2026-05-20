@@ -93,23 +93,22 @@ async function openGapPlan(page: Page) {
   await page.locator('.plan-form[role="dialog"]').waitFor({ timeout: 8_000 });
 }
 
-async function selectSingaporeSling(page: Page) {
-  await page.locator('select[aria-label="Select strain for row 1"]').selectOption('s-ssl');
+async function forceCloneShortfall(page: Page) {
+  await page.locator('.cohort-strain-cuts-input').first().fill('999');
   await page.waitForTimeout(500);
 }
 
 async function resolveWithOutsideClones(page: Page) {
-  await page.locator('.mother-coverage-action-row')
-    .filter({ hasText: /Singapore Sling/i })
+  await page.locator('.mother-coverage-action-row').first()
     .locator('button', { hasText: /Use outside clones/i })
     .click();
   await page.waitForTimeout(500);
 }
 
 async function resolveWithMomCuts(page: Page) {
-  await page.locator('.mother-coverage-action-row')
-    .filter({ hasText: /Singapore Sling/i })
-    .locator('button', { hasText: /Reduce to 200 mom cuts/i })
+  await page.locator('.mother-coverage-action-row').first()
+    .locator('button')
+    .filter({ hasText: /Reduce to \d+ mom cuts/i })
     .click();
   await page.waitForTimeout(500);
 }
@@ -143,11 +142,31 @@ async function main() {
       return `${topActionCount} top action, ${gapCardCount} gap cards`;
     });
 
+    await runCheck('Recommended multi-strain mix opens ready to create', async () => {
+      const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
+      attachConsole(page);
+      await openGapPlan(page);
+      const recommendation = normalizeText(await page.locator('.plan-form-recommendation').innerText());
+      const rows = await page.locator('.cohort-strain-row').count();
+      const expandedRows = await page.locator('.cohort-strain-row.is-expanded').count();
+      const guidance = normalizeText(await page.locator('#plan-form-finalize-guidance').innerText());
+      const primary = page.locator('.plan-form button.plan-form-btn.primary').first();
+      if (!/5-strain mix/i.test(recommendation) || !/FLW-06 capacity plan/i.test(recommendation)) {
+        throw new Error(`Recommended mix copy missing: ${recommendation}`);
+      }
+      if (rows !== 5) throw new Error(`Expected 5 recommended strain rows for FLW-06, got ${rows}.`);
+      if (expandedRows !== 0) throw new Error(`Recommended mix should open collapsed, got ${expandedRows} expanded rows.`);
+      if (await primary.isDisabled()) throw new Error('Recommended multi-strain plan opened with create disabled.');
+      if (!/Ready to create batch group/i.test(guidance)) throw new Error(`Unexpected ready guidance: ${guidance}`);
+      await page.close();
+      return recommendation;
+    });
+
     await runCheck('Clone shortfall warns without blocking create', async () => {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
+      await forceCloneShortfall(page);
       const primary = page.locator('.plan-form button.plan-form-btn.primary').first();
       const disabled = await primary.isDisabled();
       const buttonText = normalizeText(await primary.innerText());
@@ -158,7 +177,7 @@ async function main() {
       if (!/clone cuts are still open/i.test(guidance) || !/resolve source coverage above/i.test(guidance)) {
         throw new Error(`Source warning guidance missing: ${guidance}`);
       }
-      if (!/Use outside clones/i.test(resolveText) || !/Reduce to 200 mom cuts/i.test(resolveText) || !/Pick moms/i.test(resolveText)) {
+      if (!/Use outside clones/i.test(resolveText) || !/Reduce to \d+ mom cuts/i.test(resolveText) || !/Pick moms/i.test(resolveText)) {
         throw new Error(`Recovery actions missing: ${resolveText}`);
       }
       await page.close();
@@ -169,7 +188,7 @@ async function main() {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
+      await forceCloneShortfall(page);
       await resolveWithMomCuts(page);
       const primary = page.locator('.plan-form button.plan-form-btn.primary').first();
       const guidance = normalizeText(await page.locator('#plan-form-finalize-guidance').innerText());
@@ -183,8 +202,6 @@ async function main() {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
-      await resolveWithOutsideClones(page);
       await page.locator('#plan-form-veg-room-select').selectOption('r-veg-01');
       await page.waitForTimeout(500);
       const primary = page.locator('.plan-form button.plan-form-btn.primary').first();
@@ -204,8 +221,6 @@ async function main() {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
-      await resolveWithOutsideClones(page);
       await page.locator('#plan-form-room-select').selectOption('r-flw-01');
       await page.waitForTimeout(700);
       const primary = page.locator('.plan-form button.plan-form-btn.primary').first();
@@ -223,14 +238,14 @@ async function main() {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
-      await resolveWithOutsideClones(page);
       await page.locator('#plan-form-room-select').selectOption('r-flw-01');
       await page.waitForTimeout(700);
       await page.locator('.flower-capacity-warning button', { hasText: /Reduce to 252 plants/i }).click();
       await page.waitForTimeout(700);
-      const plantValue = await page.locator('.cohort-strain-plants').first().inputValue();
-      if (plantValue !== '252') throw new Error(`Expected plant target 252, got ${plantValue}.`);
+      const plantTotal = (await page.locator('.cohort-strain-plants').evaluateAll((inputs) => (
+        inputs.reduce((sum, input) => sum + Number((input as HTMLInputElement).value || 0), 0)
+      )));
+      if (plantTotal !== 252) throw new Error(`Expected plant target total 252, got ${plantTotal}.`);
       if (await page.locator('.flower-capacity-warning').count() !== 0) {
         throw new Error('Reduce-to-cap did not clear flower capacity warning.');
       }
@@ -239,8 +254,6 @@ async function main() {
       const second = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(second);
       await openGapPlan(second);
-      await selectSingaporeSling(second);
-      await resolveWithOutsideClones(second);
       await second.locator('#plan-form-room-select').selectOption('r-flw-01');
       await second.waitForTimeout(700);
       await second.locator('.flower-capacity-warning button', { hasText: /Use FLW/i }).first().click();
@@ -255,8 +268,6 @@ async function main() {
       const page = await browser!.newPage({ viewport: { width: 1440, height: 1100 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
-      await resolveWithMomCuts(page);
       await page.locator('.plan-form button.plan-form-btn.primary').first().click();
       await page.locator('.plan-form[role="dialog"]').waitFor({ state: 'detached' });
       await page.locator('.finalize-banner').waitFor({ timeout: 5_000 });
@@ -275,8 +286,6 @@ async function main() {
       const page = await browser!.newPage({ viewport: { width: 390, height: 900 } });
       attachConsole(page);
       await openGapPlan(page);
-      await selectSingaporeSling(page);
-      await resolveWithOutsideClones(page);
       await page.locator('#plan-form-room-select').selectOption('r-flw-01');
       await page.waitForTimeout(700);
       const box = await page.locator('.flower-capacity-warning').boundingBox();

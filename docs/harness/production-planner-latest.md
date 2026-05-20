@@ -1,6 +1,6 @@
 # Production Planner Harness Report
 
-Generated: 2026-05-19T16:42:32.557Z
+Generated: 2026-05-20T13:45:29.594Z
 
 Purpose: keep the Sostanza demo, live Cultivo planner, and Cultivo design/data contracts honest before planner work starts or ships.
 
@@ -8,7 +8,7 @@ Purpose: keep the Sostanza demo, live Cultivo planner, and Cultivo design/data c
 
 Overall score: 99%
 
-Checks: 50 pass, 1 warn, 0 fail.
+Checks: 51 pass, 1 warn, 0 fail.
 
 Plain-English read:
 
@@ -217,7 +217,7 @@ Evidence: `src/features/production-planner/components/ProductionPlannerView.tsx`
 
 ### PASS - Sostanza Plan a Cycle browser report is loaded
 
-The latest browser harness report was generated at 2026-05-19T16:42:25.592Z against http://127.0.0.1:5181/?demo=sostanza#.
+The latest browser harness report was generated at 2026-05-20T13:45:15.994Z against http://127.0.0.1:5184/?demo=sostanza#.
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
@@ -227,21 +227,27 @@ Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sosta
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
+### PASS - Recommended multi-strain mix opens ready to create
+
+RECOMMENDED MIX 5-strain mix · 84 plants per strain · FLW-06 capacity plan Next: review forecast and create the batch group.
+
+Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
+
 ### PASS - Clone shortfall warns without blocking create
 
-CREATE WITH SOURCE WARNING → · 458 CLONE CUTS ARE STILL OPEN. YOU CAN CREATE THE PLAN WITH THIS WARNING OR RESOLVE SOURCE COVERAGE ABOVE.
+CREATE WITH SOURCE WARNING → · 883 clone cuts are still open. You can create the plan with this warning or resolve source coverage above.
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
 ### PASS - Clone recovery enables create
 
-READY TO CREATE BATCH GROUP.
+Ready to create batch group.
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
 ### PASS - Veg overload is a soft warning with auto recovery
 
-VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 26, 2026. USE AUTO · VEG-02
+VEG CAPACITY WARNING VEG-01 PEAKS 976/840 This plan can still be created, but veg labor or bench space needs review before May 27, 2026. USE AUTO · VEG-02
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
@@ -259,7 +265,7 @@ Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sosta
 
 ### PASS - Finalize shows fixed confirmation banner
 
-FINALIZED · 1-STRAIN BATCH GROUP · 420 PLANTS planned into FLW-06 ADDED TO PLANNING VIEW · CLIENT ONLY ×
+FINALIZED · 5-STRAIN BATCH GROUP · 420 PLANTS planned into FLW-06 ADDED TO PLANNING VIEW · CLIENT ONLY ×
 
 Evidence: `/Users/justinmorrow/Desktop/Claude/cultivo/docs/harness/browser/sostanza-plan-cycle-browser-report.json`
 
